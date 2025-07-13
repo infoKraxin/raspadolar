@@ -5,7 +5,7 @@ import { Ticket, HelpCircle } from "lucide-react";
 export default function Header() {
     return (
     <div
-    className="w-screen border-b border-neutral-800">
+    className="w-screen border-b bg-neutral-900 border-neutral-800">
         <div className="flex items-center justify-between mx-auto p-2 max-w-5xl">
             <div className="flex items-center gap-6">
                 <Image
