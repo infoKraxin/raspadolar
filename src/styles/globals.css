@@ -141,13 +141,13 @@ html {
     overflow-x: hidden;
     scroll-behavior: smooth;
   }
-  
+
   /* Force dark background on all main containers */
   #__next {
     background: #171717 !important; /* neutral-900 */
     min-height: 100vh;
   }
-  
+
   /* Ensure all divs inherit dark background unless specifically overridden */
   div:not([class*="bg-"]):not([style*="background"]) {
     background: transparent;

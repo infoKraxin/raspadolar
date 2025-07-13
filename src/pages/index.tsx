@@ -3,6 +3,7 @@ import { Poppins } from "next/font/google";
 import Header from "@/components/header";
 import { useState, useEffect } from "react";
 import Footer from "@/components/footer";
+import { useRouter } from "next/router";
 
 const poppins = Poppins({ 
   subsets: ["latin"],
@@ -10,6 +11,7 @@ const poppins = Poppins({
 });
 
 export default function Home() {
+  const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
   const totalSlides = 3; // Simulando 3 slides com a mesma imagem
 
@@ -387,7 +389,10 @@ export default function Home() {
               <p className="text-neutral-400 text-sm mb-3 sm:mb-4">Ganhe até R$ 1.000</p>
               <div className="flex justify-between items-center">
                 <span className="text-green-400 font-bold text-base sm:text-lg">R$ 5,00</span>
-                <button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl">
+                <button 
+                  onClick={() => router.push('v1/scratch/pix')}
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                >
                   Jogar
                 </button>
               </div>
@@ -411,7 +416,10 @@ export default function Home() {
               <p className="text-neutral-400 text-sm mb-3 sm:mb-4">Vale compras até R$ 500</p>
               <div className="flex justify-between items-center">
                 <span className="text-green-400 font-bold text-base sm:text-lg">R$ 3,00</span>
-                <button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl">
+                <button 
+                  onClick={() => router.push('v1/scratch/shopee')}
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                >
                   Jogar
                 </button>
               </div>
@@ -437,7 +445,10 @@ export default function Home() {
               <p className="text-neutral-400 text-sm mb-3 sm:mb-4">Ganhe uma moto 0km</p>
               <div className="flex justify-between items-center">
                 <span className="text-green-400 font-bold text-base sm:text-lg">R$ 10,00</span>
-                <button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl">
+                <button 
+                  onClick={() => router.push('v1/scratch/motorizado')}
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                >
                   Jogar
                 </button>
               </div>
@@ -463,7 +474,10 @@ export default function Home() {
               <p className="text-neutral-400 text-sm mb-3 sm:mb-4">Prêmio de até R$ 50.000</p>
               <div className="flex justify-between items-center">
                 <span className="text-green-400 font-bold text-base sm:text-lg">R$ 15,00</span>
-                <button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl">
+                <button 
+                  onClick={() => router.push('v1/scratch/sonho')}
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                >
                   Jogar
                 </button>
               </div>
