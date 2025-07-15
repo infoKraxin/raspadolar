@@ -1,15 +1,19 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { X, Eye, EyeOff, Mail, Lock, User, Phone } from 'lucide-react';
+import { X, Eye, EyeOff, Mail, Lock, User, Phone, CreditCard, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onAuthSuccess?: (user: any, token: string) => void;
 }
 
-export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
+export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
+  const { login } = useAuth();
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -18,8 +22,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     password: '',
     confirmPassword: '',
     name: '',
-    phone: ''
+    phone: '',
+    cpf: ''
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   // Body scroll lock
   useEffect(() => {
@@ -49,10 +55,108 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Implementar lógica de autenticação aqui
-    console.log('Form submitted:', formData);
+    setIsLoading(true);
+
+    try {
+      if (activeTab === 'login') {
+        await handleLogin();
+      } else {
+        await handleRegister();
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Ocorreu um erro. Tente novamente.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogin = async () => {
+    const response = await fetch('https://api.raspa.ae/v1/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        identifier: formData.email,
+        password: formData.password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao fazer login');
+    }
+
+    if (data.success) {
+      // Usar AuthContext para fazer login
+      login(data.data.user, data.data.token);
+      
+      // Mostrar toast de sucesso
+      toast.success('Login realizado com sucesso!');
+      
+      // Chamar callback de sucesso se fornecido
+      if (onAuthSuccess) {
+        onAuthSuccess(data.data.user, data.data.token);
+      }
+      
+      // Fechar modal
+      onClose();
+    }
+  };
+
+  const handleRegister = async () => {
+    if (formData.password !== formData.confirmPassword) {
+      throw new Error('As senhas não coincidem');
+    }
+
+    // Capturar código de convite da URL se presente
+    const urlParams = new URLSearchParams(window.location.search);
+    const inviteCode = urlParams.get('r');
+
+    const registerData: any = {
+      email: formData.email,
+      phone: formData.phone,
+      cpf: formData.cpf,
+      password: formData.password,
+      full_name: formData.name,
+    };
+
+    if (inviteCode) {
+      registerData.invite_code = inviteCode;
+    }
+
+    const response = await fetch('https://api.raspa.ae/v1/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(registerData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao criar conta');
+    }
+
+    if (data.success) {
+      // Usar AuthContext para fazer login
+      login(data.data.user, data.data.token);
+      
+      // Mostrar toast de sucesso
+      toast.success('Conta criada com sucesso!');
+      
+      // Chamar callback de sucesso se fornecido
+      if (onAuthSuccess) {
+        onAuthSuccess(data.data.user, data.data.token);
+      }
+      
+      // Fechar modal
+      onClose();
+    }
   };
 
   return (
@@ -118,6 +222,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               </button>
             </div>
 
+
+
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4 flex-1 flex flex-col justify-center">
               {activeTab === 'register' && (
@@ -133,8 +239,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                       onChange={handleInputChange}
                       className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 outline-none"
                       required
+                      disabled={isLoading}
                     />
                   </div>
+
+
 
                   {/* Phone Field */}
                   <div className="relative">
@@ -142,13 +251,31 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                     <input
                       type="tel"
                       name="phone"
-                      placeholder="Telefone"
+                      placeholder="Telefone (ex: 11987654321)"
                       value={formData.phone}
                       onChange={handleInputChange}
                       className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 outline-none"
                       required
+                      disabled={isLoading}
                     />
                   </div>
+
+                  {/* CPF Field */}
+                  <div className="relative">
+                    <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={18} />
+                    <input
+                      type="text"
+                      name="cpf"
+                      placeholder="CPF (apenas números)"
+                      value={formData.cpf}
+                      onChange={handleInputChange}
+                      className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 outline-none"
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+
+
                 </>
               )}
 
@@ -163,6 +290,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   onChange={handleInputChange}
                   className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 outline-none"
                   required
+                  disabled={isLoading}
                 />
               </div>
 
@@ -177,11 +305,13 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   onChange={handleInputChange}
                   className="w-full pl-10 pr-12 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 outline-none"
                   required
+                  disabled={isLoading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-white transition-colors"
+                  disabled={isLoading}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -199,11 +329,13 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                     onChange={handleInputChange}
                     className="w-full pl-10 pr-12 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 outline-none"
                     required
+                    disabled={isLoading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-white transition-colors"
+                    disabled={isLoading}
                   >
                     {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -247,8 +379,16 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               <Button
                 type="submit"
                 className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                disabled={isLoading}
               >
-                {activeTab === 'login' ? 'Entrar' : 'Criar Conta'}
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="animate-spin" size={18} />
+                    {activeTab === 'login' ? 'Entrando...' : 'Criando conta...'}
+                  </div>
+                ) : (
+                  activeTab === 'login' ? 'Entrar' : 'Criar Conta'
+                )}
               </Button>
             </form>
 
