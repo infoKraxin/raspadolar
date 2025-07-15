@@ -24,7 +24,8 @@ import {
   Bell,
   ChevronRight,
   ArrowDownLeft,
-  Copy
+  Copy,
+  Package
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -69,6 +70,15 @@ export default function ProfilePage() {
   const [activeSection, setActiveSection] = useState('personal');
   const [profileData, setProfileData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Função para lidar com cliques na sidebar
+  const handleSidebarClick = (itemId: string) => {
+    if (itemId === 'inventory') {
+      router.push('/v1/profile/inventory');
+    } else {
+      setActiveSection(itemId);
+    }
+  };
 
   const [withdrawData, setWithdrawData] = useState({
     pixKey: '',
@@ -406,11 +416,12 @@ export default function ProfilePage() {
 
   const sidebarItems = [
     { id: 'personal', icon: <User className="w-5 h-5" />, label: 'Informações Pessoais' },
+    { id: 'inventory', icon: <Package className="w-5 h-5" />, label: 'Inventário' },
     { id: 'withdraw', icon: <ArrowDownLeft className="w-5 h-5" />, label: 'Sacar Montante' },
-    { id: 'security', icon: <Shield className="w-5 h-5" />, label: 'Segurança' },
+    // { id: 'security', icon: <Shield className="w-5 h-5" />, label: 'Segurança' },
     { id: 'financial', icon: <CreditCard className="w-5 h-5" />, label: 'Histórico Financeiro' },
     { id: 'games', icon: <History className="w-5 h-5" />, label: 'Histórico de Jogos' },
-    { id: 'notifications', icon: <Bell className="w-5 h-5" />, label: 'Notificações' },
+    // { id: 'notifications', icon: <Bell className="w-5 h-5" />, label: 'Notificações' },
   ];
 
   return (
@@ -469,7 +480,7 @@ export default function ProfilePage() {
                     icon={item.icon}
                     label={item.label}
                     isActive={activeSection === item.id}
-                    onClick={() => setActiveSection(item.id)}
+                    onClick={() => handleSidebarClick(item.id)}
                   />
                 ))}
               </nav>

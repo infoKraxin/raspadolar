@@ -27,7 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Search, ArrowUpRight, Clock, CreditCard, DollarSign, Loader2 } from "lucide-react"
+import { Search, ArrowDownLeft, Clock, CreditCard, DollarSign, Loader2, Check, X, Eye } from "lucide-react"
 import { Poppins } from 'next/font/google'
 
 const poppins = Poppins({ 
@@ -42,30 +42,29 @@ interface User {
   email: string;
 }
 
-interface Deposit {
+interface Withdrawal {
   id: string;
   userId: string;
   walletId: string;
   amount: string;
+  document: string;
+  pix_key: string;
+  pix_type: string;
   currency: string;
   symbol: string;
   status: boolean;
   payment_method: string;
-  metadata: {
-    qrCode?: string;
-    gateway: string;
-    transactionId: string;
-  };
-  paid_at: string | null;
+  metadata: any;
+  processed_at: string | null;
   created_at: string;
   updated_at: string;
   user: User;
 }
 
-interface DepositsResponse {
+interface WithdrawalsResponse {
   success: boolean;
   data: {
-    deposits: Deposit[];
+    withdrawals: Withdrawal[];
     pagination: {
       page: number;
       limit: number;
@@ -97,10 +96,10 @@ const formatDate = (dateString: string) => {
   });
 };
 
-export default function DepositsPage() {
+export default function WithdrawalsPage() {
   const { token, isLoading: authLoading } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
-  const [deposits, setDeposits] = useState<Deposit[]>([]);
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
@@ -110,8 +109,8 @@ export default function DepositsPage() {
     pages: 0
   });
 
-  // Função para buscar depósitos da API
-  const fetchDeposits = async (page: number = 1) => {
+  // Função para buscar saques da API
+  const fetchWithdrawals = async (page: number = 1) => {
     try {
       setLoading(true);
       setError(null);
@@ -120,7 +119,7 @@ export default function DepositsPage() {
         throw new Error('Token de autenticação não encontrado');
       }
       
-      const response = await fetch(`https://api.raspa.ae/v1/api/admin/deposits?page=${page}&limit=20`, {
+      const response = await fetch(`https://api.raspa.ae/v1/api/admin/withdrawals?page=${page}&limit=20`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -131,20 +130,20 @@ export default function DepositsPage() {
         if (response.status === 401) {
           throw new Error('Token inválido ou expirado');
         }
-        throw new Error('Erro ao carregar depósitos');
+        throw new Error('Erro ao carregar saques');
       }
       
-      const data: DepositsResponse = await response.json();
+      const data: WithdrawalsResponse = await response.json();
       
       if (data.success) {
-        setDeposits(data.data.deposits);
+        setWithdrawals(data.data.withdrawals);
         setPagination(data.data.pagination);
       } else {
         throw new Error('Erro na resposta da API');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro desconhecido');
-      console.error('Erro ao buscar depósitos:', err);
+      console.error('Erro ao buscar saques:', err);
     } finally {
       setLoading(false);
     }
@@ -152,57 +151,56 @@ export default function DepositsPage() {
 
   useEffect(() => {
     if (!authLoading && token) {
-      fetchDeposits();
+      fetchWithdrawals();
     } else if (!authLoading && !token) {
       setError('Usuário não autenticado. Faça login para continuar.');
       setLoading(false);
     }
   }, [token, authLoading]);
 
-  const filteredDeposits = deposits.filter(deposit => 
-    deposit.user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    deposit.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    deposit.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    deposit.amount.includes(searchTerm) ||
-    deposit.payment_method.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredWithdrawals = withdrawals.filter(withdrawal => 
+    withdrawal.user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    withdrawal.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    withdrawal.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    withdrawal.amount.includes(searchTerm) ||
+    withdrawal.pix_key.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    withdrawal.document.includes(searchTerm)
   );
 
   // Calcular estatísticas
   const stats = {
-    totalApproved: deposits
-      .filter(d => d.status === true)
-      .reduce((sum, d) => sum + parseFloat(d.amount), 0),
-    totalPending: deposits
-      .filter(d => d.status === false)
-      .reduce((sum, d) => sum + parseFloat(d.amount), 0),
-    totalGenerated: deposits.length
+    totalProcessed: withdrawals
+      .filter(w => w.status === true)
+      .reduce((sum, w) => sum + parseFloat(w.amount), 0),
+    totalPending: withdrawals
+      .filter(w => w.status === false)
+      .reduce((sum, w) => sum + parseFloat(w.amount), 0),
+    totalRequests: withdrawals.length
   };
 
   const statsCards = [
     {
-      title: "Total aprovado",
-      value: formatCurrency(stats.totalApproved.toString()),
-      icon: ArrowUpRight,
-      description: "Depósitos confirmados",
+      title: "Total processado",
+      value: formatCurrency(stats.totalProcessed.toString()),
+      icon: ArrowDownLeft,
+      description: "Saques confirmados",
       color: "text-green-400"
     },
     {
       title: "Total pendente",
       value: formatCurrency(stats.totalPending.toString()),
       icon: Clock,
-      description: "Aguardando pagamento",
+      description: "Aguardando processamento",
       color: "text-yellow-400"
     },
     {
-      title: "Total de PIX Gerados",
-      value: stats.totalGenerated.toString(),
+      title: "Total de Solicitações",
+      value: stats.totalRequests.toString(),
       icon: CreditCard,
-      description: "Códigos PIX criados",
+      description: "Pedidos de saque",
       color: "text-blue-400"
     }
   ];
-
-
 
   const getStatusColor = (status: boolean) => {
     return status
@@ -211,7 +209,78 @@ export default function DepositsPage() {
   };
 
   const getStatusText = (status: boolean) => {
-    return status ? 'Pago' : 'Pendente';
+    return status ? 'Processado' : 'Pendente';
+  };
+
+  const getPixTypeColor = (pixType: string) => {
+    const colors = {
+      'EMAIL': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+      'CPF': 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+      'CNPJ': 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+      'PHONE': 'bg-green-500/10 text-green-400 border-green-500/20',
+      'RANDOM': 'bg-gray-500/10 text-gray-400 border-gray-500/20'
+    };
+    return colors[pixType as keyof typeof colors] || 'bg-gray-500/10 text-gray-400 border-gray-500/20';
+  };
+
+  // Função para aprovar saque
+  const handleApprove = async (withdrawalId: string) => {
+    try {
+      if (!token) {
+        throw new Error('Token de autenticação não encontrado');
+      }
+
+      const response = await fetch(`https://api.raspa.ae/v1/api/admin/withdrawals/${withdrawalId}/approve`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao aprovar saque');
+      }
+
+      // Recarregar a lista após aprovação
+      await fetchWithdrawals(pagination.page);
+    } catch (err) {
+      console.error('Erro ao aprovar saque:', err);
+      alert('Erro ao aprovar saque. Tente novamente.');
+    }
+  };
+
+  // Função para negar saque
+  const handleReject = async (withdrawalId: string) => {
+    try {
+      if (!token) {
+        throw new Error('Token de autenticação não encontrado');
+      }
+
+      const response = await fetch(`https://api.raspa.ae/v1/api/admin/withdrawals/${withdrawalId}/reject`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao negar saque');
+      }
+
+      // Recarregar a lista após rejeição
+      await fetchWithdrawals(pagination.page);
+    } catch (err) {
+      console.error('Erro ao negar saque:', err);
+      alert('Erro ao negar saque. Tente novamente.');
+    }
+  };
+
+  // Função para visualizar detalhes
+  const handleView = (withdrawalId: string) => {
+    console.log('Visualizar saque:', withdrawalId);
+    // Implementar modal ou página de detalhes
   };
 
   return (
@@ -234,7 +303,7 @@ export default function DepositsPage() {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block text-neutral-600" />
                 <BreadcrumbItem>
-                  <BreadcrumbPage className="text-white font-medium">Depósitos</BreadcrumbPage>
+                  <BreadcrumbPage className="text-white font-medium">Saques</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -248,9 +317,9 @@ export default function DepositsPage() {
                   <DollarSign className="w-5 h-5 text-neutral-300" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-white">Gerenciar Depósitos</h1>
+                  <h1 className="text-xl font-bold text-white">Gerenciar Saques</h1>
                   <p className="text-neutral-400 text-sm">
-                    {loading ? 'Carregando...' : `Total de ${pagination.total} transações`}
+                    {loading ? 'Carregando...' : `Total de ${pagination.total} solicitações`}
                   </p>
                 </div>
               </div>
@@ -282,7 +351,7 @@ export default function DepositsPage() {
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-400" />
                   <Input
-                    placeholder="Buscar por usuário, ID do pagamento, status ou valor..."
+                    placeholder="Buscar por usuário, ID, chave PIX, documento ou valor..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500"
@@ -294,72 +363,116 @@ export default function DepositsPage() {
               </div>
             </Card>
 
-            {/* Deposits Table */}
+            {/* Withdrawals Table */}
             <Card className="bg-neutral-800 border-neutral-700">
               <div className="p-6 border-b border-neutral-700">
-                <h3 className="text-lg font-semibold text-white">Lista de Depósitos</h3>
+                <h3 className="text-lg font-semibold text-white">Lista de Saques</h3>
                 <p className="text-neutral-400 text-sm">
-                  {loading ? 'Carregando...' : `Mostrando ${filteredDeposits.length} de ${pagination.total} transações`}
+                  {loading ? 'Carregando...' : `Mostrando ${filteredWithdrawals.length} de ${pagination.total} solicitações`}
                 </p>
               </div>
               
               {loading ? (
                 <div className="p-8 text-center">
                   <Loader2 className="w-8 h-8 text-neutral-400 animate-spin mx-auto mb-4" />
-                  <p className="text-neutral-400">Carregando depósitos...</p>
+                  <p className="text-neutral-400">Carregando saques...</p>
                 </div>
               ) : error ? (
                 <div className="p-8 text-center">
                   <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
                     <DollarSign className="w-8 h-8 text-red-400" />
                   </div>
-                  <h3 className="text-lg font-semibold text-white mb-2">Erro ao carregar depósitos</h3>
+                  <h3 className="text-lg font-semibold text-white mb-2">Erro ao carregar saques</h3>
                   <p className="text-neutral-400 text-sm mb-4">{error}</p>
-                  <Button onClick={() => fetchDeposits()} className="bg-blue-600 hover:bg-blue-700">
+                  <Button onClick={() => fetchWithdrawals()} className="bg-blue-600 hover:bg-blue-700">
                     Tentar novamente
                   </Button>
                 </div>
               ) : (
                 <>
                   <div className="overflow-x-auto">
-                    <div style={{ minWidth: '1000px' }}>
+                    <div style={{ minWidth: '1200px' }}>
                       <Table>
                         <TableHeader>
                           <TableRow className="border-neutral-700 hover:bg-neutral-700/50">
-                            <TableHead className="text-neutral-300 font-medium w-[200px]">ID do Depósito</TableHead>
+                            <TableHead className="text-neutral-300 font-medium w-[180px]">ID do Saque</TableHead>
                             <TableHead className="text-neutral-300 font-medium w-[100px]">Status</TableHead>
-                            <TableHead className="text-neutral-300 font-medium w-[150px]">Usuário</TableHead>
-                            <TableHead className="text-neutral-300 font-medium w-[200px]">Email</TableHead>
-                            <TableHead className="text-neutral-300 font-medium w-[120px]">Valor</TableHead>
-                            <TableHead className="text-neutral-300 font-medium w-[100px]">Método</TableHead>
-                            <TableHead className="text-neutral-300 font-medium w-[180px]">Data de Criação</TableHead>
-                            <TableHead className="text-neutral-300 font-medium w-[180px]">Data de Pagamento</TableHead>
+                            <TableHead className="text-neutral-300 font-medium w-[120px]">Usuário</TableHead>
+                            <TableHead className="text-neutral-300 font-medium w-[180px]">Email</TableHead>
+                            <TableHead className="text-neutral-300 font-medium w-[100px]">Valor</TableHead>
+                            <TableHead className="text-neutral-300 font-medium w-[150px]">Chave PIX</TableHead>
+                            <TableHead className="text-neutral-300 font-medium w-[80px]">Tipo PIX</TableHead>
+                            <TableHead className="text-neutral-300 font-medium w-[120px]">Documento</TableHead>
+                            <TableHead className="text-neutral-300 font-medium w-[150px]">Data Criação</TableHead>
+                            <TableHead className="text-neutral-300 font-medium w-[150px]">Data Processamento</TableHead>
+                            <TableHead className="text-neutral-300 font-medium w-[120px] text-right">Ações</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {filteredDeposits.map((deposit) => (
-                            <TableRow key={deposit.id} className="border-neutral-700 hover:bg-neutral-700/30">
+                          {filteredWithdrawals.map((withdrawal) => (
+                            <TableRow key={withdrawal.id} className="border-neutral-700 hover:bg-neutral-700/30">
                               <TableCell className="text-neutral-400 font-mono text-xs">
-                                {deposit.id.substring(0, 8)}...{deposit.id.substring(deposit.id.length - 8)}
+                                {withdrawal.id.substring(0, 8)}...{withdrawal.id.substring(withdrawal.id.length - 8)}
                               </TableCell>
                               <TableCell>
-                                <Badge className={getStatusColor(deposit.status)}>
-                                  {getStatusText(deposit.status)}
+                                <Badge className={getStatusColor(withdrawal.status)}>
+                                  {getStatusText(withdrawal.status)}
                                 </Badge>
                               </TableCell>
-                              <TableCell className="text-white font-medium">{deposit.user.username}</TableCell>
-                              <TableCell className="text-neutral-300">{deposit.user.email}</TableCell>
+                              <TableCell className="text-white font-medium">{withdrawal.user.username}</TableCell>
+                              <TableCell className="text-neutral-300">{withdrawal.user.email}</TableCell>
                               <TableCell className="text-green-400 font-medium">
-                                {formatCurrency(deposit.amount, deposit.symbol)}
+                                {formatCurrency(withdrawal.amount, withdrawal.symbol)}
                               </TableCell>
-                              <TableCell className="text-neutral-300">{deposit.payment_method}</TableCell>
-                              <TableCell className="text-neutral-300">{formatDate(deposit.created_at)}</TableCell>
+                              <TableCell className="text-neutral-300 font-mono text-xs">{withdrawal.pix_key}</TableCell>
+                              <TableCell>
+                                <Badge className={getPixTypeColor(withdrawal.pix_type)}>
+                                  {withdrawal.pix_type}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-neutral-300 font-mono">{withdrawal.document}</TableCell>
+                              <TableCell className="text-neutral-300">{formatDate(withdrawal.created_at)}</TableCell>
                               <TableCell className="text-neutral-300">
-                                {deposit.paid_at ? (
-                                  formatDate(deposit.paid_at)
+                                {withdrawal.processed_at ? (
+                                  formatDate(withdrawal.processed_at)
                                 ) : (
                                   <span className="text-neutral-500">-</span>
                                 )}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleView(withdrawal.id)}
+                                    className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                                    title="Visualizar detalhes"
+                                  >
+                                    <Eye className="w-4 h-4" />
+                                  </Button>
+                                  {!withdrawal.status && (
+                                    <>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleApprove(withdrawal.id)}
+                                        className="text-green-400 hover:text-green-300 hover:bg-green-500/10"
+                                        title="Aprovar saque"
+                                      >
+                                        <Check className="w-4 h-4" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleReject(withdrawal.id)}
+                                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                        title="Negar saque"
+                                      >
+                                        <X className="w-4 h-4" />
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
                               </TableCell>
                             </TableRow>
                           ))}
@@ -368,12 +481,12 @@ export default function DepositsPage() {
                     </div>
                   </div>
                   
-                  {filteredDeposits.length === 0 && !loading && (
+                  {filteredWithdrawals.length === 0 && !loading && (
                     <div className="p-8 text-center">
                       <div className="w-16 h-16 bg-neutral-700 rounded-full flex items-center justify-center mx-auto mb-4">
                         <DollarSign className="w-8 h-8 text-neutral-400" />
                       </div>
-                      <h3 className="text-lg font-semibold text-white mb-2">Nenhum depósito encontrado</h3>
+                      <h3 className="text-lg font-semibold text-white mb-2">Nenhum saque encontrado</h3>
                       <p className="text-neutral-400 text-sm">Tente ajustar os filtros de busca</p>
                     </div>
                   )}

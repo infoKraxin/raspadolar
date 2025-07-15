@@ -111,7 +111,7 @@ export default function Footer() {
         <div className="border-t border-neutral-800/50 pt-6">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-neutral-500 text-xs sm:text-sm text-center sm:text-left">
-              © 2024 raspa.ae - Todos os direitos reservados. | CNPJ: 00.000.000/0001-00
+              © 2024 raspa.ae - Todos os direitos reservados. | CNPJ: 65.164.519/0001-50
             </p>
             <div className="flex items-center gap-4">
               <span className="text-neutral-500 text-xs">Jogue com responsabilidade</span>

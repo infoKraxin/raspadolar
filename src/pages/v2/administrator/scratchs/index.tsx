@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { useAuth } from '@/contexts/AuthContext';
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -18,7 +20,15 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Eye, Edit, Trash2, Plus, Gift, DollarSign, Users, TrendingUp, Search } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Eye, Trash2, Plus, Gift, DollarSign, Users, TrendingUp, Search, Loader2 } from 'lucide-react';
 import { Poppins } from 'next/font/google';
 
 const poppins = Poppins({ 
@@ -26,123 +36,303 @@ const poppins = Poppins({
   weight: ["100", "200", "300","400","500", "600", "700"],
 });
 
-// Mock data das raspadinhas
-const scratchCards = [
-  {
-    id: '1',
-    name: 'Motorizado',
-    image: '/scratchs/motorizado.webp',
-    price: 5.00,
-    maxPrize: 500.00,
-    totalSold: 1250,
-    totalAvailable: 2000,
-    status: 'Ativo',
-    description: 'Raspadinha com tema de entregador'
-  },
-  {
-    id: '2',
-    name: 'PIX na Conta',
-    image: '/scratchs/pix_conta.webp',
-    price: 10.00,
-    maxPrize: 1000.00,
-    totalSold: 850,
-    totalAvailable: 1500,
-    status: 'Ativo',
-    description: 'Ganhe PIX direto na sua conta'
-  },
-  {
-    id: '3',
-    name: 'Shopee',
-    image: '/scratchs/shopee.webp',
-    price: 3.00,
-    maxPrize: 300.00,
-    totalSold: 2100,
-    totalAvailable: 3000,
-    status: 'Ativo',
-    description: 'Raspadinha com tema Shopee'
-  },
-  {
-    id: '4',
-    name: 'Sonho',
-    image: '/scratchs/sonho.webp',
-    price: 15.00,
-    maxPrize: 2000.00,
-    totalSold: 450,
-    totalAvailable: 1000,
-    status: 'Inativo',
-    description: 'Realize seus sonhos com esta raspadinha'
-  }
-];
+// Interfaces
+interface Prize {
+  id: string;
+  scratchCardId: string;
+  name: string;
+  description: string;
+  type: string;
+  value: string;
+  product_name: string | null;
+  redemption_value: string | null;
+  image_url: string | null;
+  probability: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
 
-// Stats data
-const statsCards = [
-  {
-    title: "Total de Raspadinhas",
-    value: "4",
-    icon: Gift,
-    description: "Raspadinhas cadastradas",
-    color: "text-blue-400"
-  },
-  {
-    title: "Raspadinhas Ativas",
-    value: "3",
-    icon: TrendingUp,
-    description: "Disponíveis para venda",
-    color: "text-green-400"
-  },
-  {
-    title: "Total Vendidas",
-    value: "4.650",
-    icon: Users,
-    description: "Raspadinhas vendidas",
-    color: "text-purple-400"
-  },
-  {
-    title: "Receita Total",
-    value: "R$ 33.950,00",
-    icon: DollarSign,
-    description: "Receita gerada",
-    color: "text-yellow-400"
-  }
-];
+interface ScratchCard {
+  id: string;
+  name: string;
+  description: string;
+  price: string;
+  image_url: string;
+  is_active: boolean;
+  target_rtp: string;
+  current_rtp: string;
+  total_revenue: string;
+  total_payouts: string;
+  total_games_played: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  prizes: Prize[];
+  _count: {
+    games: number;
+  };
+}
+
+interface ScratchCardsResponse {
+  success: boolean;
+  message: string;
+  data: ScratchCard[];
+  count: number;
+}
+
+// Funções de formatação
+const formatCurrency = (value: string | number) => {
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(numValue);
+};
+
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+
 
 export default function ScratchCardsPage() {
+  const router = useRouter();
+  const { token, isLoading: authLoading } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
+  const [scratchCards, setScratchCards] = useState<ScratchCard[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('Todos');
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [cardToDelete, setCardToDelete] = useState<ScratchCard | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const fetchScratchCards = async () => {
+    if (!token) {
+      setError('Token de autenticação não encontrado');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch('https://api.raspa.ae/v1/api/scratchcards/admin/all?includeInactive=true', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.status === 401) {
+        setError('Token inválido ou expirado');
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(`Erro na requisição: ${response.status}`);
+      }
+
+      const data: ScratchCardsResponse = await response.json();
+      setScratchCards(data.data || []);
+    } catch (err) {
+      console.error('Erro ao buscar raspadinhas:', err);
+      setError('Erro ao carregar raspadinhas');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!authLoading && token) {
+      fetchScratchCards();
+    } else if (!authLoading && !token) {
+      setError('Usuário não autenticado');
+      setLoading(false);
+    }
+  }, [token, authLoading]);
 
   const handleView = (id: string) => {
-    console.log('Visualizar raspadinha:', id);
+    router.push(`/v2/administrator/scratchs/${id}`);
   };
 
-  const handleEdit = (id: string) => {
-    console.log('Editar raspadinha:', id);
+  const handleDelete = (card: ScratchCard) => {
+    setCardToDelete(card);
+    setDeleteModalOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    console.log('Excluir raspadinha:', id);
+  const confirmDelete = async () => {
+    if (!cardToDelete) return;
+
+    try {
+      setDeleting(true);
+      const response = await fetch(`https://api.raspa.ae/v1/api/scratchcards/admin/${cardToDelete.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        setScratchCards(prev => prev.filter(card => card.id !== cardToDelete.id));
+        setDeleteModalOpen(false);
+        setCardToDelete(null);
+      } else {
+        throw new Error('Erro ao excluir raspadinha');
+      }
+    } catch (err) {
+      console.error('Erro ao excluir raspadinha:', err);
+      alert('Erro ao excluir raspadinha');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeleteModalOpen(false);
+    setCardToDelete(null);
   };
 
   const handleCreate = () => {
-    console.log('Criar nova raspadinha');
+    router.push('/v2/administrator/scratchs/create');
   };
 
   const filteredCards = scratchCards.filter(card => {
     const matchesSearch = card.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          card.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'Todos' || card.status === statusFilter;
+    const matchesStatus = statusFilter === 'Todos' || 
+                         (statusFilter === 'Ativo' && card.is_active) ||
+                         (statusFilter === 'Inativo' && !card.is_active);
     return matchesSearch && matchesStatus;
   });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Ativo':
-        return 'bg-green-500/10 text-green-400 border-green-500/20';
-      case 'Inativo':
-        return 'bg-red-500/10 text-red-400 border-red-500/20';
-      default:
-        return 'bg-neutral-500/10 text-neutral-400 border-neutral-500/20';
+  // Calcular estatísticas
+  const totalCards = scratchCards.length;
+  const activeCards = scratchCards.filter(card => card.is_active).length;
+  const totalGamesPlayed = scratchCards.reduce((sum, card) => sum + card.total_games_played, 0);
+  const totalRevenue = scratchCards.reduce((sum, card) => sum + parseFloat(card.total_revenue || '0'), 0);
+
+  const statsCards = [
+    {
+      title: "Total de Raspadinhas",
+      value: totalCards.toString(),
+      icon: Gift,
+      description: "Raspadinhas cadastradas",
+      color: "text-blue-400"
+    },
+    {
+      title: "Raspadinhas Ativas",
+      value: activeCards.toString(),
+      icon: TrendingUp,
+      description: "Disponíveis para venda",
+      color: "text-green-400"
+    },
+    {
+      title: "Total de Jogos",
+      value: totalGamesPlayed.toLocaleString('pt-BR'),
+      icon: Users,
+      description: "Jogos realizados",
+      color: "text-purple-400"
+    },
+    {
+      title: "Receita Total",
+      value: formatCurrency(totalRevenue),
+      icon: DollarSign,
+      description: "Receita gerada",
+      color: "text-yellow-400"
     }
+  ];
+
+  const getStatusColor = (isActive: boolean) => {
+    return isActive
+      ? 'bg-green-500/10 text-green-400 border-green-500/20'
+      : 'bg-red-500/10 text-red-400 border-red-500/20';
   };
+
+  const getMaxPrize = (prizes: Prize[]) => {
+    if (!prizes || prizes.length === 0) return 0;
+    return Math.max(...prizes.map(prize => parseFloat(prize.value || '0')));
+  };
+
+  if (loading) {
+    return (
+      <div className={poppins.className}>
+        <SidebarProvider>
+          <AppSidebar />
+          <SidebarInset>
+            <header className="flex h-16 shrink-0 items-center gap-2 border-b border-neutral-700 bg-neutral-800 px-4">
+              <SidebarTrigger className="-ml-1 text-neutral-400 hover:text-white" />
+              <Separator orientation="vertical" className="mr-2 h-4 bg-neutral-600" />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem className="hidden md:block">
+                    <BreadcrumbLink href="#" className="text-neutral-400 hover:text-white">
+                      Administração
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator className="hidden md:block text-neutral-600" />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage className="text-white font-medium">Raspadinhas</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+            </header>
+            <div className="flex flex-1 flex-col gap-6 p-6 bg-neutral-900 items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+              <p className="text-neutral-400">Carregando raspadinhas...</p>
+            </div>
+          </SidebarInset>
+        </SidebarProvider>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={poppins.className}>
+        <SidebarProvider>
+          <AppSidebar />
+          <SidebarInset>
+            <header className="flex h-16 shrink-0 items-center gap-2 border-b border-neutral-700 bg-neutral-800 px-4">
+              <SidebarTrigger className="-ml-1 text-neutral-400 hover:text-white" />
+              <Separator orientation="vertical" className="mr-2 h-4 bg-neutral-600" />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem className="hidden md:block">
+                    <BreadcrumbLink href="#" className="text-neutral-400 hover:text-white">
+                      Administração
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator className="hidden md:block text-neutral-600" />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage className="text-white font-medium">Raspadinhas</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+            </header>
+            <div className="flex flex-1 flex-col gap-6 p-6 bg-neutral-900 items-center justify-center">
+              <div className="text-center">
+                <p className="text-red-400 mb-4">{error}</p>
+                <Button onClick={fetchScratchCards} className="bg-blue-600 hover:bg-blue-700">
+                  Tentar Novamente
+                </Button>
+              </div>
+            </div>
+          </SidebarInset>
+        </SidebarProvider>
+      </div>
+    );
+  }
 
   return (
     <div className={poppins.className}>
@@ -233,14 +423,14 @@ export default function ScratchCardsPage() {
               </div>
             </Card>
 
-            {/* Scratch Cards Grid */}
+            {/* Scratch Cards Table */}
             <Card className="bg-neutral-800 border-neutral-700">
               <div className="p-6 border-b border-neutral-700">
                 <h3 className="text-lg font-semibold text-white">Lista de Raspadinhas</h3>
                 <p className="text-neutral-400 text-sm">Mostrando {filteredCards.length} de {scratchCards.length} raspadinhas</p>
               </div>
               
-              <div className="p-6">
+              <div className="overflow-x-auto">
                 {filteredCards.length === 0 ? (
                   <div className="text-center py-12">
                     <div className="w-16 h-16 bg-neutral-700 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -250,84 +440,155 @@ export default function ScratchCardsPage() {
                     <p className="text-neutral-400 text-sm">Tente ajustar os filtros de busca</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {filteredCards.map((card) => (
-                      <div key={card.id} className="bg-neutral-700 rounded-lg border border-neutral-600 overflow-hidden hover:border-neutral-500 transition-colors">
-                        <div className="p-4">
-                          <div className="flex items-start justify-between mb-2">
-                            <h3 className="text-lg font-semibold text-white">{card.name}</h3>
-                            <Badge className={getStatusColor(card.status)}>
-                              {card.status}
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-neutral-700">
+                        <th className="text-left p-4 text-neutral-400 font-medium">ID</th>
+                        <th className="text-left p-4 text-neutral-400 font-medium">Nome</th>
+                        <th className="text-left p-4 text-neutral-400 font-medium">Descrição</th>
+                        <th className="text-left p-4 text-neutral-400 font-medium">Preço</th>
+                        <th className="text-left p-4 text-neutral-400 font-medium">Prêmio Máximo</th>
+                        <th className="text-left p-4 text-neutral-400 font-medium">RTP Alvo</th>
+                        <th className="text-left p-4 text-neutral-400 font-medium">RTP Atual</th>
+                        <th className="text-left p-4 text-neutral-400 font-medium">Jogos</th>
+                        <th className="text-left p-4 text-neutral-400 font-medium">Receita</th>
+                        <th className="text-left p-4 text-neutral-400 font-medium">Status</th>
+                        <th className="text-left p-4 text-neutral-400 font-medium">Criado em</th>
+                        <th className="text-left p-4 text-neutral-400 font-medium">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredCards.map((card) => (
+                        <tr key={card.id} className="border-b border-neutral-700 hover:bg-neutral-700/50 transition-colors">
+                          <td className="p-4">
+                            <span className="text-neutral-300 text-sm font-mono">
+                              {card.id.substring(0, 8)}...
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex flex-col">
+                              <span className="text-white font-medium">{card.name}</span>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <span className="text-neutral-300 text-sm max-w-xs truncate block">
+                              {card.description}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <span className="text-white font-medium">
+                              {formatCurrency(card.price)}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <span className="text-green-400 font-medium">
+                              {formatCurrency(getMaxPrize(card.prizes))}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <span className="text-neutral-300">
+                              {parseFloat(card.target_rtp).toFixed(1)}%
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <span className={`font-medium ${
+                              parseFloat(card.current_rtp) >= parseFloat(card.target_rtp) 
+                                ? 'text-green-400' 
+                                : 'text-yellow-400'
+                            }`}>
+                              {parseFloat(card.current_rtp).toFixed(1)}%
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <span className="text-neutral-300">
+                              {card.total_games_played.toLocaleString('pt-BR')}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <span className="text-white font-medium">
+                              {formatCurrency(card.total_revenue)}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <Badge className={getStatusColor(card.is_active)}>
+                              {card.is_active ? 'Ativo' : 'Inativo'}
                             </Badge>
-                          </div>
-                          <p className="text-sm text-neutral-400 mb-3">{card.description}</p>
-                          
-                          <div className="space-y-2 mb-4">
-                            <div className="flex justify-between text-sm">
-                              <span className="text-neutral-400">Preço:</span>
-                              <span className="text-white font-medium">R$ {card.price.toFixed(2)}</span>
+                          </td>
+                          <td className="p-4">
+                            <span className="text-neutral-300 text-sm">
+                              {formatDate(card.created_at)}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleView(card.id)}
+                                className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 p-2"
+                                title="Visualizar detalhes"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDelete(card)}
+                                className="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-2"
+                                title="Excluir raspadinha"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                             </div>
-                            <div className="flex justify-between text-sm">
-                              <span className="text-neutral-400">Prêmio Máximo:</span>
-                              <span className="text-green-400 font-medium">R$ {card.maxPrize.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <span className="text-neutral-400">Vendidas:</span>
-                              <span className="text-white">{card.totalSold}/{card.totalAvailable}</span>
-                            </div>
-                          </div>
-
-                          <div className="mb-4">
-                            <div className="flex justify-between text-xs text-neutral-400 mb-1">
-                              <span>Progresso de vendas</span>
-                              <span>{Math.round((card.totalSold / card.totalAvailable) * 100)}%</span>
-                            </div>
-                            <div className="w-full bg-neutral-600 rounded-full h-2">
-                              <div 
-                                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                                style={{ width: `${(card.totalSold / card.totalAvailable) * 100}%` }}
-                              ></div>
-                            </div>
-                          </div>
-
-                          <div className="flex justify-between gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleView(card.id)}
-                              className="flex-1 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
-                            >
-                              <Eye className="h-4 w-4 mr-1" />
-                              Ver
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEdit(card.id)}
-                              className="flex-1 text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10"
-                            >
-                              <Edit className="h-4 w-4 mr-1" />
-                              Editar
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDelete(card.id)}
-                              className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 )}
               </div>
             </Card>
           </div>
         </SidebarInset>
       </SidebarProvider>
+      
+      {/* Modal de Confirmação de Exclusão */}
+      <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <DialogContent className="bg-neutral-800 border-neutral-700 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-white">Confirmar Exclusão</DialogTitle>
+            <DialogDescription className="text-neutral-400">
+              Tem certeza que deseja excluir a raspadinha <strong className="text-white">"{cardToDelete?.name}"</strong>?
+              <br />
+              Esta ação não pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={cancelDelete}
+              disabled={deleting}
+              className="bg-transparent border-neutral-600 text-neutral-300 hover:bg-neutral-700 hover:text-white"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={confirmDelete}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Excluindo...
+                </>
+              ) : (
+                'Excluir'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

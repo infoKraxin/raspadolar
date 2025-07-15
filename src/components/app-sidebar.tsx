@@ -40,48 +40,56 @@ const data = {
       items: [
         {
           title: "Usuários",
-          url: "#",
+          url: "/v2/administrator/users",
         },
         {
           title: "Depositos",
-          url: "#",
+          url: "/v2/administrator/deposits",
         },
         {
           title: "Saques",
-          url: "#",
+          url: "/v2/administrator/withdrawals",
         },
         {
           title: "Raspadinhas",
-          url: "#",
-        },
-        {
-          title: "Jogadas",
-          url: "#",
+          url: "/v2/administrator/scratchs",
         },
       ],
     },
-        {
-      title: "Configurações",
-      url: "#",
-      items: [
-        {
-          title: "Credênciais de Pagamento",
-          url: "#",
-        },
-        {
-          title: "Taxas e limites",
-          url: "#",
-        },
-        {
-          title: "Configurações visuais",
-          url: "#",
-        },
-      ],
-    },
+    //     {
+    //   title: "Configurações",
+    //   url: "#",
+    //   items: [
+    //     {
+    //       title: "Credênciais",
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "Configurações visuais",
+    //       url: "#",
+    //     },
+    //   ],
+    // },
   ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [openItems, setOpenItems] = React.useState<Record<string, boolean>>({})
+  const [isClient, setIsClient] = React.useState(false)
+
+  React.useEffect(() => {
+    setIsClient(true)
+    // Definir "Administrativo" como aberto por padrão após a hidratação
+    setOpenItems({ "Administrativo": true })
+  }, [])
+
+  const toggleItem = (title: string) => {
+    setOpenItems(prev => ({
+      ...prev,
+      [title]: !prev[title]
+    }))
+  }
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -104,10 +112,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            {data.navMain.map((item, index) => (
+            {data.navMain.map((item) => (
               <Collapsible
                 key={item.title}
-                defaultOpen={index === 1}
+                open={isClient ? (openItems[item.title] || false) : false}
+                onOpenChange={() => toggleItem(item.title)}
                 className="group/collapsible"
               >
                 <SidebarMenuItem>
@@ -121,13 +130,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   {item.items?.length ? (
                     <CollapsibleContent>
                       <SidebarMenuSub>
-                        {item.items.map((item) => (
-                          <SidebarMenuSubItem key={item.title}>
+                        {item.items.map((subItem) => (
+                          <SidebarMenuSubItem key={subItem.title}>
                             <SidebarMenuSubButton
                               asChild
-                              // isActive={item.isActive}
+                              // isActive={subItem.isActive}
                             >
-                              <a href={item.url}>{item.title}</a>
+                              <a href={subItem.url}>{subItem.title}</a>
                             </SidebarMenuSubButton>
                           </SidebarMenuSubItem>
                         ))}

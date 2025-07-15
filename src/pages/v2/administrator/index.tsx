@@ -4,6 +4,7 @@ import { Poppins } from 'next/font/google';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   Eye, 
   EyeOff, 
@@ -21,6 +22,7 @@ const poppins = Poppins({
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -39,20 +41,39 @@ export default function AdminLoginPage() {
     setIsLoading(true);
     setError('');
 
-    // Simulate API call
     try {
-      // Add your authentication logic here
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate delay
-      
-      // For demo purposes, check for demo credentials
-      if (formData.email === 'admin@bonni.com' && formData.password === 'admin123') {
-        // Redirect to admin dashboard
-        router.push('/v2/administrator/dashboard');
-      } else {
-        setError('Credenciais inválidas. Tente novamente.');
+      // Fazer chamada para a API de login
+      const response = await fetch('https://api.raspa.ae/v1/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          identifier: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Erro na autenticação');
       }
-    } catch (err) {
-      setError('Erro interno do servidor. Tente novamente.');
+
+      // Verificar se o usuário é administrador
+      if (!data.data.user.is_admin) {
+        setError('Acesso negado. Você não tem permissões de administrador.');
+        return;
+      }
+
+      // Fazer login usando o contexto
+      login(data.data.user, data.data.token);
+      
+      // Redirecionar para o dashboard administrativo
+      router.push('/v2/administrator/dashboard');
+      
+    } catch (err: any) {
+      setError(err.message || 'Erro interno do servidor. Tente novamente.');
     } finally {
       setIsLoading(false);
     }

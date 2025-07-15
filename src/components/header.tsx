@@ -1,15 +1,48 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Ticket, HelpCircle, User, Wallet, LogOut, Settings, ChevronDown } from "lucide-react";
+import { Ticket, HelpCircle, User, Wallet, LogOut, Settings, ChevronDown, RefreshCw } from "lucide-react";
 import { useState, useEffect } from "react";
 import AuthModal from "@/components/auth-modal";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Header() {
-    const { user, login, logout } = useAuth();
+    const { user, login, logout, updateUser, token } = useAuth();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+    // Função para atualizar saldo do usuário
+    const refreshUserBalance = async () => {
+        if (!token) return;
+        
+        try {
+            const response = await fetch('https://api.raspa.ae/v1/api/users/profile', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                // Atualizar o contexto de autenticação com os dados atualizados
+                updateUser(data.data);
+            }
+        } catch (error) {
+            console.error('Erro ao atualizar saldo do usuário:', error);
+        }
+    };
+
+    // Atualizar saldo periodicamente quando o usuário estiver logado
+    useEffect(() => {
+        if (user && token) {
+            // Atualizar saldo a cada 10 segundos
+            const interval = setInterval(refreshUserBalance, 10000);
+            return () => clearInterval(interval);
+        }
+    }, [user, token]);
 
     // Fechar menu do usuário ao clicar fora
     useEffect(() => {
@@ -126,6 +159,13 @@ export default function Header() {
                                                 'R$ 0,00'
                                             }
                                         </span>
+                                        <button
+                                            onClick={refreshUserBalance}
+                                            className="ml-1 p-1 rounded hover:bg-neutral-700 transition-colors"
+                                            title="Atualizar saldo"
+                                        >
+                                            <RefreshCw size={14} className="text-blue-400 hover:text-blue-300" />
+                                        </button>
                                     </div>
                                 </div>
                                 

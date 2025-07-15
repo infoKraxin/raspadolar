@@ -10,10 +10,55 @@ const poppins = Poppins({
   weight: ["100", "200", "300","400","500", "600", "700"],
 });
 
+interface ScratchCard {
+  id: string;
+  name: string;
+  description: string;
+  price: string;
+  image_url: string;
+  is_active: boolean;
+  target_rtp: string;
+  current_rtp: string;
+  total_revenue: string;
+  total_payouts: string;
+  total_games_played: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  prizes: Prize[];
+}
+
+interface Prize {
+  id: string;
+  scratchCardId: string;
+  name: string;
+  description: string;
+  type: string;
+  value: string;
+  product_name: string | null;
+  redemption_value: string | null;
+  image_url: string;
+  probability: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface ApiResponse {
+  success: boolean;
+  message: string;
+  data: ScratchCard[];
+  count: number;
+}
+
 export default function Home() {
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
   const totalSlides = 3; // Simulando 3 slides com a mesma imagem
+  const [scratchCards, setScratchCards] = useState<ScratchCard[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState('all'); // 'all', 'money', 'products'
 
   // Arrays de memojis por gênero
   const maleMemojis = [
@@ -59,6 +104,75 @@ export default function Home() {
     }
   };
 
+  // Função para corrigir URLs das imagens
+  const fixImageUrl = (url: string) => {
+    if (!url) return '';
+    return url
+      .replace('raspa.ae', 'api.raspa.ae')
+      .replace('/uploads/scratchcards/', '/uploads/')
+      .replace('/uploads/prizes/', '/uploads/');
+  };
+
+  // Função para buscar raspadinhas da API
+  const fetchScratchCards = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('https://api.raspa.ae/v1/api/scratchcards');
+      const data: ApiResponse = await response.json();
+      
+      if (data.success) {
+        setScratchCards(data.data.filter(card => card.is_active));
+      } else {
+        setError('Erro ao carregar raspadinhas');
+      }
+    } catch (err) {
+      setError('Erro ao conectar com o servidor');
+      console.error('Erro ao buscar raspadinhas:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Função para determinar o tipo de prêmio principal
+  const getCardType = (card: ScratchCard) => {
+    const hasMoneyPrizes = card.prizes.some(prize => prize.type === 'MONEY');
+    const hasProductPrizes = card.prizes.some(prize => prize.type === 'PRODUCT');
+    
+    if (hasMoneyPrizes && hasProductPrizes) return 'Misto';
+    if (hasMoneyPrizes) return 'Dinheiro';
+    if (hasProductPrizes) return 'Produtos';
+    return 'Outros';
+  };
+
+  // Função para obter o maior prêmio
+  const getMaxPrize = (card: ScratchCard) => {
+    if (!card.prizes.length) return 'Sem prêmios';
+    
+    const maxPrize = card.prizes.reduce((max, prize) => {
+      const prizeValue = parseFloat(prize.value || '0');
+      const maxValue = parseFloat(max.value || '0');
+      return prizeValue > maxValue ? prize : max;
+    });
+    
+    if (maxPrize.type === 'MONEY') {
+      return `Ganhe até R$ ${parseFloat(maxPrize.value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    } else {
+      return maxPrize.product_name || maxPrize.name || 'Prêmio especial';
+    }
+  };
+
+  // Função para filtrar cards
+  const getFilteredCards = () => {
+    if (filter === 'all') return scratchCards;
+    
+    return scratchCards.filter(card => {
+      const cardType = getCardType(card).toLowerCase();
+      if (filter === 'money') return cardType === 'dinheiro' || cardType === 'misto';
+      if (filter === 'products') return cardType === 'produtos' || cardType === 'misto';
+      return true;
+    });
+  };
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % totalSlides);
@@ -66,6 +180,10 @@ export default function Home() {
 
     return () => clearInterval(interval);
   }, [totalSlides]);
+
+  useEffect(() => {
+    fetchScratchCards();
+  }, []);
 
   return (
   <div 
@@ -356,13 +474,34 @@ export default function Home() {
           
           {/* Filter Buttons */}
           <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-            <button className="px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full font-medium hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl border border-blue-400/20 text-sm sm:text-base flex-1 sm:flex-none">
+            <button 
+              onClick={() => setFilter('all')}
+              className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-medium transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base flex-1 sm:flex-none ${
+                filter === 'all' 
+                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white border border-blue-400/20 hover:from-blue-600 hover:to-blue-700' 
+                  : 'bg-gradient-to-r from-neutral-700 to-neutral-800 text-neutral-300 border border-neutral-600/30 hover:from-neutral-600 hover:to-neutral-700 hover:text-white'
+              }`}
+            >
               Todos
             </button>
-            <button className="px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-neutral-700 to-neutral-800 text-neutral-300 rounded-full font-medium hover:from-neutral-600 hover:to-neutral-700 hover:text-white transition-all duration-200 shadow-lg border border-neutral-600/30 text-sm sm:text-base flex-1 sm:flex-none">
+            <button 
+              onClick={() => setFilter('money')}
+              className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-medium transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base flex-1 sm:flex-none ${
+                filter === 'money' 
+                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white border border-blue-400/20 hover:from-blue-600 hover:to-blue-700' 
+                  : 'bg-gradient-to-r from-neutral-700 to-neutral-800 text-neutral-300 border border-neutral-600/30 hover:from-neutral-600 hover:to-neutral-700 hover:text-white'
+              }`}
+            >
               Dinheiro
             </button>
-            <button className="px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-neutral-700 to-neutral-800 text-neutral-300 rounded-full font-medium hover:from-neutral-600 hover:to-neutral-700 hover:text-white transition-all duration-200 shadow-lg border border-neutral-600/30 text-sm sm:text-base flex-1 sm:flex-none">
+            <button 
+              onClick={() => setFilter('products')}
+              className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-medium transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base flex-1 sm:flex-none ${
+                filter === 'products' 
+                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white border border-blue-400/20 hover:from-blue-600 hover:to-blue-700' 
+                  : 'bg-gradient-to-r from-neutral-700 to-neutral-800 text-neutral-300 border border-neutral-600/30 hover:from-neutral-600 hover:to-neutral-700 hover:text-white'
+              }`}
+            >
               Produtos
             </button>
           </div>
@@ -370,119 +509,94 @@ export default function Home() {
         
         {/* Scratch Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-          {/* PIX Scratch Card */}
-          <div className="bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl border border-neutral-700/50 shadow-lg hover:shadow-xl transition-all duration-300 pt-6 sm:pt-8">
-            <div className="relative -mt-12 sm:-mt-15">
-              <Image
-                src="/scratchs/pix_conta.webp"
-                alt="PIX Scratch"
-                width={300}
-                height={200}
-                className="w-full h-auto object-cover "
-              />
-              <div className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-green-500/90 backdrop-blur-sm text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-bold shadow-lg">
-                Dinheiro
+          {loading ? (
+            // Loading skeleton
+            Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl border border-neutral-700/50 shadow-lg pt-6 sm:pt-8 animate-pulse">
+                <div className="relative -mt-12 sm:-mt-15">
+                  <div className="w-full h-48 bg-neutral-700 rounded-t-xl"></div>
+                </div>
+                <div className="p-4 sm:p-5">
+                  <div className="h-6 bg-neutral-700 rounded mb-2"></div>
+                  <div className="h-4 bg-neutral-700 rounded mb-4 w-3/4"></div>
+                  <div className="flex justify-between items-center">
+                    <div className="h-6 bg-neutral-700 rounded w-20"></div>
+                    <div className="h-10 bg-neutral-700 rounded w-16"></div>
+                  </div>
+                </div>
               </div>
+            ))
+          ) : error ? (
+            // Error state
+            <div className="col-span-full text-center py-12">
+              <p className="text-red-400 text-lg mb-4">{error}</p>
+              <button 
+                onClick={fetchScratchCards}
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                Tentar Novamente
+              </button>
             </div>
-            <div className="p-4 sm:p-5">
-              <h3 className="text-white font-semibold text-base sm:text-lg mb-1">Raspadinha PIX</h3>
-              <p className="text-neutral-400 text-sm mb-3 sm:mb-4">Ganhe até R$ 1.000</p>
-              <div className="flex justify-between items-center">
-                <span className="text-green-400 font-bold text-base sm:text-lg">R$ 5,00</span>
-                <button 
-                  onClick={() => router.push('v1/scratch/pix')}
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
-                >
-                  Jogar
-                </button>
-              </div>
+          ) : getFilteredCards().length === 0 ? (
+            // No cards state
+            <div className="col-span-full text-center py-12">
+              <p className="text-neutral-400 text-lg">Nenhuma raspadinha encontrada para este filtro.</p>
             </div>
-          </div>          {/* Shopee Scratch Card */}
-          <div className="bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl border border-neutral-700/50 shadow-lg hover:shadow-xl transition-all duration-300 pt-6 sm:pt-8">
-            <div className="relative -mt-12 sm:-mt-15">
-              <Image
-                src="/scratchs/shopee.webp"
-                alt="Shopee Scratch"
-                width={300}
-                height={200}
-                className="w-full h-auto object-cover"
-              />
-              <div className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-orange-500/90 backdrop-blur-sm text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-bold shadow-lg">
-                Vale
-              </div>
-            </div>
-            <div className="p-4 sm:p-5">
-              <h3 className="text-white font-semibold text-base sm:text-lg mb-1">Vale Shopee</h3>
-              <p className="text-neutral-400 text-sm mb-3 sm:mb-4">Vale compras até R$ 500</p>
-              <div className="flex justify-between items-center">
-                <span className="text-green-400 font-bold text-base sm:text-lg">R$ 3,00</span>
-                <button 
-                  onClick={() => router.push('v1/scratch/shopee')}
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
-                >
-                  Jogar
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Motorizado Scratch Card */}
-          <div className="bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl border border-neutral-700/50 shadow-lg hover:shadow-xl transition-all duration-300 pt-6 sm:pt-8">
-            <div className="relative -mt-12 sm:-mt-15">
-              <Image
-                src="/scratchs/motorizado.webp"
-                alt="Motorizado Scratch"
-                width={300}
-                height={200}
-                className="w-full h-auto object-cover"
-              />
-              <div className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-red-500/90 backdrop-blur-sm text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-bold shadow-lg">
-                Moto
-              </div>
-            </div>
-            <div className="p-4 sm:p-5">
-              <h3 className="text-white font-semibold text-base sm:text-lg mb-1">Motorizado</h3>
-              <p className="text-neutral-400 text-sm mb-3 sm:mb-4">Ganhe uma moto 0km</p>
-              <div className="flex justify-between items-center">
-                <span className="text-green-400 font-bold text-base sm:text-lg">R$ 10,00</span>
-                <button 
-                  onClick={() => router.push('v1/scratch/motorizado')}
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
-                >
-                  Jogar
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Sonho Scratch Card */}
-          <div className="bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl border border-neutral-700/50 shadow-lg hover:shadow-xl transition-all duration-300 pt-6 sm:pt-8">
-            <div className="relative -mt-12 sm:-mt-15">
-              <Image
-                src="/scratchs/sonho.webp"
-                alt="Sonho Scratch"
-                width={300}
-                height={200}
-                className="w-full h-auto object-cover"
-              />
-              <div className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-yellow-500/90 backdrop-blur-sm text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-bold shadow-lg">
-                Produtos
-              </div>
-            </div>
-            <div className="p-4 sm:p-5">
-              <h3 className="text-white font-semibold text-base sm:text-lg mb-1">Realize o Sonho</h3>
-              <p className="text-neutral-400 text-sm mb-3 sm:mb-4">Prêmio de até R$ 50.000</p>
-              <div className="flex justify-between items-center">
-                <span className="text-green-400 font-bold text-base sm:text-lg">R$ 15,00</span>
-                <button 
-                  onClick={() => router.push('v1/scratch/sonho')}
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
-                >
-                  Jogar
-                </button>
-              </div>
-            </div>
-          </div>
+          ) : (
+            // Render cards from API
+            getFilteredCards().map((card) => {
+              const cardType = getCardType(card);
+              const maxPrize = getMaxPrize(card);
+              
+              // Determine badge color based on card type
+              const getBadgeColor = () => {
+                if (cardType === 'Dinheiro') return 'bg-green-500/90';
+                if (cardType === 'Produtos') return 'bg-yellow-500/90';
+                if (cardType === 'Misto') return 'bg-purple-500/90';
+                return 'bg-blue-500/90';
+              };
+              
+              return (
+                <div key={card.id} className="bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl border border-neutral-700/50 shadow-lg hover:shadow-xl transition-all duration-300 pt-6 sm:pt-8">
+                  <div className="relative -mt-12 sm:-mt-15">
+                    <Image
+                      src={fixImageUrl(card.image_url) || '/scratchs/sonho.webp'}
+                      alt={card.name}
+                      width={300}
+                      height={200}
+                      className="w-full h-auto object-cover rounded-t-xl"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/scratchs/sonho.webp';
+                      }}
+                    />
+                    <div className={`absolute top-2 sm:top-3 right-2 sm:right-3 ${getBadgeColor()} backdrop-blur-sm text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-bold shadow-lg`}>
+                      {cardType}
+                    </div>
+                  </div>
+                  <div className="p-4 sm:p-5">
+                    <h3 className="text-white font-semibold text-base sm:text-lg mb-1 truncate" title={card.name}>
+                      {card.name}
+                    </h3>
+                    <p className="text-neutral-400 text-sm mb-3 sm:mb-4 truncate" title={cardType === 'Produtos' ? card.description : maxPrize}>
+                      {cardType === 'Produtos' ? card.description : maxPrize}
+                    </p>
+                    <div className="flex justify-between items-center">
+                      <span className="text-green-400 font-bold text-base sm:text-lg">
+                        R$ {parseFloat(card.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </span>
+                      <button 
+                        onClick={() => router.push(`v1/scratch/${card.id}`)}
+                        className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                      >
+                        Jogar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
     </div>
@@ -548,10 +662,10 @@ export default function Home() {
                </div>
               <div className="flex-1">
                 <h3 className="text-white font-semibold text-lg sm:text-xl mb-2">
-                  Resgate seu Prêmio
+                  Raspe e Descubra
                 </h3>
                 <p className="text-neutral-400 text-sm sm:text-base leading-relaxed">
-                  Ganhou? Resgate seu produto ou troque pelo valor em dinheiro
+                  Use o dedo ou mouse para raspar e descobrir se você ganhou
                 </p>
               </div>
             </div>
@@ -561,31 +675,25 @@ export default function Home() {
           <div className="bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl border border-neutral-700/50 shadow-lg hover:shadow-xl transition-all duration-300 p-6 sm:p-8 group">
              <div className="flex items-start gap-4 sm:gap-6">
                <div className="relative flex-shrink-0">
-                 <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 border border-gray-200/40">
-                    <span className="text-gray-800 font-bold text-lg sm:text-xl">4</span>
+                 <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-neutral-400 to-neutral-500 rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 border border-neutral-300/40">
+                    <span className="text-white font-bold text-lg sm:text-xl">4</span>
                   </div>
                </div>
               <div className="flex-1">
                 <h3 className="text-white font-semibold text-lg sm:text-xl mb-2">
-                  Receba e Lucre
+                  Receba seu Prêmio
                 </h3>
                 <p className="text-neutral-400 text-sm sm:text-base leading-relaxed">
-                  Receba seus prêmios e continue jogando para lucrar ainda mais
+                  Ganhou? Receba seu prêmio instantaneamente via PIX ou retire produtos
                 </p>
               </div>
             </div>
           </div>
         </div>
-
-        {/* CTA Button */}
-        <div className="text-center mt-8 sm:mt-12">
-          <button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 sm:px-12 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 border border-blue-400/20">
-            Começar Agora
-          </button>
-        </div>
       </div>
     </div>
-    <Footer />
+
+    <Footer/>
   </div>
   );
 }
