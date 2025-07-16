@@ -25,7 +25,10 @@ import {
   ChevronRight,
   ArrowDownLeft,
   Copy,
-  Package
+  Package,
+  Users,
+  DollarSign,
+  UserCheck
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -90,6 +93,8 @@ export default function ProfilePage() {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [gameHistory, setGameHistory] = useState<any>(null);
   const [isLoadingGameHistory, setIsLoadingGameHistory] = useState(false);
+  const [affiliatesData, setAffiliatesData] = useState<any>(null);
+  const [isLoadingAffiliates, setIsLoadingAffiliates] = useState(false);
 
   // Função para formatar CPF
   const formatCPF = (cpf: string) => {
@@ -112,10 +117,10 @@ export default function ProfilePage() {
   // Função para copiar código de convite
   const copyInviteCode = async (code: string) => {
     try {
-      await navigator.clipboard.writeText(code);
-      toast.success('Código de convite copiado!');
+      await navigator.clipboard.writeText(`https://raspa.ae?r=${code}`);
+      toast.success('Link de convite copiado!');
     } catch (error) {
-      toast.error('Erro ao copiar código');
+      toast.error('Erro ao copiar link de convite');
     }
   };
 
@@ -355,6 +360,41 @@ export default function ProfilePage() {
     }
   };
 
+  // Função para buscar dados dos afiliados
+  const fetchAffiliatesData = async () => {
+    if (!token) {
+      toast.error('Erro de autenticação');
+      return;
+    }
+
+    setIsLoadingAffiliates(true);
+
+    try {
+      const response = await fetch('https://api.raspa.ae/v1/api/users/invited-users', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Erro ao carregar dados dos afiliados');
+      }
+
+      if (data.success) {
+        setAffiliatesData(data.data);
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao carregar dados dos afiliados');
+      console.error('Erro ao buscar dados dos afiliados:', error);
+    } finally {
+      setIsLoadingAffiliates(false);
+    }
+  };
+
   // Função para obter status do jogo
   const getGameStatusText = (isWinner: boolean, status: string) => {
     if (status === 'COMPLETED') {
@@ -417,6 +457,7 @@ export default function ProfilePage() {
   const sidebarItems = [
     { id: 'personal', icon: <User className="w-5 h-5" />, label: 'Informações Pessoais' },
     { id: 'inventory', icon: <Package className="w-5 h-5" />, label: 'Inventário' },
+    { id: 'affiliates', icon: <Users className="w-5 h-5" />, label: 'Afiliados' },
     { id: 'withdraw', icon: <ArrowDownLeft className="w-5 h-5" />, label: 'Sacar Montante' },
     // { id: 'security', icon: <Shield className="w-5 h-5" />, label: 'Segurança' },
     { id: 'financial', icon: <CreditCard className="w-5 h-5" />, label: 'Histórico Financeiro' },
@@ -570,7 +611,7 @@ export default function ProfilePage() {
 
                       <div className="space-y-2">
                         <Label htmlFor="inviteCode" className="text-white font-medium">
-                          Código de convite
+                          Link de convite
                         </Label>
                         <div className="relative">
                           <Input
@@ -583,7 +624,7 @@ export default function ProfilePage() {
                             <button
                               onClick={() => copyInviteCode(profileData.inviteCode.code)}
                               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-white transition-colors p-1 rounded hover:bg-neutral-600"
-                              title="Copiar código"
+                              title="Copiar link de convite"
                             >
                               <Copy className="w-4 h-4" />
                             </button>
@@ -935,6 +976,117 @@ export default function ProfilePage() {
                           </div>
                         </div>
                       )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeSection === 'affiliates' && (
+                <div>
+                  <div className="mb-8">
+                    <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent mb-2">
+                      Afiliados
+                    </h2>
+                    <p className="text-neutral-400 text-sm">
+                      Gerencie seus afiliados e acompanhe suas comissões
+                    </p>
+                  </div>
+
+                  {!affiliatesData ? (
+                    <div className="text-center py-12">
+                      <Button 
+                        onClick={fetchAffiliatesData}
+                        disabled={isLoadingAffiliates}
+                        className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-blue-400/20"
+                      >
+                        {isLoadingAffiliates ? 'Carregando...' : 'Carregar Dados de Afiliados'}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {/* Estatísticas dos Afiliados */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 p-6 rounded-lg border border-blue-400/20">
+                          <div className="flex items-center gap-3 mb-2">
+                            <Users className="w-6 h-6 text-blue-400" />
+                            <h3 className="text-white font-semibold">Total de Convites</h3>
+                          </div>
+                          <p className="text-2xl font-bold text-blue-400">{affiliatesData.stats.total_invites}</p>
+                        </div>
+                        
+                        <div className="bg-gradient-to-br from-green-500/20 to-green-600/20 p-6 rounded-lg border border-green-400/20">
+                          <div className="flex items-center gap-3 mb-2">
+                            <DollarSign className="w-6 h-6 text-green-400" />
+                            <h3 className="text-white font-semibold">Total de Comissões</h3>
+                          </div>
+                          <p className="text-2xl font-bold text-green-400">R$ {parseFloat(affiliatesData.stats.total_commission).toFixed(2)}</p>
+                        </div>
+                        
+                        <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 p-6 rounded-lg border border-purple-400/20">
+                          <div className="flex items-center gap-3 mb-2">
+                            <UserCheck className="w-6 h-6 text-purple-400" />
+                            <h3 className="text-white font-semibold">Convites Ativos</h3>
+                          </div>
+                          <p className="text-2xl font-bold text-purple-400">{affiliatesData.stats.active_invites}</p>
+                        </div>
+                      </div>
+
+                      {/* Lista de Usuários Convidados */}
+                      <div>
+                        <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                          <Users className="w-5 h-5 text-blue-400" />
+                          Usuários Convidados
+                        </h3>
+                        
+                        {affiliatesData.invitedUsers.length === 0 ? (
+                          <div className="text-center py-12">
+                            <Users className="w-16 h-16 text-neutral-600 mx-auto mb-4" />
+                            <p className="text-neutral-400 text-lg mb-2">Nenhum usuário convidado</p>
+                            <p className="text-neutral-500 text-sm">Convide amigos para começar a ganhar comissões</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {affiliatesData.invitedUsers.map((user: any, index: number) => (
+                              <div key={index} className="p-4 bg-neutral-700/50 rounded-lg border border-neutral-600">
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-3 mb-2">
+                                      <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
+                                        <Users className="w-4 h-4 text-blue-400" />
+                                      </div>
+                                      <div>
+                                        <p className="text-white font-medium">{user.name || 'Usuário'}</p>
+                                        <p className="text-neutral-400 text-sm">{user.email || 'Email não disponível'}</p>
+                                      </div>
+                                    </div>
+                                    <div className="text-neutral-400 text-sm space-y-1">
+                                      <p>Data de cadastro: {user.created_at ? formatDate(user.created_at) : 'Não disponível'}</p>
+                                      <p>Status: {user.status || 'Ativo'}</p>
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400">
+                                      Ativo
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Botão para recarregar */}
+                      <div className="text-center pt-4">
+                        <Button 
+                          onClick={fetchAffiliatesData}
+                          disabled={isLoadingAffiliates}
+                          variant="outline"
+                          className="bg-neutral-700 border-neutral-600 text-white hover:bg-neutral-600"
+                        >
+                          {isLoadingAffiliates ? 'Carregando...' : 'Atualizar Dados'}
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>

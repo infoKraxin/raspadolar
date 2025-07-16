@@ -238,7 +238,7 @@ export default function DepositPage() {
         body: JSON.stringify({
           amount: amount,
           paymentMethod: 'PIX',
-          gateway: 'safira'
+          gateway: 'pixup'
         })
       });
 

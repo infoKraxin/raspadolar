@@ -40,7 +40,7 @@ interface Prize {
   product_name?: string
   redemption_value?: number
   probability: number
-  image?: File
+  image_url: string
 }
 
 interface ScratchCard {
@@ -49,20 +49,20 @@ interface ScratchCard {
   price: number
   target_rtp: number
   is_active: boolean
+  image_url: string
 }
 
 export default function CreateScratchCard() {
   const router = useRouter()
   const { token } = useAuth()
   const [loading, setLoading] = useState(false)
-  const [scratchCardImage, setScratchCardImage] = useState<File | null>(null)
-  
   const [scratchCard, setScratchCard] = useState<ScratchCard>({
     name: '',
     description: '',
     price: 0,
     target_rtp: 85.0,
-    is_active: true
+    is_active: true,
+    image_url: ''
   })
   
   const [prizes, setPrizes] = useState<Prize[]>([
@@ -72,7 +72,7 @@ export default function CreateScratchCard() {
       type: 'MONEY',
       value: 0,
       probability: 0,
-      image: undefined
+      image_url: ''
     }
   ])
 
@@ -83,7 +83,7 @@ export default function CreateScratchCard() {
       type: 'MONEY',
       value: 0,
       probability: 0,
-      image: undefined
+      image_url: ''
     }])
   }
 
@@ -99,16 +99,26 @@ export default function CreateScratchCard() {
     setPrizes(updatedPrizes)
   }
 
-  const handleScratchCardImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setScratchCardImage(e.target.files[0])
-    }
-  }
-
-  const handlePrizeImageChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      updatePrize(index, 'image', e.target.files[0])
-    }
+  // Função para distribuir automaticamente as probabilidades
+  const distributeProbabilities = () => {
+    if (prizes.length === 0) return;
+    
+    // O primeiro prêmio (mais importante) recebe uma probabilidade menor
+    const firstPrizeProbability = 1.0;
+    
+    // Distribuir o restante das probabilidades entre os outros prêmios
+    const remainingProbability = 99.0 - firstPrizeProbability;
+    const probabilityPerPrize = remainingProbability / (prizes.length - 1);
+    
+    const updatedPrizes = prizes.map((prize, index) => {
+      if (index === 0) {
+        return { ...prize, probability: firstPrizeProbability };
+      } else {
+        return { ...prize, probability: probabilityPerPrize };
+      }
+    });
+    
+    setPrizes(updatedPrizes);
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -119,54 +129,51 @@ export default function CreateScratchCard() {
       return
     }
 
-    if (!scratchCardImage) {
-      alert('Por favor, selecione uma imagem para a raspadinha')
+    if (!scratchCard.image_url) {
+      alert('Por favor, informe a URL da imagem para a raspadinha')
       return
     }
 
-    // Validar se todos os prêmios têm imagem
-    const prizesWithoutImage = prizes.filter(prize => !prize.image)
+    // Validar se todos os prêmios têm URL de imagem
+    const prizesWithoutImage = prizes.filter(prize => !prize.image_url)
     if (prizesWithoutImage.length > 0) {
-      alert('Por favor, adicione imagens para todos os prêmios')
+      alert('Por favor, adicione URLs de imagem para todos os prêmios')
+      return
+    }
+
+    // Validar se a soma das probabilidades não excede 100%
+    const totalProbability = prizes.reduce((sum, prize) => sum + prize.probability, 0);
+    if (totalProbability > 100) {
+      alert('A soma das probabilidades não pode exceder 100%')
       return
     }
 
     setLoading(true)
     
     try {
-      const formData = new FormData()
-      
-      // Adicionar dados da raspadinha
-      formData.append('scratchCard', JSON.stringify(scratchCard))
-      
-      // Adicionar prêmios
-      formData.append('prizes', JSON.stringify(prizes.map(prize => ({
-        name: prize.name,
-        description: prize.description,
-        type: prize.type,
-        ...(prize.type === 'MONEY' ? { value: prize.value } : {
-          product_name: prize.product_name,
-          redemption_value: prize.redemption_value
-        }),
-        probability: prize.probability
-      }))))
-      
-      // Adicionar imagem da raspadinha
-      formData.append('scratchcard_image', scratchCardImage)
-      
-      // Adicionar imagens dos prêmios
-      prizes.forEach((prize, index) => {
-        if (prize.image) {
-          formData.append('prize_images', prize.image)
-        }
-      })
+      // Preparar o objeto de dados para envio
+      const requestData = {
+        ...scratchCard,
+        prizes: prizes.map(prize => ({
+          name: prize.name,
+          description: prize.description,
+          type: prize.type,
+          ...(prize.type === 'MONEY' ? { value: prize.value } : {
+            product_name: prize.product_name,
+            redemption_value: prize.redemption_value
+          }),
+          probability: prize.probability,
+          image_url: prize.image_url
+        }))
+      };
       
       const response = await fetch('https://api.raspa.ae/v1/api/scratchcards/admin/create', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         },
-        body: formData
+        body: JSON.stringify(requestData)
       })
       
       if (response.ok) {
@@ -323,20 +330,16 @@ export default function CreateScratchCard() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="scratchcard_image" className="text-neutral-300">Imagem da Raspadinha *</Label>
+              <Label htmlFor="image_url" className="text-neutral-300">URL da Imagem da Raspadinha *</Label>
               <Input
-                id="scratchcard_image"
-                type="file"
-                accept="image/*"
-                onChange={handleScratchCardImageChange}
-                className="bg-neutral-700 border-neutral-600 text-white file:bg-neutral-600 file:text-white file:border-0 file:mr-4 file:py-2 file:px-4 file:rounded-md file:text-sm file:font-medium hover:file:bg-neutral-500"
+                id="image_url"
+                type="url"
+                value={scratchCard.image_url}
+                onChange={(e) => setScratchCard({...scratchCard, image_url: e.target.value})}
+                placeholder="https://example.com/images/raspadinha-premium.jpg"
+                className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500"
                 required
               />
-              {scratchCardImage && (
-                <p className="text-sm text-neutral-400">
-                  Arquivo selecionado: {scratchCardImage.name}
-                </p>
-              )}
             </div>
           </CardContent>
         </Card>
@@ -349,10 +352,26 @@ export default function CreateScratchCard() {
                 <CardTitle className="text-white">Prêmios</CardTitle>
                 <CardDescription className="text-neutral-400">Configure os prêmios disponíveis na raspadinha</CardDescription>
               </div>
-              <Button type="button" onClick={addPrize} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Adicionar Prêmio
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  type="button" 
+                  onClick={distributeProbabilities} 
+                  size="sm" 
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                  disabled={prizes.length <= 1}
+                >
+                  Distribuir Probabilidades
+                </Button>
+                <Button 
+                  type="button" 
+                  onClick={addPrize} 
+                  size="sm" 
+                  className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Adicionar Prêmio
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -472,19 +491,15 @@ export default function CreateScratchCard() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label className="text-neutral-300">Imagem do Prêmio *</Label>
+                  <Label className="text-neutral-300">URL da Imagem do Prêmio *</Label>
                   <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handlePrizeImageChange(index, e)}
-                    className="bg-neutral-700 border-neutral-600 text-white file:bg-neutral-600 file:text-white file:border-0 file:mr-4 file:py-2 file:px-4 file:rounded-md file:text-sm file:font-medium hover:file:bg-neutral-500"
+                    type="url"
+                    value={prize.image_url}
+                    onChange={(e) => updatePrize(index, 'image_url', e.target.value)}
+                    placeholder="https://example.com/images/prize-image.jpg"
+                    className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500"
                     required
                   />
-                  {prize.image && (
-                    <p className="text-sm text-neutral-400">
-                      Arquivo selecionado: {prize.image.name}
-                    </p>
-                  )}
                 </div>
               </div>
             ))}

@@ -49,10 +49,51 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
   if (!isOpen) return null;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    
+    if (name === 'phone') {
+      // Remove caracteres não numéricos
+      const numericValue = value.replace(/\D/g, '');
+      
+      // Aplica a máscara visual (XX) XXXXX-XXXX
+      let formattedValue = numericValue;
+      if (numericValue.length > 0) {
+        formattedValue = numericValue.replace(/^(\d{2})(\d)/g, '($1) $2');
+      }
+      if (numericValue.length > 6) {
+        formattedValue = formattedValue.replace(/^(\(\d{2}\)\s)(\d{5})(\d)/g, '$1$2-$3');
+      }
+      
+      setFormData({
+        ...formData,
+        [name]: formattedValue
+      });
+    } else if (name === 'cpf') {
+      // Remove caracteres não numéricos
+      const numericValue = value.replace(/\D/g, '');
+      
+      // Aplica a máscara visual XXX.XXX.XXX-XX
+      let formattedValue = numericValue;
+      if (numericValue.length > 3) {
+        formattedValue = numericValue.replace(/^(\d{3})(\d)/g, '$1.$2');
+      }
+      if (numericValue.length > 6) {
+        formattedValue = formattedValue.replace(/^(\d{3}\.\d{3})(\d)/g, '$1.$2');
+      }
+      if (numericValue.length > 9) {
+        formattedValue = formattedValue.replace(/^(\d{3}\.\d{3}\.\d{3})(\d)/g, '$1-$2');
+      }
+      
+      setFormData({
+        ...formData,
+        [name]: formattedValue
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -115,11 +156,15 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
     // Capturar código de convite da URL se presente
     const urlParams = new URLSearchParams(window.location.search);
     const inviteCode = urlParams.get('r');
+    
+    // Remove formatação do telefone e CPF antes de enviar
+    const phoneClean = formData.phone.replace(/\D/g, '');
+    const cpfClean = formData.cpf.replace(/\D/g, '');
 
     const registerData: any = {
       email: formData.email,
-      phone: formData.phone,
-      cpf: formData.cpf,
+      phone: phoneClean,
+      cpf: cpfClean,
       password: formData.password,
       full_name: formData.name,
     };
@@ -251,9 +296,10 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                     <input
                       type="tel"
                       name="phone"
-                      placeholder="Telefone (ex: 11987654321)"
+                      placeholder="Telefone (ex: (11) 98765-4321)"
                       value={formData.phone}
                       onChange={handleInputChange}
+                      maxLength={15}
                       className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 outline-none"
                       required
                       disabled={isLoading}
@@ -266,9 +312,10 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                     <input
                       type="text"
                       name="cpf"
-                      placeholder="CPF (apenas números)"
+                      placeholder="CPF (ex: 123.456.789-00)"
                       value={formData.cpf}
                       onChange={handleInputChange}
+                      maxLength={14}
                       className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 outline-none"
                       required
                       disabled={isLoading}

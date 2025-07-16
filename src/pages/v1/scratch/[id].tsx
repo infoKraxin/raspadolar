@@ -114,7 +114,7 @@ interface PlayGameResponse {
 // Tipos para os itens da raspadinha
 interface ScratchItem {
   id: number;
-  type: 'coin' | 'gem' | 'star' | 'crown' | 'heart';
+  type: 'coin' | 'gem' | 'star' | 'crown' | 'heart' | 'diamond' | 'trophy' | 'medal' | 'gift' | 'ticket' | 'chest';
   value: number;
   icon: string;
   name?: string;
@@ -210,8 +210,11 @@ const ScratchCardPage = () => {
     }
 
     // Usar prêmios da API para gerar itens
+    // Expandir os tipos visuais para acomodar mais prêmios
+    const visualTypes = ['coin', 'gem', 'star', 'crown', 'heart', 'diamond', 'trophy', 'medal', 'gift', 'ticket', 'chest'];
+    
     const itemTypes = scratchCardData.prizes.map((prize, index) => ({
-      type: ['coin', 'gem', 'star', 'crown', 'heart'][index % 5] as 'coin' | 'gem' | 'star' | 'crown' | 'heart',
+      type: visualTypes[index % visualTypes.length] as 'coin' | 'gem' | 'star' | 'crown' | 'heart',
       icon: fixImageUrl(prize.image_url) || '/50_money.webp',
       baseValue: parseFloat(prize.value || prize.redemption_value || '0'),
       prizeData: prize
@@ -273,19 +276,31 @@ const ScratchCardPage = () => {
       // Adicionar tipos fictícios "Ops! Hoje não" para garantir variedade
       const dummyTypes = [
         {
-          type: 'coin' as 'coin' | 'gem' | 'star' | 'crown' | 'heart',
+          type: 'coin' as 'coin' | 'gem' | 'star' | 'crown' | 'heart' | 'diamond' | 'trophy' | 'medal' | 'gift' | 'ticket' | 'chest',
           icon: '/50_money.webp',
           baseValue: 0,
           prizeData: null
         },
         {
-          type: 'gem' as 'coin' | 'gem' | 'star' | 'crown' | 'heart',
+          type: 'gem' as 'coin' | 'gem' | 'star' | 'crown' | 'heart' | 'diamond' | 'trophy' | 'medal' | 'gift' | 'ticket' | 'chest',
           icon: '/50_money.webp',
           baseValue: 0,
           prizeData: null
         },
         {
-          type: 'star' as 'coin' | 'gem' | 'star' | 'crown' | 'heart',
+          type: 'star' as 'coin' | 'gem' | 'star' | 'crown' | 'heart' | 'diamond' | 'trophy' | 'medal' | 'gift' | 'ticket' | 'chest',
+          icon: '/50_money.webp',
+          baseValue: 0,
+          prizeData: null
+        },
+        {
+          type: 'diamond' as 'coin' | 'gem' | 'star' | 'crown' | 'heart' | 'diamond' | 'trophy' | 'medal' | 'gift' | 'ticket' | 'chest',
+          icon: '/50_money.webp',
+          baseValue: 0,
+          prizeData: null
+        },
+        {
+          type: 'trophy' as 'coin' | 'gem' | 'star' | 'crown' | 'heart' | 'diamond' | 'trophy' | 'medal' | 'gift' | 'ticket' | 'chest',
           icon: '/50_money.webp',
           baseValue: 0,
           prizeData: null
@@ -298,11 +313,18 @@ const ScratchCardPage = () => {
       // Criar um padrão que garante no máximo 2 de cada tipo
       const pattern = [];
       
-      // Adicionar no máximo 2 de cada tipo real
-      for (let i = 0; i < Math.min(availableTypes.length, 4); i++) {
-        pattern.push(availableTypes[i]);
-        if (pattern.length < 8) {
-          pattern.push(availableTypes[i]);
+      // Usar todos os tipos de prêmios disponíveis
+      // Distribuir os tipos de prêmios de forma equilibrada
+      const maxTypesPerPattern = Math.ceil(8 / availableTypes.length);
+      
+      for (let i = 0; i < availableTypes.length; i++) {
+        // Adicionar cada tipo no máximo maxTypesPerPattern vezes
+        const timesToAdd = Math.min(maxTypesPerPattern, 2); // No máximo 2 de cada tipo
+        
+        for (let j = 0; j < timesToAdd; j++) {
+          if (pattern.length < 8) {
+            pattern.push(availableTypes[i]);
+          }
         }
       }
       
@@ -814,7 +836,7 @@ const ScratchCardPage = () => {
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             {scratchCardData?.prizes && scratchCardData.prizes.length > 0 ? (
-              scratchCardData.prizes.slice(0, 4).map((prize, index) => (
+              scratchCardData.prizes.slice(0, 10).map((prize, index) => (
                 <div key={prize.id} className="bg-white/5 backdrop-blur-sm rounded-lg p-3 sm:p-4 text-center border border-white/10 shadow-lg hover:bg-white/10 transition-all duration-300 hover:scale-105">
                   <Image
                     src={fixImageUrl(prize.image_url) || "/50_money.webp"}

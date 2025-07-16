@@ -179,6 +179,15 @@ export default function Header() {
                                         <span>Meu Perfil</span>
                                     </a>
                                     
+                                    <a
+                                        href="/v1/profile/deposit"
+                                        className="flex items-center gap-3 px-3 py-2 rounded-md text-neutral-300 hover:text-white hover:bg-neutral-700 transition-colors"
+                                        onClick={() => setIsUserMenuOpen(false)}
+                                    >
+                                        <Wallet size={16} />
+                                        <span>Depositar</span>
+                                    </a>
+                                    
                                     {user.is_admin && (
                                         <a
                                             href="/v2/administrator"
