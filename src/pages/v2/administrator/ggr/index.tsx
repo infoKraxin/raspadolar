@@ -114,7 +114,7 @@ export default function GGRPage() {
       if (!token) return;
       
       try {
-        const response = await fetch('https://api.raspa.ae/v1/api/license/current', {
+        const response = await fetch('https://api.olaf.w1-olaf.com/v1/api/license/current', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -140,7 +140,7 @@ export default function GGRPage() {
       
       try {
         setUsageLoading(true);
-        const response = await fetch('https://api.raspa.ae/v1/api/license/usage', {
+        const response = await fetch('https://api.olaf.w1-olaf.com/v1/api/license/usage', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -175,7 +175,7 @@ export default function GGRPage() {
       setModalError('');
       setModalSuccess('');
       
-      const response = await fetch('https://api.raspa.ae/v1/api/license/credits', {
+      const response = await fetch('https://api.olaf.w1-olaf.com/v1/api/license/credits', {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -193,7 +193,7 @@ export default function GGRPage() {
       }
 
       // Atualizar os dados da licença
-      const licenseResponse = await fetch('https://api.raspa.ae/v1/api/license/current', {
+      const licenseResponse = await fetch('https://api.olaf.w1-olaf.com/v1/api/license/current', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -224,7 +224,7 @@ export default function GGRPage() {
       setModalError('');
       setModalSuccess('');
       
-      const response = await fetch('https://api.raspa.ae/v1/api/license/earnings', {
+      const response = await fetch('https://api.olaf.w1-olaf.com/v1/api/license/earnings', {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -242,7 +242,7 @@ export default function GGRPage() {
       }
 
       // Atualizar os dados da licença
-      const licenseResponse = await fetch('https://api.raspa.ae/v1/api/license/current', {
+      const licenseResponse = await fetch('https://api.olaf.w1-olaf.com/v1/api/license/current', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

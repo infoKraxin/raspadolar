@@ -114,7 +114,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
   };
 
   const handleLogin = async () => {
-    const response = await fetch('https://api.raspa.ae/v1/api/auth/login', {
+    const response = await fetch('https://api.olaf.w1-olaf.com/v1/api/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -173,7 +173,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
       registerData.invite_code = inviteCode;
     }
 
-    const response = await fetch('https://api.raspa.ae/v1/api/auth/register', {
+    const response = await fetch('https://api.olaf.w1-olaf.com/v1/api/auth/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

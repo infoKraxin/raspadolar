@@ -165,7 +165,7 @@ const ScratchCardPage = () => {
   const fixImageUrl = (url: string) => {
     if (!url) return '';
     return url
-      .replace('raspa.ae', 'api.raspa.ae')
+      .replace('raspa.ae', 'api.olaf.w1-olaf.com')
       .replace('/uploads/scratchcards/', '/uploads/')
       .replace('/uploads/prizes/', '/uploads/');
   };
@@ -176,7 +176,7 @@ const ScratchCardPage = () => {
     
     try {
       setLoading(true);
-      const response = await fetch(`https://api.raspa.ae/v1/api/scratchcards/${id}`);
+      const response = await fetch(`https://api.olaf.w1-olaf.com/v1/api/scratchcards/${id}`);
       const data: ApiResponse = await response.json();
       
       if (data.success) {
@@ -381,7 +381,7 @@ const ScratchCardPage = () => {
     
     try {
       setPlayingGame(true);
-      const response = await fetch('https://api.raspa.ae/v1/api/scratchcards/play', {
+      const response = await fetch('https://api.olaf.w1-olaf.com/v1/api/scratchcards/play', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -413,7 +413,7 @@ const ScratchCardPage = () => {
     if (!token) return;
     
     try {
-      const response = await fetch('https://api.raspa.ae/v1/api/users/profile', {
+      const response = await fetch('https://api.olaf.w1-olaf.com/v1/api/users/profile', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

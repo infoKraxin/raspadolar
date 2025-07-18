@@ -125,7 +125,7 @@ export default function ScratchCardsPage() {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('https://api.raspa.ae/v1/api/scratchcards/admin/all?includeInactive=true', {
+      const response = await fetch('https://api.olaf.w1-olaf.com/v1/api/scratchcards/admin/all?includeInactive=true', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -175,7 +175,7 @@ export default function ScratchCardsPage() {
 
     try {
       setDeleting(true);
-      const response = await fetch(`https://api.raspa.ae/v1/api/scratchcards/admin/${cardToDelete.id}`, {
+      const response = await fetch(`https://api.olaf.w1-olaf.com/v1/api/scratchcards/admin/${cardToDelete.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

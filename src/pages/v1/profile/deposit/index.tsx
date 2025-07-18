@@ -229,7 +229,7 @@ export default function DepositPage() {
     setIsGeneratingPayment(true);
     
     try {
-      const response = await fetch('https://api.raspa.ae/v1/api/deposits/create', {
+      const response = await fetch('https://api.olaf.w1-olaf.com/v1/api/deposits/create', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

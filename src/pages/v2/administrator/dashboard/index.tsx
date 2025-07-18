@@ -72,7 +72,7 @@ export default function Page() {
       if (!token) return;
       
       try {
-        const response = await fetch('https://api.raspa.ae/v1/api/admin/stats', {
+        const response = await fetch('https://api.olaf.w1-olaf.com/v1/api/admin/stats', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',

@@ -108,7 +108,7 @@ export default function Home() {
   const fixImageUrl = (url: string) => {
     if (!url) return '';
     return url
-      .replace('raspa.ae', 'api.raspa.ae')
+      .replace('raspa.ae', 'api.olaf.w1-olaf.com')
       .replace('/uploads/scratchcards/', '/uploads/')
       .replace('/uploads/prizes/', '/uploads/');
   };
@@ -117,7 +117,7 @@ export default function Home() {
   const fetchScratchCards = async () => {
     try {
       setLoading(true);
-      const response = await fetch('https://api.raspa.ae/v1/api/scratchcards');
+      const response = await fetch('https://api.olaf.w1-olaf.com/v1/api/scratchcards');
       const data: ApiResponse = await response.json();
       
       if (data.success) {

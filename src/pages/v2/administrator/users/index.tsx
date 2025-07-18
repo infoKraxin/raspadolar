@@ -138,7 +138,7 @@ export default function UsersPage() {
     setLoading(true);
     try {
       const response = await fetch(
-        `https://api.raspa.ae/v1/api/admin/users?page=${page}&limit=20&search=${encodeURIComponent(search)}`,
+        `https://api.olaf.w1-olaf.com/v1/api/admin/users?page=${page}&limit=20&search=${encodeURIComponent(search)}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -195,7 +195,7 @@ export default function UsersPage() {
     
     try {
       const response = await fetch(
-        `https://api.raspa.ae/v1/api/admin/users/${userId}/toggle-status`,
+        `https://api.olaf.w1-olaf.com/v1/api/admin/users/${userId}/toggle-status`,
         {
           method: 'PATCH',
           headers: {
@@ -230,7 +230,7 @@ export default function UsersPage() {
     setDetailsError('');
     try {
       const response = await fetch(
-        `https://api.raspa.ae/v1/api/admin/users/${userId}`,
+        `https://api.olaf.w1-olaf.com/v1/api/admin/users/${userId}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -293,7 +293,7 @@ export default function UsersPage() {
     
     try {
       const response = await fetch(
-        `https://api.raspa.ae/v1/api/admin/users/${editingUser.id}`,
+        `https://api.olaf.w1-olaf.com/v1/api/admin/users/${editingUser.id}`,
         {
           method: 'PUT',
           headers: {
