@@ -16,7 +16,7 @@ export default function Footer() {
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
               <h3 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent">
-                raspa.ae
+                rapapixoficial.com
               </h3>
             </div>
             <p className="text-neutral-400 text-sm sm:text-base leading-relaxed mb-4">

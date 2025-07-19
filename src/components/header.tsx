@@ -76,9 +76,9 @@ export default function Header() {
         <div className="flex items-center justify-between mx-auto p-2 max-w-5xl">
             <div className="flex items-center gap-6">
                 <Image
-                src="/logo_rs.png"
+                src="/logo_orion.png"
                 alt="logo"
-                width={64}
+                width={84}
                 height={64}
                 />
                 
