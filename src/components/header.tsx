@@ -16,7 +16,7 @@ export default function Header() {
         if (!token) return;
         
         try {
-            const response = await fetch('https://api.olaf.w1-olaf.com/v1/api/users/profile', {
+            const response = await fetch('https://api.raspapixoficial.com/v1/api/users/profile', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,

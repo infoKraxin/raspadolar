@@ -68,8 +68,8 @@ const InventoryPage: React.FC = () => {
   const fixImageUrl = (url: string | null): string | null => {
     if (!url) return null;
     
-    // Trocar raspa.ae por api.olaf.w1-olaf.com
-    let fixedUrl = url.replace('https://raspa.ae/', 'https://api.olaf.w1-olaf.com/');
+    // Trocar raspa.ae por api.raspapixoficial.com
+    let fixedUrl = url.replace('https://raspa.ae/', 'https://api.raspapixoficial.com/');
     
     // Remover 'prizes/' e 'scratchcards/' após 'uploads/'
     fixedUrl = fixedUrl.replace('/uploads/prizes/', '/uploads/');
@@ -100,7 +100,7 @@ const InventoryPage: React.FC = () => {
 
     try {
       setLoading(true);
-      const response = await fetch('https://api.olaf.w1-olaf.com/v1/api/users/redemptions/pending', {
+      const response = await fetch('https://api.raspapixoficial.com/v1/api/users/redemptions/pending', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -135,7 +135,7 @@ const InventoryPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch('https://api.olaf.w1-olaf.com/v1/api/users/redemptions/choose', {
+      const response = await fetch('https://api.raspapixoficial.com/v1/api/users/redemptions/choose', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
