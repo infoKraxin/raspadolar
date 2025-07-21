@@ -56,20 +56,20 @@ const data = {
         },
       ],
     },
-    //     {
-    //   title: "Configurações",
-    //   url: "#",
-    //   items: [
-    //     {
-    //       title: "Credênciais",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Configurações visuais",
-    //       url: "#",
-    //     },
-    //   ],
-    // },
+        {
+      title: "Configurações",
+      url: "#",
+      items: [
+        // {
+        //   title: "Informações",
+        //   url: "/v2/administrator/settings",
+        // },
+        {
+          title: "Imagens",
+          url: "/v2/administrator/setting/upload",
+        },
+      ],
+    },
   ],
 }
 

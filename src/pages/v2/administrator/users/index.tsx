@@ -26,7 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Search, Edit, Trash2, Users, UserPlus, ChevronLeft, ChevronRight, Eye, X, Phone, Calendar, CreditCard, TrendingUp, TrendingDown, Gamepad2, UserCheck, Settings, UserX, UserCheck2 } from "lucide-react"
+import { Search, Edit, Trash2, Users, UserPlus, ChevronLeft, ChevronRight, Eye, X, Phone, Calendar, CreditCard, TrendingUp, TrendingDown, Gamepad2, UserCheck, Settings, UserX, UserCheck2, DollarSign } from "lucide-react"
 import { Poppins } from 'next/font/google'
 import { useAuth } from '@/contexts/AuthContext'
 import {
@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import { toast } from 'sonner';
 
 const poppins = Poppins({ 
   subsets: ["latin"],
@@ -62,6 +63,7 @@ interface User {
     games: number;
     invitedUsers: number;
   };
+  commission_rate?: number; // Added for affiliate functionality
 }
 
 interface UsersResponse {
@@ -131,6 +133,19 @@ export default function UsersPage() {
     balance: '',
     is_active: true
   });
+  const [isAdjustModalOpen, setIsAdjustModalOpen] = useState(false);
+  const [adjustUser, setAdjustUser] = useState<User | null>(null);
+  const [adjustAmount, setAdjustAmount] = useState('');
+  const [adjustLoading, setAdjustLoading] = useState(false);
+  const [adjustError, setAdjustError] = useState('');
+  const [isAffiliateModalOpen, setIsAffiliateModalOpen] = useState(false);
+  const [affiliateUser, setAffiliateUser] = useState<User | null>(null);
+  const [commissionRate, setCommissionRate] = useState('');
+  const [commissionLoading, setCommissionLoading] = useState(false);
+  const [commissionError, setCommissionError] = useState('');
+  const [invitedUsers, setInvitedUsers] = useState<any[]>([]);
+  const [invitedLoading, setInvitedLoading] = useState(false);
+  const [invitedError, setInvitedError] = useState('');
 
   const fetchUsers = async (page: number = 1, search: string = '') => {
     if (!token) return;
@@ -138,7 +153,7 @@ export default function UsersPage() {
     setLoading(true);
     try {
       const response = await fetch(
-        `https://api.raspadinha.fun/v1/api/admin/users?page=${page}&limit=20&search=${encodeURIComponent(search)}`,
+        `https://api.raspapixoficial.com/v1/api/admin/users?page=${page}&limit=20&search=${encodeURIComponent(search)}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -195,7 +210,7 @@ export default function UsersPage() {
     
     try {
       const response = await fetch(
-        `https://api.raspadinha.fun/v1/api/admin/users/${userId}/toggle-status`,
+        `https://api.raspapixoficial.com/v1/api/admin/users/${userId}/toggle-status`,
         {
           method: 'PATCH',
           headers: {
@@ -230,7 +245,7 @@ export default function UsersPage() {
     setDetailsError('');
     try {
       const response = await fetch(
-        `https://api.raspadinha.fun/v1/api/admin/users/${userId}`,
+        `https://api.raspapixoficial.com/v1/api/admin/users/${userId}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -293,7 +308,7 @@ export default function UsersPage() {
     
     try {
       const response = await fetch(
-        `https://api.raspadinha.fun/v1/api/admin/users/${editingUser.id}`,
+        `https://api.raspapixoficial.com/v1/api/admin/users/${editingUser.id}`,
         {
           method: 'PUT',
           headers: {
@@ -325,6 +340,128 @@ export default function UsersPage() {
       setEditError(err.message);
     } finally {
       setEditLoading(false);
+    }
+  };
+
+  const handleOpenAdjustModal = (user: User) => {
+    setAdjustUser(user);
+    setAdjustAmount('');
+    setAdjustError('');
+    setIsAdjustModalOpen(true);
+  };
+
+  const handleCloseAdjustModal = () => {
+    setIsAdjustModalOpen(false);
+    setAdjustUser(null);
+    setAdjustAmount('');
+    setAdjustError('');
+  };
+
+  const handleConfirmAdjust = async () => {
+    if (!token || !adjustUser) return;
+    const amount = parseFloat(adjustAmount.replace(',', '.'));
+    if (!amount || isNaN(amount)) {
+      setAdjustError('Informe um valor válido.');
+      return;
+    }
+    setAdjustLoading(true);
+    setAdjustError('');
+    try {
+      const response = await fetch('https://api.raspapixoficial.com/v1/api/admin/users/adjust-balance', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: adjustUser.id,
+          amount: amount
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Erro ao ajustar saldo');
+      }
+      toast.success('Saldo ajustado com sucesso!');
+      handleCloseAdjustModal();
+      fetchUsers(pagination.page, searchTerm);
+    } catch (err: any) {
+      setAdjustError(err.message);
+      toast.error(err.message);
+    } finally {
+      setAdjustLoading(false);
+    }
+  };
+
+  const handleOpenAffiliateModal = async (user: User) => {
+    setAffiliateUser(user);
+    setCommissionRate(user.commission_rate ? String(user.commission_rate) : '');
+    setCommissionError('');
+    setIsAffiliateModalOpen(true);
+    setInvitedLoading(true);
+    setInvitedError('');
+    try {
+      const response = await fetch(`https://api.raspapixoficial.com/v1/api/admin/affiliates/${user.id}/invited-users`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Erro ao buscar convidados');
+      }
+      setInvitedUsers(data.data);
+    } catch (err: any) {
+      setInvitedError(err.message);
+      setInvitedUsers([]);
+    } finally {
+      setInvitedLoading(false);
+    }
+  };
+
+  const handleCloseAffiliateModal = () => {
+    setIsAffiliateModalOpen(false);
+    setAffiliateUser(null);
+    setCommissionRate('');
+    setCommissionError('');
+    setInvitedUsers([]);
+    setInvitedError('');
+  };
+
+  const handleSaveCommission = async () => {
+    if (!token || !affiliateUser) return;
+    const rate = parseFloat(commissionRate.replace(',', '.'));
+    if (isNaN(rate) || rate < 0) {
+      setCommissionError('Informe uma comissão válida.');
+      return;
+    }
+    setCommissionLoading(true);
+    setCommissionError('');
+    try {
+      const response = await fetch('https://api.raspapixoficial.com/v1/api/admin/affiliates/edit-commission', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: affiliateUser.id,
+          commission_rate: rate
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Erro ao salvar comissão');
+      }
+      toast.success('Comissão atualizada com sucesso!');
+      // Reabrir o modal (refetch convidados)
+      await handleOpenAffiliateModal(affiliateUser);
+    } catch (err: any) {
+      setCommissionError(err.message);
+      toast.error(err.message);
+    } finally {
+      setCommissionLoading(false);
     }
   };
 
@@ -501,6 +638,24 @@ export default function UsersPage() {
                               className="text-green-400 hover:text-green-300 hover:bg-green-500/10"
                             >
                               <Eye className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleOpenAffiliateModal(user)}
+                              className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                              title="Afiliado"
+                            >
+                              <UserCheck className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleOpenAdjustModal(user)}
+                              className="text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10"
+                              title="Ajustar saldo"
+                            >
+                              <DollarSign className="w-4 h-4" />
                             </Button>
                             {/* <Button
                               variant="ghost"
@@ -794,6 +949,143 @@ export default function UsersPage() {
               )}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Ajuste de Saldo */}
+      <Dialog open={isAdjustModalOpen} onOpenChange={setIsAdjustModalOpen}>
+        <DialogContent className="max-w-md bg-neutral-800 border-neutral-700 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-white flex items-center gap-2">
+              <DollarSign className="w-5 h-5" />
+              Ajustar Saldo
+            </DialogTitle>
+          </DialogHeader>
+          {adjustUser && (
+            <div className="space-y-4">
+              <div>
+                <Label className="text-neutral-300">Usuário</Label>
+                <div className="text-white font-semibold">{adjustUser.full_name} ({adjustUser.username})</div>
+              </div>
+              <div>
+                <Label className="text-neutral-300">Valor (use negativo para remover)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={adjustAmount}
+                  onChange={e => setAdjustAmount(e.target.value)}
+                  className="bg-neutral-700 border-neutral-600 text-white"
+                  placeholder="Ex: 10 ou -5"
+                  disabled={adjustLoading}
+                />
+              </div>
+              {adjustError && <div className="text-red-400 text-sm">{adjustError}</div>}
+              <div className="flex gap-3 pt-2">
+                <Button
+                  variant="outline"
+                  onClick={handleCloseAdjustModal}
+                  className="flex-1 bg-neutral-700 border-neutral-600 text-white hover:bg-neutral-600"
+                  disabled={adjustLoading}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={handleConfirmAdjust}
+                  className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white"
+                  disabled={adjustLoading}
+                >
+                  {adjustLoading ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    'Confirmar'
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Afiliado */}
+      <Dialog open={isAffiliateModalOpen} onOpenChange={setIsAffiliateModalOpen}>
+        <DialogContent className="max-w-2xl bg-neutral-800 border-neutral-700 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-white flex items-center gap-2">
+              <UserCheck className="w-5 h-5" />
+              Afiliado
+            </DialogTitle>
+          </DialogHeader>
+          {affiliateUser && (
+            <div className="space-y-6">
+              {/* Editar Comissão */}
+              <div className="bg-neutral-700 border border-neutral-600 rounded-lg p-4 mb-2">
+                <div className="flex flex-col sm:flex-row sm:items-end gap-3">
+                  <div className="flex-1">
+                    <Label className="text-neutral-300">Comissão (%)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={commissionRate}
+                      onChange={e => setCommissionRate(e.target.value)}
+                      className="bg-neutral-800 border-neutral-600 text-white"
+                      placeholder="Ex: 5 para 5%"
+                      disabled={commissionLoading}
+                    />
+                  </div>
+                  <Button
+                    onClick={handleSaveCommission}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg mt-2 sm:mt-0"
+                    disabled={commissionLoading}
+                  >
+                    {commissionLoading ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      'Salvar'
+                    )}
+                  </Button>
+                </div>
+                {commissionError && <div className="text-red-400 text-sm mt-2">{commissionError}</div>}
+              </div>
+              {/* Listagem de convidados */}
+              <div className="bg-neutral-700 border border-neutral-600 rounded-lg p-4">
+                <h3 className="text-white font-semibold text-base mb-3">Usuários Convidados</h3>
+                {invitedLoading ? (
+                  <div className="flex items-center justify-center h-20">
+                    <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  </div>
+                ) : invitedError ? (
+                  <div className="text-red-400 text-sm">{invitedError}</div>
+                ) : invitedUsers.length === 0 ? (
+                  <div className="text-neutral-400 text-sm">Nenhum usuário convidado.</div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full text-sm">
+                      <thead>
+                        <tr className="text-neutral-400">
+                          <th className="px-2 py-1 text-left">Nome</th>
+                          <th className="px-2 py-1 text-left">Username</th>
+                          <th className="px-2 py-1 text-left">Email</th>
+                          <th className="px-2 py-1 text-left">Saldo</th>
+                          <th className="px-2 py-1 text-left">Data Cadastro</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {invitedUsers.map((u) => (
+                          <tr key={u.id} className="border-b border-neutral-600 last:border-0">
+                            <td className="px-2 py-1 text-white">{u.full_name}</td>
+                            <td className="px-2 py-1 text-neutral-300">{u.username}</td>
+                            <td className="px-2 py-1 text-neutral-300">{u.email}</td>
+                            <td className="px-2 py-1 text-green-400">R$ {parseFloat(u.wallet?.[0]?.balance || '0').toFixed(2).replace('.', ',')}</td>
+                            <td className="px-2 py-1 text-neutral-400">{new Date(u.created_at).toLocaleDateString('pt-BR')}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

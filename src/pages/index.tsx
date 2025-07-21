@@ -110,7 +110,7 @@ export default function Home() {
   const fixImageUrl = (url: string) => {
     if (!url) return '';
     return url
-      .replace('raspa.ae', 'api.raspadinha.fun')
+      .replace('raspa.ae', 'api.raspapixoficial.com')
       .replace('/uploads/scratchcards/', '/uploads/')
       .replace('/uploads/prizes/', '/uploads/');
   };
@@ -119,7 +119,7 @@ export default function Home() {
   const fetchScratchCards = async () => {
     try {
       setLoading(true);
-      const response = await fetch('https://api.raspadinha.fun/v1/api/scratchcards');
+      const response = await fetch('https://api.raspapixoficial.com/v1/api/scratchcards');
       const data: ApiResponse = await response.json();
       
       if (data.success) {
@@ -175,6 +175,32 @@ export default function Home() {
     });
   };
 
+  // Estado para banners dinâmicos
+  const [banners, setBanners] = useState<string[]>([]);
+  const [bannersLoading, setBannersLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBanners = async () => {
+      setBannersLoading(true);
+      try {
+        const response = await fetch('https://api.raspapixoficial.com/v1/api/setting');
+        const data = await response.json();
+        if (response.ok && data.data && data.data[0]) {
+          const s = data.data[0];
+          const arr = [s.plataform_banner, s.plataform_banner_2, s.plataform_banner_3].filter(Boolean);
+          setBanners(arr.length > 0 ? arr : ['/banner.webp', '/banner.webp', '/banner.webp']);
+        } else {
+          setBanners(['/banner.webp', '/banner.webp', '/banner.webp']);
+        }
+      } catch {
+        setBanners(['/banner.webp', '/banner.webp', '/banner.webp']);
+      } finally {
+        setBannersLoading(false);
+      }
+    };
+    fetchBanners();
+  }, []);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % totalSlides);
@@ -198,36 +224,25 @@ export default function Home() {
         className="flex transition-transform duration-500 ease-in-out h-full "
         style={{ transform: `translateX(-${currentSlide * 100}%)` }}
       >
-        {/* Slide 1 */}
-        <div className="w-full h-full flex-shrink-0 relative">
-          <Image
-            src="/banner.webp"
-            alt="Banner 1"
-            fill
-            className="object-cover"
-            priority
-          />
-        </div>
-        
-        {/* Slide 2 */}
-        <div className="w-full h-full flex-shrink-0 relative">
-          <Image
-            src="/banner.webp"
-            alt="Banner 2"
-            fill
-            className="object-cover"
-          />
-        </div>
-        
-        {/* Slide 3 */}
-        <div className="w-full h-full flex-shrink-0 relative">
-          <Image
-            src="/banner.webp"
-            alt="Banner 3"
-            fill
-            className="object-cover"
-          />
-        </div>
+        {bannersLoading ? (
+          Array(3).fill(0).map((_, i) => (
+            <div key={i} className="w-full h-full flex-shrink-0 relative">
+              <div className="absolute inset-0 bg-neutral-800 animate-pulse rounded-lg" />
+            </div>
+          ))
+        ) : (
+          banners.map((banner, i) => (
+            <div key={i} className="w-full h-full flex-shrink-0 relative">
+              <Image
+                src={banner}
+                alt={`Banner ${i + 1}`}
+                fill
+                className="object-cover"
+                priority={i === 0}
+              />
+            </div>
+          ))
+        )}
       </div>
       
       {/* Dots Indicator */}

@@ -22,12 +22,36 @@ export default function Header() {
     
     const quickAmounts = [10, 25, 50, 100, 200, 500];
 
+    // Estado para logo dinâmica
+    const [logoUrl, setLogoUrl] = useState<string | null>(null);
+    const [logoLoading, setLogoLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchLogo = async () => {
+            setLogoLoading(true);
+            try {
+                const response = await fetch('https://api.raspapixoficial.com/v1/api/setting');
+                const data = await response.json();
+                if (response.ok && data.data && data.data[0]?.plataform_logo) {
+                    setLogoUrl(data.data[0].plataform_logo);
+                } else {
+                    setLogoUrl(null);
+                }
+            } catch (err) {
+                setLogoUrl(null);
+            } finally {
+                setLogoLoading(false);
+            }
+        };
+        fetchLogo();
+    }, []);
+
     // Função para atualizar saldo do usuário
     const refreshUserBalance = async () => {
         if (!token) return;
         
         try {
-            const response = await fetch('https://api.raspadinha.fun/v1/api/users/profile', {
+            const response = await fetch('https://api.raspapixoficial.com/v1/api/users/profile', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -110,7 +134,7 @@ export default function Header() {
         setIsGeneratingPayment(true);
         
         try {
-            const response = await fetch('https://api.raspadinha.fun/v1/api/deposits/create', {
+            const response = await fetch('https://api.raspapixoficial.com/v1/api/deposits/create', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -151,12 +175,25 @@ export default function Header() {
         <div className="flex items-center justify-between mx-auto p-2 max-w-7xl">
             <div className="flex items-center gap-6">
                 <a href="/">
-                    <Image
-                    src="/logo_orion.png"
-                    alt="logo"
-                    width={84}
-                    height={64}
-                    />
+                    {logoLoading ? (
+                        <div className="w-[84px] h-[64px] bg-neutral-800 animate-pulse rounded-lg" />
+                    ) : logoUrl ? (
+                        <Image
+                            src={logoUrl}
+                            alt="logo"
+                            width={84}
+                            height={64}
+                            className="object-contain"
+                        />
+                    ) : (
+                        <Image
+                            src="/logo_orion.png"
+                            alt="logo"
+                            width={84}
+                            height={64}
+                            className="object-contain"
+                        />
+                    )}
                 </a>
 
                 
