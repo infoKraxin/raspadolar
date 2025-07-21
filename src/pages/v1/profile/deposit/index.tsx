@@ -39,7 +39,7 @@ function QuickAmount({ amount, isSelected, onClick }: QuickAmountProps) {
       onClick={onClick}
       className={`p-4 rounded-lg border transition-all duration-300 ${
         isSelected
-          ? 'bg-blue-500/20 border-blue-500 text-blue-400'
+          ? 'bg-yellow-500/20 border-yellow-500 text-yellow-400'
           : 'bg-neutral-700 border-neutral-600 text-neutral-300 hover:bg-neutral-600 hover:border-neutral-500'
       }`}
     >
@@ -138,7 +138,7 @@ function PaymentModal({ isOpen, onClose, paymentData }: PaymentModalProps) {
               />
               <Button
                 onClick={copyPixCode}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <Copy className="w-4 h-4" />
                 Copiar Código PIX
@@ -149,7 +149,7 @@ function PaymentModal({ isOpen, onClose, paymentData }: PaymentModalProps) {
           {/* Instructions */}
           <div className="space-y-3 mb-6">
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold mt-0.5">
+              <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center text-white text-xs font-bold mt-0.5">
                 1
               </div>
               <p className="text-neutral-300 text-sm">
@@ -157,7 +157,7 @@ function PaymentModal({ isOpen, onClose, paymentData }: PaymentModalProps) {
               </p>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold mt-0.5">
+              <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center text-white text-xs font-bold mt-0.5">
                 2
               </div>
               <p className="text-neutral-300 text-sm">
@@ -165,7 +165,7 @@ function PaymentModal({ isOpen, onClose, paymentData }: PaymentModalProps) {
               </p>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold mt-0.5">
+              <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center text-white text-xs font-bold mt-0.5">
                 3
               </div>
               <p className="text-neutral-300 text-sm">
@@ -175,10 +175,10 @@ function PaymentModal({ isOpen, onClose, paymentData }: PaymentModalProps) {
           </div>
 
           {/* Status */}
-          <div className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
+          <div className="p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
-              <span className="text-blue-400 text-sm font-medium">Aguardando pagamento</span>
+              <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
+              <span className="text-yellow-400 text-sm font-medium">Aguardando pagamento</span>
             </div>
             <p className="text-neutral-300 text-xs">
               O saldo será creditado automaticamente após a confirmação do pagamento
@@ -229,7 +229,7 @@ export default function DepositPage() {
     setIsGeneratingPayment(true);
     
     try {
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/deposits/create', {
+      const response = await fetch('https://api.raspadinha.fun/v1/api/deposits/create', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -294,7 +294,7 @@ export default function DepositPage() {
             {/* Amount Selection */}
             <div className="bg-neutral-800 rounded-xl border border-neutral-700 p-6">
               <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-blue-400" />
+                <CreditCard className="w-5 h-5 text-yellow-400" />
                 Valor do Depósito
               </h2>
               
@@ -330,7 +330,7 @@ export default function DepositPage() {
                     placeholder="0,00"
                     value={customAmount}
                     onChange={(e) => handleCustomAmountChange(e.target.value)}
-                    className="pl-10 bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500 focus:ring-blue-500/20 text-lg font-semibold"
+                    className="pl-10 bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500 focus:ring-yellow-500/20 text-lg font-semibold"
                   />
                 </div>
                 <p className="text-neutral-500 text-sm">
@@ -342,18 +342,18 @@ export default function DepositPage() {
             {/* Payment Method */}
             <div className="bg-neutral-800 rounded-xl border border-neutral-700 p-6">
               <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
-                <QrCode className="w-5 h-5 text-blue-400" />
+                <QrCode className="w-5 h-5 text-yellow-400" />
                 Método de Pagamento
               </h2>
               
-              <div className="p-4 bg-gradient-to-r from-blue-500/10 to-blue-600/10 rounded-lg border border-blue-500/20">
+              <div className="p-4 bg-gradient-to-r from-yellow-500/10 to-yellow-600/10 rounded-lg border border-yellow-500/20">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center">
                     <Smartphone className="w-5 h-5 text-white" />
                   </div>
                   <div>
                     <h3 className="text-white font-semibold">PIX</h3>
-                    <p className="text-blue-400 text-sm">Aprovação instantânea</p>
+                    <p className="text-yellow-400 text-sm">Aprovação instantânea</p>
                   </div>
                   <CheckCircle className="w-5 h-5 text-green-400 ml-auto" />
                 </div>
@@ -367,7 +367,7 @@ export default function DepositPage() {
             <Button
               onClick={handleGeneratePayment}
               disabled={!customAmount || getCurrentAmount() < 1 || isGeneratingPayment}
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-neutral-600 disabled:to-neutral-700 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-blue-400/20 disabled:border-neutral-600/20 text-lg"
+              className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 disabled:from-neutral-600 disabled:to-neutral-700 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20 disabled:border-neutral-600/20 text-lg"
             >
               {isGeneratingPayment ? (
                 <div className="flex items-center gap-2">

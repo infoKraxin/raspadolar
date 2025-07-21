@@ -165,7 +165,7 @@ const ScratchCardPage = () => {
   const fixImageUrl = (url: string) => {
     if (!url) return '';
     return url
-      .replace('raspa.ae', 'api.raspapixoficial.com')
+      .replace('raspa.ae', 'api.raspadinha.fun')
       .replace('/uploads/scratchcards/', '/uploads/')
       .replace('/uploads/prizes/', '/uploads/');
   };
@@ -176,7 +176,7 @@ const ScratchCardPage = () => {
     
     try {
       setLoading(true);
-      const response = await fetch(`https://api.raspapixoficial.com/v1/api/scratchcards/${id}`);
+      const response = await fetch(`https://api.raspadinha.fun/v1/api/scratchcards/${id}`);
       const data: ApiResponse = await response.json();
       
       if (data.success) {
@@ -381,7 +381,7 @@ const ScratchCardPage = () => {
     
     try {
       setPlayingGame(true);
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/scratchcards/play', {
+      const response = await fetch('https://api.raspadinha.fun/v1/api/scratchcards/play', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -413,7 +413,7 @@ const ScratchCardPage = () => {
     if (!token) return;
     
     try {
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/users/profile', {
+      const response = await fetch('https://api.raspadinha.fun/v1/api/users/profile', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -591,7 +591,7 @@ const ScratchCardPage = () => {
                 <Button 
                   onClick={handleBuyAndScratch}
                   disabled={!isAuthenticated || !scratchCardData}
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-neutral-600 disabled:to-neutral-700 text-white font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-xl w-full transition-all duration-300 shadow-lg hover:shadow-xl border border-blue-400/20 disabled:border-neutral-600/20 cursor-pointer disabled:cursor-not-allowed text-sm sm:text-base"
+                  className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 disabled:from-neutral-600 disabled:to-neutral-700 text-white font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-xl w-full transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20 disabled:border-neutral-600/20 cursor-pointer disabled:cursor-not-allowed text-sm sm:text-base"
                 >
                   {!isAuthenticated ? 'Faça login para jogar' : scratchCardData ? `Comprar e Raspar (R$ ${parseFloat(scratchCardData.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})` : 'Carregando...'}
                 </Button>
@@ -603,7 +603,7 @@ const ScratchCardPage = () => {
           {gameState === 'loading' && (
             <div className="bg-neutral-700 rounded-lg p-6 sm:p-8 border border-neutral-600 mb-4 sm:mb-6">
               <div className="text-center">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mb-4 mx-auto animate-pulse">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center mb-4 mx-auto animate-pulse">
                   <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 text-white animate-spin" />
                 </div>
                 <h3 className="text-white font-bold text-lg sm:text-xl mb-2">
@@ -744,7 +744,7 @@ const ScratchCardPage = () => {
                     <Button 
                       onClick={handlePlayAgain}
                       disabled={!isAuthenticated || !scratchCardData}
-                      className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-neutral-600 disabled:to-neutral-700 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300 disabled:cursor-not-allowed"
+                      className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 disabled:from-neutral-600 disabled:to-neutral-700 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300 disabled:cursor-not-allowed"
                     >
                       {scratchCardData ? `Jogar Novamente (R$ ${parseFloat(scratchCardData.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})` : 'Carregando...'}
                     </Button>

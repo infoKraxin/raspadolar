@@ -138,7 +138,7 @@ export default function UsersPage() {
     setLoading(true);
     try {
       const response = await fetch(
-        `https://api.raspapixoficial.com/v1/api/admin/users?page=${page}&limit=20&search=${encodeURIComponent(search)}`,
+        `https://api.raspadinha.fun/v1/api/admin/users?page=${page}&limit=20&search=${encodeURIComponent(search)}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -195,7 +195,7 @@ export default function UsersPage() {
     
     try {
       const response = await fetch(
-        `https://api.raspapixoficial.com/v1/api/admin/users/${userId}/toggle-status`,
+        `https://api.raspadinha.fun/v1/api/admin/users/${userId}/toggle-status`,
         {
           method: 'PATCH',
           headers: {
@@ -230,7 +230,7 @@ export default function UsersPage() {
     setDetailsError('');
     try {
       const response = await fetch(
-        `https://api.raspapixoficial.com/v1/api/admin/users/${userId}`,
+        `https://api.raspadinha.fun/v1/api/admin/users/${userId}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -293,7 +293,7 @@ export default function UsersPage() {
     
     try {
       const response = await fetch(
-        `https://api.raspapixoficial.com/v1/api/admin/users/${editingUser.id}`,
+        `https://api.raspadinha.fun/v1/api/admin/users/${editingUser.id}`,
         {
           method: 'PUT',
           headers: {
@@ -392,7 +392,7 @@ export default function UsersPage() {
                   <p className="text-neutral-400 text-sm">Total de {pagination.total} usuários cadastrados</p>
                 </div>
               </div>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Button className="bg-yellow-600 hover:bg-yellow-700 text-white">
                 <UserPlus className="w-4 h-4 mr-2" />
                 Novo Usuário
               </Button>
@@ -407,7 +407,7 @@ export default function UsersPage() {
                     placeholder="Buscar por nome, CPF, telefone ou ID..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500"
+                    className="pl-10 bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500"
                   />
                 </div>
                 <Button variant="outline" className="bg-neutral-700 border-neutral-600 text-white hover:bg-neutral-600">
@@ -477,7 +477,7 @@ export default function UsersPage() {
                         </TableCell>
                         <TableCell className="text-green-400">{user._count.deposits}</TableCell>
                         <TableCell className="text-red-400">{user._count.withdraws}</TableCell>
-                        <TableCell className="text-blue-400 font-medium">{user._count.games}</TableCell>
+                        <TableCell className="text-yellow-400 font-medium">{user._count.games}</TableCell>
                         <TableCell className="text-purple-400">{user._count.invitedUsers}</TableCell>
                         <TableCell>
                           <Badge className={getStatusColor(user.is_admin)}>
@@ -506,7 +506,7 @@ export default function UsersPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleEdit(user.id)}
-                              className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                              className="text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10"
                             >
                               <Edit className="w-4 h-4" />
                             </Button> */}
@@ -604,7 +604,7 @@ export default function UsersPage() {
                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                  <Card className="bg-neutral-700 border-neutral-600 p-3 sm:p-4">
                    <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2">
-                     <UserCheck className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
+                     <UserCheck className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />
                      Informações Pessoais
                    </h3>
                   <div className="space-y-2 sm:space-y-3">
@@ -699,7 +699,7 @@ export default function UsersPage() {
                     <p className="text-neutral-400 text-sm">Derrotas</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-blue-400">{userDetails.invitedUsers.length}</p>
+                    <p className="text-2xl font-bold text-yellow-400">{userDetails.invitedUsers.length}</p>
                     <p className="text-neutral-400 text-sm">Usuários Convidados</p>
                   </div>
                 </div>
@@ -784,7 +784,7 @@ export default function UsersPage() {
             </Button>
             <Button
               onClick={handleUpdateUser}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white"
               disabled={editLoading}
             >
               {editLoading ? (

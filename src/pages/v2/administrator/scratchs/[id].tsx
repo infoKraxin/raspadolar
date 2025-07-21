@@ -96,8 +96,8 @@ const formatPercentage = (value: string | number) => {
 const fixImageUrl = (url: string | null) => {
   if (!url) return null;
   
-  // Trocar raspa.ae por api.raspapixoficial.com
-  let fixedUrl = url.replace('https://raspa.ae/', 'https://api.raspapixoficial.com/');
+  // Trocar raspa.ae por api.raspadinha.fun
+  let fixedUrl = url.replace('https://raspa.ae/', 'https://api.raspadinha.fun/');
   
   // Remover 'prizes/' e 'scratchcards/' após 'uploads/'
   fixedUrl = fixedUrl.replace('/uploads/prizes/', '/uploads/');
@@ -125,7 +125,7 @@ export default function ScratchCardDetailsPage() {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`https://api.raspapixoficial.com/v1/api/scratchcards/${id}`, {
+      const response = await fetch(`https://api.raspadinha.fun/v1/api/scratchcards/${id}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -176,7 +176,7 @@ export default function ScratchCardDetailsPage() {
       case 'MONEY':
         return 'bg-green-500/10 text-green-400 border-green-500/20';
       case 'PRODUCT':
-        return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+        return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
       default:
         return 'bg-neutral-500/10 text-neutral-400 border-neutral-500/20';
     }
@@ -223,7 +223,7 @@ export default function ScratchCardDetailsPage() {
               </Breadcrumb>
             </header>
             <div className="flex flex-1 flex-col gap-6 p-6 bg-neutral-900 items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+              <Loader2 className="h-8 w-8 animate-spin text-yellow-500" />
               <p className="text-neutral-400">Carregando detalhes da raspadinha...</p>
             </div>
           </SidebarInset>
@@ -265,7 +265,7 @@ export default function ScratchCardDetailsPage() {
               <div className="text-center">
                 <p className="text-red-400 mb-4">{error}</p>
                 <div className="flex gap-4">
-                  <Button onClick={fetchScratchCard} className="bg-blue-600 hover:bg-blue-700">
+                  <Button onClick={fetchScratchCard} className="bg-yellow-600 hover:bg-yellow-700">
                     Tentar Novamente
                   </Button>
                   <Button onClick={handleBack} variant="outline" className="border-neutral-600 text-neutral-300 hover:bg-neutral-700">
@@ -401,9 +401,9 @@ export default function ScratchCardDetailsPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-neutral-400 text-sm font-medium">RTP Alvo</p>
-                        <p className="text-blue-400 text-xl font-bold">{formatPercentage(scratchCard.target_rtp)}</p>
+                        <p className="text-yellow-400 text-xl font-bold">{formatPercentage(scratchCard.target_rtp)}</p>
                       </div>
-                      <Target className="w-8 h-8 text-blue-400" />
+                      <Target className="w-8 h-8 text-yellow-400" />
                     </div>
                   </Card>
                   
@@ -458,7 +458,7 @@ export default function ScratchCardDetailsPage() {
                     </div>
                     <div>
                       <label className="text-neutral-400 text-sm font-medium">Lucro</label>
-                      <p className="text-blue-400 font-bold text-2xl">
+                      <p className="text-yellow-400 font-bold text-2xl">
                         {formatCurrency(parseFloat(scratchCard.total_revenue) - parseFloat(scratchCard.total_payouts))}
                       </p>
                     </div>

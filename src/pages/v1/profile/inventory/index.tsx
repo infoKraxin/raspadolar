@@ -68,8 +68,8 @@ const InventoryPage: React.FC = () => {
   const fixImageUrl = (url: string | null): string | null => {
     if (!url) return null;
     
-    // Trocar raspa.ae por api.raspapixoficial.com
-    let fixedUrl = url.replace('https://raspa.ae/', 'https://api.raspapixoficial.com/');
+    // Trocar raspa.ae por api.raspadinha.fun
+    let fixedUrl = url.replace('https://raspa.ae/', 'https://api.raspadinha.fun/');
     
     // Remover 'prizes/' e 'scratchcards/' após 'uploads/'
     fixedUrl = fixedUrl.replace('/uploads/prizes/', '/uploads/');
@@ -100,7 +100,7 @@ const InventoryPage: React.FC = () => {
 
     try {
       setLoading(true);
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/users/redemptions/pending', {
+      const response = await fetch('https://api.raspadinha.fun/v1/api/users/redemptions/pending', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -135,7 +135,7 @@ const InventoryPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/users/redemptions/choose', {
+      const response = await fetch('https://api.raspadinha.fun/v1/api/users/redemptions/choose', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -350,7 +350,7 @@ const InventoryPage: React.FC = () => {
                 </p>
                 <Button 
                   onClick={() => router.push('/')}
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
+                  className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white"
                 >
                   Jogar Agora
                 </Button>

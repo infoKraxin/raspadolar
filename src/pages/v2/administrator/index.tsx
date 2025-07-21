@@ -43,7 +43,7 @@ export default function AdminLoginPage() {
 
     try {
       // Fazer chamada para a API de login
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/auth/login', {
+      const response = await fetch('https://api.raspadinha.fun/v1/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -117,10 +117,10 @@ export default function AdminLoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@bonni.com"
+                placeholder="admin@heroigaming.com"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
-                className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500 focus:ring-blue-500/20"
+                className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500 focus:ring-yellow-500/20"
                 required
               />
             </div>
@@ -138,7 +138,7 @@ export default function AdminLoginPage() {
                   placeholder="Digite sua senha"
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
-                  className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500 focus:ring-blue-500/20 pr-12"
+                  className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500 focus:ring-yellow-500/20 pr-12"
                   required
                 />
                 <button
@@ -159,7 +159,7 @@ export default function AdminLoginPage() {
             <Button 
               type="submit"
               disabled={isLoading || !formData.email || !formData.password}
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-blue-400/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">

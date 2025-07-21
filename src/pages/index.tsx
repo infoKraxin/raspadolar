@@ -4,6 +4,7 @@ import Header from "@/components/header";
 import { useState, useEffect } from "react";
 import Footer from "@/components/footer";
 import { useRouter } from "next/router";
+import Winners from "@/components/winners";
 
 const poppins = Poppins({ 
   subsets: ["latin"],
@@ -108,7 +109,7 @@ export default function Home() {
   const fixImageUrl = (url: string) => {
     if (!url) return '';
     return url
-      .replace('raspa.ae', 'api.raspapixoficial.com')
+      .replace('raspa.ae', 'api.raspadinha.fun')
       .replace('/uploads/scratchcards/', '/uploads/')
       .replace('/uploads/prizes/', '/uploads/');
   };
@@ -117,7 +118,7 @@ export default function Home() {
   const fetchScratchCards = async () => {
     try {
       setLoading(true);
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/scratchcards');
+      const response = await fetch('https://api.raspadinha.fun/v1/api/scratchcards');
       const data: ApiResponse = await response.json();
       
       if (data.success) {
@@ -191,7 +192,7 @@ export default function Home() {
     <Header/>
     
     {/* Banner Carousel */}
-    <div className="bg-neutral-900 mt-4 relative w-full max-w-5xl mx-auto h-[200px] xs:h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px] xl:h-[450px] overflow-hidden px-2 sm:px-4 lg:px-0">
+    <div className="bg-neutral-900 mt-4 relative w-full max-w-6xl lg:max-w-7xl mx-auto h-[200px] xs:h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px] xl:h-[450px] overflow-hidden px-2 sm:px-4 lg:px-0">
       <div 
         className="flex transition-transform duration-500 ease-in-out h-full "
         style={{ transform: `translateX(-${currentSlide * 100}%)` }}
@@ -236,7 +237,7 @@ export default function Home() {
             onClick={() => setCurrentSlide(index)}
             className={`transition-all duration-300 ${
               index === currentSlide
-                ? "w-6 h-1.5 bg-blue-500 rounded-full" // Ponto ativo alongado azul
+                ? "w-6 h-1.5 bg-yellow-500 rounded-full" // Ponto ativo alongado azul
                 : "w-1.5 h-1.5 bg-white/50 rounded-full hover:bg-white/70" // Pontos inativos menores
             }`}
           />
@@ -245,228 +246,21 @@ export default function Home() {
     </div>
 
     {/* Winners Slider */}
-    <div className="py-8 sm:py-12 bg-neutral-900">
-      <div className="max-w-5xl mx-auto px-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
-          <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent">
-            Últimos Ganhadores
-          </h2>
-          <div className="text-left sm:text-right">
-            <p className="text-neutral-400 text-sm">Prêmios Distribuídos</p>
-            <p className="text-xl sm:text-2xl font-bold text-green-400">R$ 1.247.350</p>
-          </div>
-        </div>
-        
-        <div className="relative overflow-hidden">
-          {/* Fade effects on sides */}
-          <div className="absolute left-0 top-0 w-20 h-full bg-gradient-to-r from-neutral-900 to-transparent z-10"></div>
-          <div className="absolute right-0 top-0 w-20 h-full bg-gradient-to-l from-neutral-900 to-transparent z-10"></div>
-          
-          <div className="flex gap-4 sm:gap-6 animate-scroll-continuous">
-            {/* Winner Card 1 */}
-            <div className="flex-shrink-0 bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl p-4 sm:p-5 w-72 sm:w-80 border border-neutral-700/50 shadow-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center overflow-hidden">
-                    <Image
-                        src={getMemojiByName('***carlos')}
-                        alt="Avatar"
-                        width={48}
-                        height={48}
-                        className="object-cover"
-                      />
-                  </div>
-                  <div>
-                    <p className="text-white font-semibold text-sm sm:text-base">***carlos</p>
-                    <p className="text-neutral-400 text-xs sm:text-sm">há 2 min</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-green-400 font-bold text-lg sm:text-xl">R$ 50</p>
-                  <p className="text-neutral-500 text-xs uppercase tracking-wide">PIX</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Winner Card 2 */}
-            <div className="flex-shrink-0 bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl p-4 sm:p-5 w-72 sm:w-80 border border-neutral-700/50 shadow-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center overflow-hidden">
-                    <Image
-                        src={getMemojiByName('***maria')}
-                        alt="Avatar"
-                        width={48}
-                        height={48}
-                        className="object-cover"
-                      />
-                  </div>
-                  <div>
-                    <p className="text-white font-semibold text-sm sm:text-base">***maria</p>
-                    <p className="text-neutral-400 text-xs sm:text-sm">há 5 min</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-green-400 font-bold text-lg sm:text-xl">R$ 100</p>
-                  <p className="text-neutral-500 text-xs uppercase tracking-wide">PIX</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Winner Card 3 */}
-            <div className="flex-shrink-0 bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl p-4 sm:p-5 w-72 sm:w-80 border border-neutral-700/50 shadow-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center overflow-hidden">
-                    <Image
-                        src={getMemojiByName('***joao')}
-                        alt="Avatar"
-                        width={48}
-                        height={48}
-                        className="object-cover"
-                      />
-                  </div>
-                  <div>
-                    <p className="text-white font-semibold text-sm sm:text-base">***joao</p>
-                    <p className="text-neutral-400 text-xs sm:text-sm">há 8 min</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-green-400 font-bold text-sm sm:text-lg">Apple Watch</p>
-                  <p className="text-neutral-500 text-xs uppercase tracking-wide">PRODUTO</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Winner Card 4 */}
-            <div className="flex-shrink-0 bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl p-4 sm:p-5 w-72 sm:w-80 border border-neutral-700/50 shadow-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center overflow-hidden">
-                    <Image
-                        src={getMemojiByName('***ana')}
-                        alt="Avatar"
-                        width={48}
-                        height={48}
-                        className="object-cover"
-                      />
-                  </div>
-                  <div>
-                    <p className="text-white font-semibold text-sm sm:text-base">***ana</p>
-                    <p className="text-neutral-400 text-xs sm:text-sm">há 12 min</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-green-400 font-bold text-lg sm:text-xl">R$ 200</p>
-                  <p className="text-neutral-500 text-xs uppercase tracking-wide">PIX</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Duplicate all cards for seamless infinite scroll */}
-             <div className="flex-shrink-0 bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl p-4 sm:p-5 w-72 sm:w-80 border border-neutral-700/50 shadow-lg">
-               <div className="flex items-center justify-between">
-                 <div className="flex items-center gap-3">
-                   <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center overflow-hidden">
-                     <Image
-                       src={getMemojiByName('***carlos')}
-                       alt="Avatar"
-                       width={48}
-                       height={48}
-                       className="object-cover"
-                     />
-                   </div>
-                   <div>
-                     <p className="text-white font-semibold text-sm sm:text-base">***carlos</p>
-                     <p className="text-neutral-400 text-xs sm:text-sm">há 2 min</p>
-                   </div>
-                 </div>
-                 <div className="text-right">
-                   <p className="text-green-400 font-bold text-lg sm:text-xl">R$ 50</p>
-                   <p className="text-neutral-500 text-xs uppercase tracking-wide">PIX</p>
-                 </div>
-               </div>
-             </div>
-
-             <div className="flex-shrink-0 bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl p-4 sm:p-5 w-72 sm:w-80 border border-neutral-700/50 shadow-lg">
-               <div className="flex items-center justify-between">
-                 <div className="flex items-center gap-3">
-                   <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center overflow-hidden">
-                     <Image
-                       src={getMemojiByName('***maria')}
-                       alt="Avatar"
-                       width={48}
-                       height={48}
-                       className="object-cover"
-                     />
-                   </div>
-                   <div>
-                     <p className="text-white font-semibold text-sm sm:text-base">***maria</p>
-                     <p className="text-neutral-400 text-xs sm:text-sm">há 5 min</p>
-                   </div>
-                 </div>
-                 <div className="text-right">
-                   <p className="text-green-400 font-bold text-lg sm:text-xl">R$ 100</p>
-                   <p className="text-neutral-500 text-xs uppercase tracking-wide">PIX</p>
-                 </div>
-               </div>
-             </div>
-
-             <div className="flex-shrink-0 bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl p-4 sm:p-5 w-72 sm:w-80 border border-neutral-700/50 shadow-lg">
-               <div className="flex items-center justify-between">
-                 <div className="flex items-center gap-3">
-                   <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center overflow-hidden">
-                     <Image
-                       src={getMemojiByName('***joao')}
-                       alt="Avatar"
-                       width={48}
-                       height={48}
-                       className="object-cover"
-                     />
-                   </div>
-                   <div>
-                     <p className="text-white font-semibold text-sm sm:text-base">***joao</p>
-                     <p className="text-neutral-400 text-xs sm:text-sm">há 8 min</p>
-                   </div>
-                 </div>
-                 <div className="text-right">
-                   <p className="text-green-400 font-bold text-sm sm:text-lg">Apple Watch</p>
-                   <p className="text-neutral-500 text-xs uppercase tracking-wide">PRODUTO</p>
-                 </div>
-               </div>
-             </div>
-
-             <div className="flex-shrink-0 bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl p-4 sm:p-5 w-72 sm:w-80 border border-neutral-700/50 shadow-lg">
-               <div className="flex items-center justify-between">
-                 <div className="flex items-center gap-3">
-                   <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center overflow-hidden">
-                     <Image
-                       src={getMemojiByName('***ana')}
-                       alt="Avatar"
-                       width={48}
-                       height={48}
-                       className="object-cover"
-                     />
-                   </div>
-                   <div>
-                     <p className="text-white font-semibold text-sm sm:text-base">***ana</p>
-                     <p className="text-neutral-400 text-xs sm:text-sm">há 12 min</p>
-                   </div>
-                 </div>
-                 <div className="text-right">
-                   <p className="text-green-400 font-bold text-lg sm:text-xl">R$ 200</p>
-                   <p className="text-neutral-500 text-xs uppercase tracking-wide">PIX</p>
-                 </div>
-               </div>
-             </div>
-          </div>
-        </div>
-      </div>
+    <div className="py-8 sm:py-12 bg-neutral-900 max-w-7xl mx-auto px-4">
+      <Winners />
+    </div>
+    
+    {/* Raspadinhas em Destaque */}
+    <div className="py-8 sm:py-12 bg-neutral-900 max-w-7xl mx-auto px-4 flex items-center gap-2">
+    <svg width="2em" height="2em" fill="currentColor" className="bi bi-fire text-amber-400 animate-pulse duration-700" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M8 16c3.314 0 6-2 6-5.5 0-1.5-.5-4-2.5-6 .25 1.5-1.25 2-1.25 2C11 4 9 .5 6 0c.357 2 .5 4-2 6-1.25 1-2 2.729-2 4.5C2 14 4.686 16 8 16m0-1c-1.657 0-3-1-3-2.75 0-.75.25-2 1.25-3C6.125 10 7 10.5 7 10.5c-.375-1.25.5-3.25 2-3.5-.179 1-.25 2 1 3 .625.5 1 1.364 1 2.25C11 14 9.657 15 8 15"></path></svg>
+      <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent">
+        Mais jogadas!
+      </h2>
     </div>
 
     {/* Raspadinhas Section */}
     <div id="raspadinhas" className="py-8 sm:py-12 bg-neutral-900">
-      <div className="max-w-5xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
           <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent">
             Raspadinhas
@@ -478,7 +272,7 @@ export default function Home() {
               onClick={() => setFilter('all')}
               className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-medium transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base flex-1 sm:flex-none ${
                 filter === 'all' 
-                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white border border-blue-400/20 hover:from-blue-600 hover:to-blue-700' 
+                  ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white border border-yellow-400/20 hover:from-yellow-600 hover:to-yellow-700' 
                   : 'bg-gradient-to-r from-neutral-700 to-neutral-800 text-neutral-300 border border-neutral-600/30 hover:from-neutral-600 hover:to-neutral-700 hover:text-white'
               }`}
             >
@@ -488,7 +282,7 @@ export default function Home() {
               onClick={() => setFilter('money')}
               className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-medium transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base flex-1 sm:flex-none ${
                 filter === 'money' 
-                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white border border-blue-400/20 hover:from-blue-600 hover:to-blue-700' 
+                  ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white border border-yellow-400/20 hover:from-yellow-600 hover:to-yellow-700' 
                   : 'bg-gradient-to-r from-neutral-700 to-neutral-800 text-neutral-300 border border-neutral-600/30 hover:from-neutral-600 hover:to-neutral-700 hover:text-white'
               }`}
             >
@@ -498,7 +292,7 @@ export default function Home() {
               onClick={() => setFilter('products')}
               className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-medium transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base flex-1 sm:flex-none ${
                 filter === 'products' 
-                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white border border-blue-400/20 hover:from-blue-600 hover:to-blue-700' 
+                  ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white border border-yellow-400/20 hover:from-yellow-600 hover:to-yellow-700' 
                   : 'bg-gradient-to-r from-neutral-700 to-neutral-800 text-neutral-300 border border-neutral-600/30 hover:from-neutral-600 hover:to-neutral-700 hover:text-white'
               }`}
             >
@@ -532,7 +326,7 @@ export default function Home() {
               <p className="text-red-400 text-lg mb-4">{error}</p>
               <button 
                 onClick={fetchScratchCards}
-                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
               >
                 Tentar Novamente
               </button>
@@ -553,7 +347,7 @@ export default function Home() {
                 if (cardType === 'Dinheiro') return 'bg-green-500/90';
                 if (cardType === 'Produtos') return 'bg-yellow-500/90';
                 if (cardType === 'Misto') return 'bg-purple-500/90';
-                return 'bg-blue-500/90';
+                return 'bg-yellow-500/90';
               };
               
               return (
@@ -587,7 +381,7 @@ export default function Home() {
                       </span>
                       <button 
                         onClick={() => router.push(`v1/scratch/${card.id}`)}
-                        className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                        className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
                       >
                         Jogar
                       </button>
@@ -603,7 +397,7 @@ export default function Home() {
 
     {/* Como Funciona Section */}
     <div id="como-funciona" className="py-8 sm:py-12 bg-neutral-900">
-      <div className="max-w-5xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-8 sm:mb-12">
           <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent mb-2">
             Como Funciona

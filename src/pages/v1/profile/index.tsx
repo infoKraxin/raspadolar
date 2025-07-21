@@ -50,18 +50,18 @@ function SidebarItem({ icon, label, isActive, onClick }: SidebarItemProps) {
       onClick={onClick}
       className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all duration-200 rounded-lg group ${
         isActive 
-          ? 'bg-blue-500/10 text-blue-400 border-l-2 border-blue-500' 
+          ? 'bg-yellow-500/10 text-yellow-400 border-l-2 border-yellow-500' 
           : 'text-neutral-400 hover:text-white hover:bg-neutral-700/50'
       }`}
     >
       <div className={`transition-colors ${
-        isActive ? 'text-blue-400' : 'text-neutral-500 group-hover:text-white'
+        isActive ? 'text-yellow-400' : 'text-neutral-500 group-hover:text-white'
       }`}>
         {icon}
       </div>
       <span className="font-medium text-sm">{label}</span>
       <ChevronRight className={`w-4 h-4 ml-auto transition-transform ${
-        isActive ? 'text-blue-400' : 'text-neutral-600 group-hover:text-neutral-400'
+        isActive ? 'text-yellow-400' : 'text-neutral-600 group-hover:text-neutral-400'
       }`} />
     </button>
   );
@@ -209,7 +209,7 @@ export default function ProfilePage() {
         random: 'RANDOM'
       };
 
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/users/withdraw', {
+      const response = await fetch('https://api.raspadinha.fun/v1/api/users/withdraw', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -274,7 +274,7 @@ export default function ProfilePage() {
     setIsLoadingHistory(true);
 
     try {
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/users/financial-history', {
+      const response = await fetch('https://api.raspadinha.fun/v1/api/users/financial-history', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -335,7 +335,7 @@ export default function ProfilePage() {
     setIsLoadingGameHistory(true);
 
     try {
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/users/game-history?limit=10', {
+      const response = await fetch('https://api.raspadinha.fun/v1/api/users/game-history?limit=10', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -370,7 +370,7 @@ export default function ProfilePage() {
     setIsLoadingAffiliates(true);
 
     try {
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/users/invited-users', {
+      const response = await fetch('https://api.raspadinha.fun/v1/api/users/invited-users', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -426,7 +426,7 @@ export default function ProfilePage() {
 
     const fetchProfileData = async () => {
       try {
-        const response = await fetch('https://api.raspapixoficial.com/v1/api/users/profile', {
+        const response = await fetch('https://api.raspadinha.fun/v1/api/users/profile', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -476,7 +476,7 @@ export default function ProfilePage() {
             <div className="bg-neutral-800 rounded-xl border border-neutral-700 p-6">
               {/* User Info */}
               <div className="flex items-center gap-4 mb-8 pb-6 border-b border-neutral-700">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center overflow-hidden">
+                <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center overflow-hidden">
                   <Image
                     src="/memojis/male-4.png"
                     alt="memoji"
@@ -497,7 +497,7 @@ export default function ProfilePage() {
 
               {/* Balance */}
               <div className="mb-8 p-4 bg-gradient-to-r from-neutral-500/10 to-neutral-600/10 rounded-lg border border-neutral-500/20">
-                <p className="text-blue-400 text-sm font-medium mb-1">Seu saldo</p>
+                <p className="text-yellow-400 text-sm font-medium mb-1">Seu saldo</p>
                 <p className="text-white text-2xl font-bold">
                   {isLoading ? 'Carregando...' : (
                     profileData?.wallet?.[0] ? 
@@ -506,7 +506,7 @@ export default function ProfilePage() {
                   )}
                 </p>
                 <Button 
-                  className="w-full mt-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-blue-400/20"
+                  className="w-full mt-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20"
                   onClick={() => router.push('/v1/profile/deposit')}
                 >
                   Depositar
@@ -665,7 +665,7 @@ export default function ProfilePage() {
                          Tipo de chave PIX
                        </Label>
                        <Select value={withdrawData.keyType} onValueChange={(value) => setWithdrawData(prev => ({ ...prev, keyType: value }))}>
-                         <SelectTrigger className="w-full bg-neutral-700 border-neutral-600 text-white focus:border-blue-500 focus:ring-blue-500/20">
+                         <SelectTrigger className="w-full bg-neutral-700 border-neutral-600 text-white focus:border-yellow-500 focus:ring-yellow-500/20">
                            <SelectValue placeholder="Selecione o tipo de chave" />
                          </SelectTrigger>
                          <SelectContent className="bg-neutral-700 border-neutral-600">
@@ -690,7 +690,7 @@ export default function ProfilePage() {
                           const value = e.target.value.replace(/[^\d,]/g, '').replace(',', '.');
                           handleAmountChange(value);
                         }}
-                        className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500 focus:ring-blue-500/20"
+                        className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500 focus:ring-yellow-500/20"
                       />
                     </div>
 
@@ -704,7 +704,7 @@ export default function ProfilePage() {
                         placeholder="Digite sua chave PIX"
                         value={withdrawData.pixKey}
                         onChange={(e) => setWithdrawData(prev => ({ ...prev, pixKey: e.target.value }))}
-                        className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500 focus:ring-blue-500/20"
+                        className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500 focus:ring-yellow-500/20"
                       />
                     </div>
                   </div>
@@ -776,7 +776,7 @@ export default function ProfilePage() {
                       <Button 
                         onClick={fetchFinancialHistory}
                         disabled={isLoadingHistory}
-                        className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-blue-400/20"
+                        className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20"
                       >
                         {isLoadingHistory ? 'Carregando...' : 'Carregar Histórico'}
                       </Button>
@@ -914,7 +914,7 @@ export default function ProfilePage() {
                       <Button 
                         onClick={fetchGameHistory}
                         disabled={isLoadingGameHistory}
-                        className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-blue-400/20"
+                        className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20"
                       >
                         {isLoadingGameHistory ? 'Carregando...' : 'Carregar Histórico de Jogos'}
                       </Button>
@@ -997,7 +997,7 @@ export default function ProfilePage() {
                       <Button 
                         onClick={fetchAffiliatesData}
                         disabled={isLoadingAffiliates}
-                        className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-blue-400/20"
+                        className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20"
                       >
                         {isLoadingAffiliates ? 'Carregando...' : 'Carregar Dados de Afiliados'}
                       </Button>
@@ -1006,12 +1006,12 @@ export default function ProfilePage() {
                     <div className="space-y-6">
                       {/* Estatísticas dos Afiliados */}
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 p-6 rounded-lg border border-blue-400/20">
+                        <div className="bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 p-6 rounded-lg border border-yellow-400/20">
                           <div className="flex items-center gap-3 mb-2">
-                            <Users className="w-6 h-6 text-blue-400" />
+                            <Users className="w-6 h-6 text-yellow-400" />
                             <h3 className="text-white font-semibold">Total de Convites</h3>
                           </div>
-                          <p className="text-2xl font-bold text-blue-400">{affiliatesData.stats.total_invites}</p>
+                          <p className="text-2xl font-bold text-yellow-400">{affiliatesData.stats.total_invites}</p>
                         </div>
                         
                         <div className="bg-gradient-to-br from-green-500/20 to-green-600/20 p-6 rounded-lg border border-green-400/20">
@@ -1034,7 +1034,7 @@ export default function ProfilePage() {
                       {/* Lista de Usuários Convidados */}
                       <div>
                         <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                          <Users className="w-5 h-5 text-blue-400" />
+                          <Users className="w-5 h-5 text-yellow-400" />
                           Usuários Convidados
                         </h3>
                         
@@ -1051,8 +1051,8 @@ export default function ProfilePage() {
                                 <div className="flex justify-between items-start">
                                   <div className="flex-1">
                                     <div className="flex items-center gap-3 mb-2">
-                                      <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
-                                        <Users className="w-4 h-4 text-blue-400" />
+                                      <div className="w-8 h-8 bg-yellow-500/20 rounded-full flex items-center justify-center">
+                                        <Users className="w-4 h-4 text-yellow-400" />
                                       </div>
                                       <div>
                                         <p className="text-white font-medium">{user.name || 'Usuário'}</p>

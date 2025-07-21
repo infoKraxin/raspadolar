@@ -119,7 +119,7 @@ export default function WithdrawalsPage() {
         throw new Error('Token de autenticação não encontrado');
       }
       
-      const response = await fetch(`https://api.raspapixoficial.com/v1/api/admin/withdrawals?page=${page}&limit=20`, {
+      const response = await fetch(`https://api.raspadinha.fun/v1/api/admin/withdrawals?page=${page}&limit=20`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -198,7 +198,7 @@ export default function WithdrawalsPage() {
       value: stats.totalRequests.toString(),
       icon: CreditCard,
       description: "Pedidos de saque",
-      color: "text-blue-400"
+      color: "text-yellow-400"
     }
   ];
 
@@ -214,7 +214,7 @@ export default function WithdrawalsPage() {
 
   const getPixTypeColor = (pixType: string) => {
     const colors = {
-      'EMAIL': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+      'EMAIL': 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
       'CPF': 'bg-purple-500/10 text-purple-400 border-purple-500/20',
       'CNPJ': 'bg-orange-500/10 text-orange-400 border-orange-500/20',
       'PHONE': 'bg-green-500/10 text-green-400 border-green-500/20',
@@ -230,7 +230,7 @@ export default function WithdrawalsPage() {
         throw new Error('Token de autenticação não encontrado');
       }
 
-      const response = await fetch(`https://api.raspapixoficial.com/v1/api/admin/withdrawals/${withdrawalId}/approve`, {
+      const response = await fetch(`https://api.raspadinha.fun/v1/api/admin/withdrawals/${withdrawalId}/approve`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -257,7 +257,7 @@ export default function WithdrawalsPage() {
         throw new Error('Token de autenticação não encontrado');
       }
 
-      const response = await fetch(`https://api.raspapixoficial.com/v1/api/admin/withdrawals/${withdrawalId}/reject`, {
+      const response = await fetch(`https://api.raspadinha.fun/v1/api/admin/withdrawals/${withdrawalId}/reject`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -354,7 +354,7 @@ export default function WithdrawalsPage() {
                     placeholder="Buscar por usuário, ID, chave PIX, documento ou valor..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500"
+                    className="pl-10 bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500"
                   />
                 </div>
                 <Button variant="outline" className="bg-neutral-700 border-neutral-600 text-white hover:bg-neutral-600">
@@ -384,7 +384,7 @@ export default function WithdrawalsPage() {
                   </div>
                   <h3 className="text-lg font-semibold text-white mb-2">Erro ao carregar saques</h3>
                   <p className="text-neutral-400 text-sm mb-4">{error}</p>
-                  <Button onClick={() => fetchWithdrawals()} className="bg-blue-600 hover:bg-blue-700">
+                  <Button onClick={() => fetchWithdrawals()} className="bg-yellow-600 hover:bg-yellow-700">
                     Tentar novamente
                   </Button>
                 </div>
@@ -445,7 +445,7 @@ export default function WithdrawalsPage() {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => handleView(withdrawal.id)}
-                                    className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                                    className="text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10"
                                     title="Visualizar detalhes"
                                   >
                                     <Eye className="w-4 h-4" />

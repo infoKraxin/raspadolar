@@ -9,7 +9,7 @@ const poppins = Poppins({
 export default function Footer() {
   return (
     <footer className={`${poppins.className} bg-neutral-950 border-t border-neutral-800/50`}>
-      <div className="max-w-5xl mx-auto px-4 py-8 sm:py-12">
+      <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Logo and Description */}

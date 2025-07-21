@@ -120,7 +120,7 @@ export default function DepositsPage() {
         throw new Error('Token de autenticação não encontrado');
       }
       
-      const response = await fetch(`https://api.raspapixoficial.com/v1/api/admin/deposits?page=${page}&limit=20`, {
+      const response = await fetch(`https://api.raspadinha.fun/v1/api/admin/deposits?page=${page}&limit=20`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -198,7 +198,7 @@ export default function DepositsPage() {
       value: stats.totalGenerated.toString(),
       icon: CreditCard,
       description: "Códigos PIX criados",
-      color: "text-blue-400"
+      color: "text-yellow-400"
     }
   ];
 
@@ -285,7 +285,7 @@ export default function DepositsPage() {
                     placeholder="Buscar por usuário, ID do pagamento, status ou valor..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500"
+                    className="pl-10 bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500"
                   />
                 </div>
                 <Button variant="outline" className="bg-neutral-700 border-neutral-600 text-white hover:bg-neutral-600">
@@ -315,7 +315,7 @@ export default function DepositsPage() {
                   </div>
                   <h3 className="text-lg font-semibold text-white mb-2">Erro ao carregar depósitos</h3>
                   <p className="text-neutral-400 text-sm mb-4">{error}</p>
-                  <Button onClick={() => fetchDeposits()} className="bg-blue-600 hover:bg-blue-700">
+                  <Button onClick={() => fetchDeposits()} className="bg-yellow-600 hover:bg-yellow-700">
                     Tentar novamente
                   </Button>
                 </div>

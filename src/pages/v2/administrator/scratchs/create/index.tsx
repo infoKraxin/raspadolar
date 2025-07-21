@@ -167,7 +167,7 @@ export default function CreateScratchCard() {
         }))
       };
       
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/scratchcards/admin/create', {
+      const response = await fetch('https://api.raspadinha.fun/v1/api/scratchcards/admin/create', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -269,7 +269,7 @@ export default function CreateScratchCard() {
                   value={scratchCard.name}
                   onChange={(e) => setScratchCard({...scratchCard, name: e.target.value})}
                   placeholder="Ex: Raspadinha Premium"
-                  className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500"
+                  className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500"
                   required
                 />
               </div>
@@ -284,7 +284,7 @@ export default function CreateScratchCard() {
                   value={scratchCard.price}
                   onChange={(e) => setScratchCard({...scratchCard, price: parseFloat(e.target.value) || 0})}
                   placeholder="10.00"
-                  className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500"
+                  className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500"
                   required
                 />
               </div>
@@ -297,7 +297,7 @@ export default function CreateScratchCard() {
                 value={scratchCard.description}
                 onChange={(e) => setScratchCard({...scratchCard, description: e.target.value})}
                 placeholder="Uma raspadinha com prêmios incríveis!"
-                className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500"
+                className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500"
                 required
               />
             </div>
@@ -314,7 +314,7 @@ export default function CreateScratchCard() {
                   value={scratchCard.target_rtp}
                   onChange={(e) => setScratchCard({...scratchCard, target_rtp: parseFloat(e.target.value) || 0})}
                   placeholder="85.0"
-                  className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500"
+                  className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500"
                   required
                 />
               </div>
@@ -337,7 +337,7 @@ export default function CreateScratchCard() {
                 value={scratchCard.image_url}
                 onChange={(e) => setScratchCard({...scratchCard, image_url: e.target.value})}
                 placeholder="https://example.com/images/raspadinha-premium.jpg"
-                className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500"
+                className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500"
                 required
               />
             </div>
@@ -366,7 +366,7 @@ export default function CreateScratchCard() {
                   type="button" 
                   onClick={addPrize} 
                   size="sm" 
-                  className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+                  className="bg-yellow-600 hover:bg-yellow-700 text-white flex items-center gap-2"
                 >
                   <Plus className="h-4 w-4" />
                   Adicionar Prêmio
@@ -378,7 +378,7 @@ export default function CreateScratchCard() {
             {prizes.map((prize, index) => (
               <div key={index} className="border border-neutral-600 rounded-lg p-4 space-y-4 bg-neutral-700/50">
                 <div className="flex items-center justify-between">
-                  <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/20">Prêmio {index + 1}</Badge>
+                  <Badge variant="outline" className="bg-yellow-500/10 text-yellow-400 border-yellow-500/20">Prêmio {index + 1}</Badge>
                   {prizes.length > 1 && (
                     <Button
                       type="button"
@@ -399,7 +399,7 @@ export default function CreateScratchCard() {
                       value={prize.name}
                       onChange={(e) => updatePrize(index, 'name', e.target.value)}
                       placeholder="Ex: R$ 100,00"
-                      className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500"
+                      className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500"
                       required
                     />
                   </div>
@@ -427,7 +427,7 @@ export default function CreateScratchCard() {
                     value={prize.description}
                     onChange={(e) => updatePrize(index, 'description', e.target.value)}
                     placeholder="Ex: Prêmio em dinheiro"
-                    className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500"
+                    className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500"
                     required
                   />
                 </div>
@@ -442,7 +442,7 @@ export default function CreateScratchCard() {
                       value={prize.value || ''}
                       onChange={(e) => updatePrize(index, 'value', parseFloat(e.target.value) || 0)}
                       placeholder="100.00"
-                      className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500"
+                      className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500"
                       required
                     />
                   </div>
@@ -454,7 +454,7 @@ export default function CreateScratchCard() {
                         value={prize.product_name || ''}
                         onChange={(e) => updatePrize(index, 'product_name', e.target.value)}
                         placeholder="Ex: iPhone 15 128GB"
-                        className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500"
+                        className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500"
                         required
                       />
                     </div>
@@ -468,7 +468,7 @@ export default function CreateScratchCard() {
                         value={prize.redemption_value || ''}
                         onChange={(e) => updatePrize(index, 'redemption_value', parseFloat(e.target.value) || 0)}
                         placeholder="500.00"
-                        className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500"
+                        className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500"
                         required
                       />
                     </div>
@@ -485,7 +485,7 @@ export default function CreateScratchCard() {
                     value={prize.probability}
                     onChange={(e) => updatePrize(index, 'probability', parseFloat(e.target.value) || 0)}
                     placeholder="5.0"
-                    className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500"
+                    className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500"
                     required
                   />
                 </div>
@@ -497,7 +497,7 @@ export default function CreateScratchCard() {
                     value={prize.image_url}
                     onChange={(e) => updatePrize(index, 'image_url', e.target.value)}
                     placeholder="https://example.com/images/prize-image.jpg"
-                    className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500"
+                    className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500"
                     required
                   />
                 </div>
@@ -534,7 +534,7 @@ export default function CreateScratchCard() {
           <Button type="button" variant="outline" onClick={() => router.back()} className="bg-neutral-700 border-neutral-600 text-white hover:bg-neutral-600">
             Cancelar
           </Button>
-          <Button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50">
+          <Button type="submit" disabled={loading} className="bg-yellow-600 hover:bg-yellow-700 text-white disabled:opacity-50">
             {loading ? 'Criando...' : 'Criar Raspadinha'}
           </Button>
         </div>

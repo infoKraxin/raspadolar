@@ -125,7 +125,7 @@ export default function ScratchCardsPage() {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/scratchcards/admin/all?includeInactive=true', {
+      const response = await fetch('https://api.raspadinha.fun/v1/api/scratchcards/admin/all?includeInactive=true', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -175,7 +175,7 @@ export default function ScratchCardsPage() {
 
     try {
       setDeleting(true);
-      const response = await fetch(`https://api.raspapixoficial.com/v1/api/scratchcards/admin/${cardToDelete.id}`, {
+      const response = await fetch(`https://api.raspadinha.fun/v1/api/scratchcards/admin/${cardToDelete.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -228,7 +228,7 @@ export default function ScratchCardsPage() {
       value: totalCards.toString(),
       icon: Gift,
       description: "Raspadinhas cadastradas",
-      color: "text-blue-400"
+      color: "text-yellow-400"
     },
     {
       title: "Raspadinhas Ativas",
@@ -288,7 +288,7 @@ export default function ScratchCardsPage() {
               </Breadcrumb>
             </header>
             <div className="flex flex-1 flex-col gap-6 p-6 bg-neutral-900 items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+              <Loader2 className="h-8 w-8 animate-spin text-yellow-500" />
               <p className="text-neutral-400">Carregando raspadinhas...</p>
             </div>
           </SidebarInset>
@@ -323,7 +323,7 @@ export default function ScratchCardsPage() {
             <div className="flex flex-1 flex-col gap-6 p-6 bg-neutral-900 items-center justify-center">
               <div className="text-center">
                 <p className="text-red-400 mb-4">{error}</p>
-                <Button onClick={fetchScratchCards} className="bg-blue-600 hover:bg-blue-700">
+                <Button onClick={fetchScratchCards} className="bg-yellow-600 hover:bg-yellow-700">
                   Tentar Novamente
                 </Button>
               </div>
@@ -374,7 +374,7 @@ export default function ScratchCardsPage() {
               </div>
               <Button
                 onClick={handleCreate}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-yellow-600 hover:bg-yellow-700 text-white"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Nova Raspadinha
@@ -408,13 +408,13 @@ export default function ScratchCardsPage() {
                     placeholder="Buscar por nome ou descrição..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-blue-500"
+                    className="pl-10 bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500"
                   />
                 </div>
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-3 py-2 bg-neutral-700 border border-neutral-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="px-3 py-2 bg-neutral-700 border border-neutral-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                 >
                   <option value="Todos">Todos os Status</option>
                   <option value="Ativo">Ativo</option>
@@ -525,7 +525,7 @@ export default function ScratchCardsPage() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleView(card.id)}
-                                className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 p-2"
+                                className="text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10 p-2"
                                 title="Visualizar detalhes"
                               >
                                 <Eye className="h-4 w-4" />
