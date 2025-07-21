@@ -8,7 +8,7 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <AuthProvider>
       <Head>
-        <title>raspa.ae - Raspadinhas Online com Prêmios Reais</title>
+        <title>{process.env.NEXT_PUBLIC_APP_NAME} - Raspadinhas Online com Prêmios Reais</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <Component {...pageProps} />

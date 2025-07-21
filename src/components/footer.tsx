@@ -16,7 +16,7 @@ export default function Footer() {
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
               <h3 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent">
-                rapapixoficial.com
+                {process.env.NEXT_PUBLIC_APP_NAME}
               </h3>
             </div>
             <p className="text-neutral-400 text-sm sm:text-base leading-relaxed mb-4">
@@ -111,7 +111,7 @@ export default function Footer() {
         <div className="border-t border-neutral-800/50 pt-6">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-neutral-500 text-xs sm:text-sm text-center sm:text-left">
-              © 2024 raspa.ae - Todos os direitos reservados. | CNPJ: 65.164.519/0001-50
+              © 2025 {process.env.NEXT_PUBLIC_APP_NAME} - Todos os direitos reservados. | CNPJ: 65.164.519/0001-50
             </p>
             <div className="flex items-center gap-4">
               <span className="text-neutral-500 text-xs">Jogue com responsabilidade</span>

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import DepositModal from "@/components/deposit-modal";
 
 export default function Header() {
     const { user, login, logout, updateUser, token } = useAuth();
@@ -274,9 +275,11 @@ export default function Header() {
                                     </a>
                                     
                                     <a
-                                        href="/v1/profile/deposit"
-                                        className="flex items-center gap-3 px-3 py-2 rounded-md text-neutral-300 hover:text-white hover:bg-neutral-700 transition-colors"
-                                        onClick={() => setIsUserMenuOpen(false)}
+                                        className="flex items-center gap-3 px-3 py-2 rounded-md text-neutral-300 hover:text-white hover:bg-neutral-700 transition-colors cursor-pointer"
+                                        onClick={() => {
+                                            setIsUserMenuOpen(false);
+                                            setIsDepositModalOpen(true);
+                                        }}
                                     >
                                         <Wallet size={16} />
                                         <span>Depositar</span>
@@ -284,12 +287,12 @@ export default function Header() {
                                     
                                     {user.is_admin && (
                                         <a
-                                            href="/v2/administrator"
+                                            href="/v2/administrator/dashboard"
                                             className="flex items-center gap-3 px-3 py-2 rounded-md text-neutral-300 hover:text-white hover:bg-neutral-700 transition-colors"
                                             onClick={() => setIsUserMenuOpen(false)}
                                         >
                                             <Settings size={16} />
-                                            <span>Painel Admin</span>
+                                            <span>Administrador</span>
                                         </a>
                                     )}
                                     
@@ -334,119 +337,12 @@ export default function Header() {
         />
 
         {/* Deposit Modal */}
-        {isDepositModalOpen && (
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                <div className="bg-neutral-900 rounded-2xl shadow-2xl max-w-2xl w-full border border-neutral-700 max-h-[90vh] overflow-y-auto">
-                    <div className="p-6">
-                        {/* Header */}
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-bold text-white">Fazer Depósito</h2>
-                            <button
-                                onClick={() => {
-                                    setIsDepositModalOpen(false);
-                                    setCustomAmount('');
-                                    setSelectedAmount(null);
-                                }}
-                                className="text-neutral-400 hover:text-white transition-colors"
-                            >
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        {/* Amount Selection */}
-                        <div className="space-y-6">
-                            {/* Quick Amounts */}
-                            <div>
-                                <Label className="text-white font-medium mb-3 block">
-                                    Valores Rápidos
-                                </Label>
-                                <div className="grid grid-cols-3 gap-3">
-                                    {quickAmounts.map((amount) => {
-                                        const isPopular = [25, 50, 100].includes(amount);
-                                        return (
-                                            <button
-                                                key={amount}
-                                                onClick={() => handleQuickAmountSelect(amount)}
-                                                className={`p-3 rounded-lg border transition-all duration-300 relative ${
-                                                    selectedAmount === amount
-                                                        ? 'bg-yellow-500/20 border-yellow-500 text-yellow-400'
-                                                        : 'bg-neutral-700 border-neutral-600 text-neutral-300 hover:bg-neutral-600 hover:border-neutral-500'
-                                                }`}
-                                            >
-                                                {isPopular && (
-                                                    <div className="absolute -top-1 -right-1 bg-yellow-500/80 backdrop-blur-sm text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold border border-yellow-400/30">
-                                                        POPULAR
-                                                    </div>
-                                                )}
-                                                <div className="text-center">
-                                                    <p className="text-sm font-semibold">R$ {amount}</p>
-                                                </div>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                            
-                            {/* Custom Amount */}
-                            <div className="space-y-2">
-                                <Label htmlFor="customAmount" className="text-white font-medium">
-                                    Ou digite o valor desejado
-                                </Label>
-                                <div className="relative">
-                                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 font-medium">
-                                        R$
-                                    </span>
-                                    <Input
-                                        id="customAmount"
-                                        type="text"
-                                        placeholder="0,00"
-                                        value={customAmount}
-                                        onChange={(e) => handleCustomAmountChange(e.target.value)}
-                                        className="pl-10 bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500 focus:ring-yellow-500/20"
-                                    />
-                                </div>
-                                <p className="text-neutral-500 text-sm">
-                                    Valor mínimo: R$ 1,00
-                                </p>
-                            </div>
-
-                            {/* Payment Method */}
-                            <div className="p-4 bg-gradient-to-r from-yellow-500/10 to-yellow-600/10 rounded-lg border border-yellow-500/20">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
-                                        <Smartphone className="w-4 h-4 text-white" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-white font-semibold text-sm">PIX</h3>
-                                        <p className="text-yellow-400 text-xs">Aprovação instantânea</p>
-                                    </div>
-                                    <CheckCircle className="w-4 h-4 text-green-400 ml-auto" />
-                                </div>
-                                <p className="text-neutral-300 text-xs">
-                                    Pagamento processado automaticamente em até 2 minutos
-                                </p>
-                            </div>
-
-                            {/* Generate Payment Button */}
-                            <Button
-                                onClick={handleGeneratePayment}
-                                disabled={!customAmount || getCurrentAmount() < 1 || isGeneratingPayment}
-                                className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 disabled:from-neutral-600 disabled:to-neutral-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20 disabled:border-neutral-600/20"
-                            >
-                                {isGeneratingPayment ? (
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                        Gerando Pagamento...
-                                    </div>
-                                ) : (
-                                    `Gerar Pagamento PIX - R$ ${getCurrentAmount().toFixed(2).replace('.', ',')}`
-                                )}
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        )}
+        <DepositModal
+          isOpen={isDepositModalOpen}
+          onClose={() => setIsDepositModalOpen(false)}
+          token={token}
+          updateUser={updateUser}
+        />
 
         {/* Payment Modal */}
         {paymentData && (

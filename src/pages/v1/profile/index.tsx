@@ -31,6 +31,7 @@ import {
   UserCheck
 } from 'lucide-react';
 import Image from 'next/image';
+import DepositModal from '@/components/deposit-modal';
 
 const poppins = Poppins({ 
   subsets: ["latin"],
@@ -69,10 +70,11 @@ function SidebarItem({ icon, label, isActive, onClick }: SidebarItemProps) {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, token, isLoading: authLoading } = useAuth();
+  const { user, token, isLoading: authLoading, updateUser } = useAuth();
   const [activeSection, setActiveSection] = useState('personal');
   const [profileData, setProfileData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
 
   // Função para lidar com cliques na sidebar
   const handleSidebarClick = (itemId: string) => {
@@ -507,7 +509,7 @@ export default function ProfilePage() {
                 </p>
                 <Button 
                   className="w-full mt-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20"
-                  onClick={() => router.push('/v1/profile/deposit')}
+                  onClick={() => setIsDepositModalOpen(true)}
                 >
                   Depositar
                 </Button>
@@ -1128,6 +1130,12 @@ export default function ProfilePage() {
       </div>
 
       <Footer />
+      <DepositModal
+        isOpen={isDepositModalOpen}
+        onClose={() => setIsDepositModalOpen(false)}
+        token={token}
+        updateUser={updateUser}
+      />
     </div>
   );
 }

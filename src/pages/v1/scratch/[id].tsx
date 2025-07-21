@@ -10,6 +10,8 @@ import { ArrowLeft, Lock, Loader2 } from 'lucide-react';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
 import ScratchCard from 'react-scratchcard-v4';
+import Winners from '@/components/winners';
+import { toast } from 'sonner';
 
 const poppins = Poppins({ 
   subsets: ["latin"],
@@ -376,8 +378,8 @@ const ScratchCardPage = () => {
   };
 
   // Função para jogar na API
-  const playGame = async (authToken: string): Promise<GameResult | null> => {
-    if (!id || !authToken) return null;
+  const playGame = async (authToken: string): Promise<{ result: GameResult | null, errorMessage?: string }> => {
+    if (!id || !authToken) return { result: null, errorMessage: "Dados de autenticação ausentes." };
     
     try {
       setPlayingGame(true);
@@ -393,16 +395,15 @@ const ScratchCardPage = () => {
       });
       
       const data: PlayGameResponse = await response.json();
-      
       if (data.success) {
-        return data.data.result;
+        return { result: data.data.result };
       } else {
         console.error('Erro ao jogar:', data.message);
-        return null;
+        return { result: null, errorMessage: data.message };
       }
     } catch (error) {
       console.error('Erro na requisição de jogo:', error);
-      return null;
+      return { result: null, errorMessage: 'Erro de conexão com o servidor.' };
     } finally {
       setPlayingGame(false);
     }
@@ -445,7 +446,7 @@ const ScratchCardPage = () => {
 
     
     // Jogar na API
-     const result = await playGame(token || '');
+    const { result, errorMessage } = await playGame(token || '');
     
     if (result) {
       setGameResult(result);
@@ -455,7 +456,7 @@ const ScratchCardPage = () => {
     } else {
       // Erro ao jogar - voltar ao estado idle
       setGameState('idle');
-      alert('Erro ao iniciar o jogo. Tente novamente.');
+      toast.error(errorMessage || 'Erro ao iniciar o jogo. Tente novamente.');
     }
   };
 
@@ -501,7 +502,7 @@ const ScratchCardPage = () => {
     setGameState('loading');
     
     // Jogar na API
-    const result = await playGame(token || '');
+    const { result, errorMessage } = await playGame(token || '');
     
     if (result) {
       setGameResult(result);
@@ -511,7 +512,7 @@ const ScratchCardPage = () => {
     } else {
       // Erro ao jogar - voltar ao estado idle
       setGameState('idle');
-      alert('Erro ao iniciar o jogo. Tente novamente.');
+      toast.error(errorMessage || 'Erro ao iniciar o jogo. Tente novamente.');
     }
   };
 
@@ -533,19 +534,22 @@ const ScratchCardPage = () => {
       )}
       
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Back Button */}
-        <Button 
+        {/* <Button 
           onClick={handleBackClick}
           variant="outline"
           className="mb-4 sm:mb-6 bg-neutral-800 border-neutral-700 text-white hover:bg-neutral-700 text-sm sm:text-base"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar
-        </Button>
+        </Button> */}
+
+        {/* Winners */}
+        <Winners />
 
         {/* Game Area - Full Width */}
-        <div className="bg-neutral-800 rounded-xl border border-neutral-700 p-4 sm:p-6 mb-6 sm:mb-8" style={{ overscrollBehavior: 'contain' }}>
+        <div className="mt-4 bg-neutral-800 rounded-xl border border-neutral-700 p-4 sm:p-6 mb-6 sm:mb-8" style={{ overscrollBehavior: 'contain' }}>
           {/* Header */}
           <div className="text-center mb-4 sm:mb-6">
             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent">
@@ -585,13 +589,17 @@ const ScratchCardPage = () => {
               </div>
               
               <div className="text-center mt-3 sm:mt-4">
+                <h3 className="text-white font-bold text-lg sm:text-xl mb-2">
+                Reúna 3 imagens iguais e conquiste seu prêmio!
+                </h3>
                 <p className="text-neutral-400 text-xs sm:text-sm mb-3 sm:mb-4 px-2">
-                  💡 Clique em "Comprar e Raspar" para iniciar o jogo
+                O valor correspondente será creditado automaticamente na sua conta.<br />
+                Se preferir receber o produto físico, basta entrar em contato com o nosso suporte.
                 </p>
                 <Button 
                   onClick={handleBuyAndScratch}
                   disabled={!isAuthenticated || !scratchCardData}
-                  className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 disabled:from-neutral-600 disabled:to-neutral-700 text-white font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-xl w-full transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20 disabled:border-neutral-600/20 cursor-pointer disabled:cursor-not-allowed text-sm sm:text-base"
+                  className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 disabled:from-neutral-600 disabled:to-neutral-700 text-white font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-xl w-full lg:w-1/2 transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20 disabled:border-neutral-600/20 cursor-pointer disabled:cursor-not-allowed text-sm sm:text-base"
                 >
                   {!isAuthenticated ? 'Faça login para jogar' : scratchCardData ? `Comprar e Raspar (R$ ${parseFloat(scratchCardData.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})` : 'Carregando...'}
                 </Button>
@@ -755,7 +763,7 @@ const ScratchCardPage = () => {
           )}
 
           {/* Game Info */}
-          <div className="bg-neutral-700 rounded-lg p-3 sm:p-4 border border-neutral-600">
+          {/* <div className="bg-neutral-700 rounded-lg p-3 sm:p-4 border border-neutral-600">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
               <div>
                 <p className="text-white font-semibold text-sm sm:text-base">SEU SALDO</p>
@@ -770,88 +778,39 @@ const ScratchCardPage = () => {
                 Ver histórico
               </Button>
             </div>
-          </div>
+          </div> */}
         </div>
 
-        {/* Winners Slider - Horizontal */}
-        <div className="bg-neutral-800 rounded-xl border border-neutral-700 p-4 sm:p-6 mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
-            <h2 className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent">
-              Ganhadores Recentes
-            </h2>
-            <div className="text-left sm:text-right">
-              <p className="text-neutral-400 text-xs sm:text-sm">Prêmios Distribuídos</p>
-              <p className="text-lg sm:text-xl md:text-2xl font-bold text-green-400">R$ 1.247.350</p>
-            </div>
-          </div>
-          
-          <div className="relative overflow-hidden">
-            {/* Fade effects on sides */}
-            <div className="absolute left-0 top-0 w-12 sm:w-20 h-full bg-gradient-to-r from-neutral-800 to-transparent z-10"></div>
-            <div className="absolute right-0 top-0 w-12 sm:w-20 h-full bg-gradient-to-l from-neutral-800 to-transparent z-10"></div>
-            
-            <div className="flex gap-3 sm:gap-4 md:gap-6 animate-scroll-continuous">
-              {[
-                { name: 'João***', prize: 'R$ 500', time: '2 min' },
-                { name: 'Maria***', prize: 'R$ 200', time: '5 min' },
-                { name: 'Pedro***', prize: 'R$ 1.000', time: '8 min' },
-                { name: 'Ana***', prize: 'R$ 100', time: '12 min' },
-                { name: 'Carlos***', prize: 'R$ 300', time: '15 min' },
-                { name: 'Lucia***', prize: 'R$ 750', time: '18 min' }
-              ].concat([
-                { name: 'João***', prize: 'R$ 500', time: '2 min' },
-                { name: 'Maria***', prize: 'R$ 200', time: '5 min' },
-                { name: 'Pedro***', prize: 'R$ 1.000', time: '8 min' },
-                { name: 'Ana***', prize: 'R$ 100', time: '12 min' },
-                { name: 'Carlos***', prize: 'R$ 300', time: '15 min' },
-                { name: 'Lucia***', prize: 'R$ 750', time: '18 min' }
-              ]).map((winner, index) => (
-                <div key={index} className="flex-shrink-0 bg-gradient-to-br from-neutral-700 to-neutral-800 rounded-xl p-3 sm:p-4 md:p-5 w-60 sm:w-72 md:w-80 border border-neutral-600/50 shadow-lg">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-bold">
-                        {winner.name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="text-white font-semibold text-xs sm:text-sm md:text-base">{winner.name}</p>
-                        <p className="text-neutral-400 text-xs">há {winner.time}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-green-400 font-bold text-base sm:text-lg md:text-xl">{winner.prize}</p>
-                      <p className="text-neutral-500 text-xs uppercase tracking-wide">PIX</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
 
         {/* Prize Section */}
-        <div className="bg-neutral-800 rounded-xl border border-neutral-700 p-4 sm:p-6">
-          <h2 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4 text-center">
+        <div className="rounded-xl">
+          <h2 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4 text-start">
             Prêmios Disponíveis
           </h2>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
             {scratchCardData?.prizes && scratchCardData.prizes.length > 0 ? (
-              scratchCardData.prizes.slice(0, 10).map((prize, index) => (
-                <div key={prize.id} className="bg-white/5 backdrop-blur-sm rounded-lg p-3 sm:p-4 text-center border border-white/10 shadow-lg hover:bg-white/10 transition-all duration-300 hover:scale-105">
-                  <Image
-                    src={fixImageUrl(prize.image_url) || "/50_money.webp"}
-                    alt={prize.name}
-                    width={60}
-                    height={45}
-                    className="mx-auto mb-2 drop-shadow-lg"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = '/50_money.webp';
-                    }}
-                  />
-                  <p className="text-white font-semibold text-xs sm:text-sm">
-                    {prize.type === 'MONEY' ? `R$ ${parseFloat(prize.value || '0').toFixed(0)}` : prize.name}
-                  </p>
+              scratchCardData.prizes.slice(0, 17).map((prize, index) => (
+                <div key={prize.id} className="flex-shrink-0 w-38 xl:w-auto">
+                  <div className="flex flex-col border-2 border-yellow-500/30 p-3 rounded-lg bg-gradient-to-t from-yellow-500/17 from-[0%] to-[35%] to-yellow-400/10 cursor-pointer aspect-square hover:scale-105 transition-all duration-300">
+                    <Image
+                      src={fixImageUrl(prize.image_url) || "/50_money.webp"}
+                      alt={prize.type === 'MONEY' ? `${parseFloat(prize.value || '0').toFixed(0)} Reais` : prize.name}
+                      width={80}
+                      height={80}
+                      className="size-full p-3 object-contain"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/50_money.webp';
+                      }}
+                    />
+                    <h3 className="text-sm font-semibold mb-3 overflow-hidden text-ellipsis text-nowrap w-30 text-white">
+                      {prize.type === 'MONEY' ? `${parseFloat(prize.value || '0').toFixed(0)} Reais` : prize.name}
+                    </h3>
+                    <div className="px-1.5 py-1 bg-white text-neutral-900 rounded-sm text-sm font-semibold self-start">
+                      R$ {prize.type === 'MONEY' ? parseFloat(prize.value || '0').toFixed(2).replace('.', ',') : parseFloat(prize.redemption_value || '0').toFixed(2).replace('.', ',')}
+                    </div>
+                  </div>
                 </div>
               ))
             ) : (
