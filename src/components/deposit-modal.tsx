@@ -172,11 +172,34 @@ export default function DepositModal({ isOpen, onClose, token }: DepositModalPro
   const [isGeneratingPayment, setIsGeneratingPayment] = useState(false);
   const [paymentData, setPaymentData] = useState<any>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [depositBannerUrl, setDepositBannerUrl] = useState<string | null>(null);
+  const [depositBannerLoading, setDepositBannerLoading] = useState(true);
 
   const handleQuickAmountSelect = (amount: number) => {
     setSelectedAmount(amount);
     setCustomAmount(amount.toString());
   };
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      setDepositBannerLoading(true);
+      try {
+        const response = await fetch('https://api.raspadinha.fun/v1/api/setting');
+        const data = await response.json();
+        if (response.ok && data.data && data.data[0]?.deposit_banner) {
+          setDepositBannerUrl(data.data[0].deposit_banner);
+        } else {
+          setDepositBannerUrl(null);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar banner de depósito:', error);
+        setDepositBannerUrl(null);
+      } finally {
+        setDepositBannerLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const handleCustomAmountChange = (value: string) => {
     const cleanValue = value.replace(/[^0-9.,]/g, '');
@@ -257,11 +280,21 @@ export default function DepositModal({ isOpen, onClose, token }: DepositModalPro
 
             {/* Background Image */}
             <div className="relative mb-4 sm:mb-6">
-              <img 
-                src="/deposit_bg.jpg" 
-                alt="Depósito" 
-                className="w-full h-32 sm:h-40 object-cover rounded-lg"
-              />
+              {depositBannerLoading ? (
+                <div className="w-full h-32 sm:h-40 bg-neutral-800 animate-pulse rounded-lg" />
+              ) : depositBannerUrl ? (
+                <img 
+                  src={depositBannerUrl} 
+                  alt="Depósito" 
+                  className="w-full h-32 sm:h-40 object-cover rounded-lg"
+                />
+              ) : (
+                <img 
+                  src="/deposit_bg.jpg" 
+                  alt="Depósito" 
+                  className="w-full h-32 sm:h-40 object-cover rounded-lg"
+                />
+              )}
             </div>
 
             {/* Amount Selection */}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -19,7 +20,16 @@ import {
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Gift, DollarSign, Users, TrendingUp, Loader2, Eye, Calendar, Target, Percent } from 'lucide-react';
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { ArrowLeft, Gift, DollarSign, Users, TrendingUp, Loader2, Eye, Calendar, Target, Percent, Edit, Settings } from 'lucide-react';
 import { Poppins } from 'next/font/google';
 import Image from 'next/image';
 
@@ -113,6 +123,18 @@ export default function ScratchCardDetailsPage() {
   const [scratchCard, setScratchCard] = useState<ScratchCard | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Estados para modal de edição
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState('');
+  const [editForm, setEditForm] = useState({
+    name: '',
+    description: '',
+    price: '',
+    target_rtp: '',
+    is_active: true
+  });
 
   const fetchScratchCard = async () => {
     if (!token || !id) {
@@ -163,6 +185,79 @@ export default function ScratchCardDetailsPage() {
 
   const handleBack = () => {
     router.push('/v2/administrator/scratchs');
+  };
+
+  const handleEdit = () => {
+    if (scratchCard) {
+      setEditForm({
+        name: scratchCard.name,
+        description: scratchCard.description,
+        price: scratchCard.price,
+        target_rtp: scratchCard.target_rtp,
+        is_active: scratchCard.is_active
+      });
+      setIsEditModalOpen(true);
+      setEditError('');
+    }
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditForm({
+      name: '',
+      description: '',
+      price: '',
+      target_rtp: '',
+      is_active: true
+    });
+    setEditError('');
+  };
+
+  const handleEditFormChange = (field: string, value: string | boolean) => {
+    setEditForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleUpdateScratchCard = async () => {
+    if (!token || !scratchCard) return;
+    
+    setEditLoading(true);
+    setEditError('');
+    
+    try {
+      const response = await fetch(`https://api.raspadinha.fun/v1/api/scratchcards/admin/${scratchCard.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: editForm.name,
+          description: editForm.description,
+          price: parseFloat(editForm.price),
+          target_rtp: parseFloat(editForm.target_rtp),
+          is_active: editForm.is_active
+        })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Erro ao atualizar raspadinha');
+      }
+
+      toast.success('Raspadinha atualizada com sucesso!');
+      handleCloseEditModal();
+      await fetchScratchCard();
+      
+    } catch (err: any) {
+      setEditError(err.message);
+      toast.error(err.message);
+    } finally {
+      setEditLoading(false);
+    }
   };
 
   const getStatusColor = (isActive: boolean) => {
@@ -337,9 +432,19 @@ export default function ScratchCardDetailsPage() {
                   <p className="text-neutral-400 text-sm">ID: {scratchCard.id}</p>
                 </div>
               </div>
-              <Badge className={getStatusColor(scratchCard.is_active)}>
-                {scratchCard.is_active ? 'Ativo' : 'Inativo'}
-              </Badge>
+              <div className="flex items-center gap-3">
+                <Badge className={getStatusColor(scratchCard.is_active)}>
+                  {scratchCard.is_active ? 'Ativo' : 'Inativo'}
+                </Badge>
+                <Button
+                  onClick={handleEdit}
+                  className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                  size="sm"
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Editar
+                </Button>
+              </div>
             </div>
 
             {/* Main Content Grid */}
@@ -575,6 +680,112 @@ export default function ScratchCardDetailsPage() {
           </div>
         </SidebarInset>
       </SidebarProvider>
+
+      {/* Modal de Edição */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="max-w-2xl bg-neutral-800 border-neutral-700 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-white flex items-center gap-2">
+              <Settings className="w-5 h-5" />
+              Editar Raspadinha
+            </DialogTitle>
+          </DialogHeader>
+          
+          {editError && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+              <p className="text-red-400 text-sm">{editError}</p>
+            </div>
+          )}
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-neutral-300">Nome</Label>
+              <Input
+                id="name"
+                value={editForm.name}
+                onChange={(e) => handleEditFormChange('name', e.target.value)}
+                className="bg-neutral-700 border-neutral-600 text-white"
+                placeholder="Digite o nome da raspadinha"
+                disabled={editLoading}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="description" className="text-neutral-300">Descrição</Label>
+              <Input
+                id="description"
+                value={editForm.description}
+                onChange={(e) => handleEditFormChange('description', e.target.value)}
+                className="bg-neutral-700 border-neutral-600 text-white"
+                placeholder="Digite a descrição"
+                disabled={editLoading}
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="price" className="text-neutral-300">Preço</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  step="0.01"
+                  value={editForm.price}
+                  onChange={(e) => handleEditFormChange('price', e.target.value)}
+                  className="bg-neutral-700 border-neutral-600 text-white"
+                  placeholder="0.00"
+                  disabled={editLoading}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="target_rtp" className="text-neutral-300">RTP Alvo (%)</Label>
+                <Input
+                  id="target_rtp"
+                  type="number"
+                  step="0.1"
+                  value={editForm.target_rtp}
+                  onChange={(e) => handleEditFormChange('target_rtp', e.target.value)}
+                  className="bg-neutral-700 border-neutral-600 text-white"
+                  placeholder="90.0"
+                  disabled={editLoading}
+                />
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="is_active"
+                checked={editForm.is_active}
+                onCheckedChange={(checked) => handleEditFormChange('is_active', checked)}
+                disabled={editLoading}
+              />
+              <Label htmlFor="is_active" className="text-neutral-300">Raspadinha Ativa</Label>
+            </div>
+          </div>
+          
+          <div className="flex gap-3 pt-4">
+            <Button
+              variant="outline"
+              onClick={handleCloseEditModal}
+              className="flex-1 bg-neutral-700 border-neutral-600 text-white hover:bg-neutral-600"
+              disabled={editLoading}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleUpdateScratchCard}
+              className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white"
+              disabled={editLoading}
+            >
+              {editLoading ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                'Salvar Alterações'
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

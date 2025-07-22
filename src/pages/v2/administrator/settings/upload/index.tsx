@@ -28,6 +28,7 @@ const imageFields = [
   { key: 'plataform_banner_3', label: 'Banner Terciário', uploadKey: 'banner_3' },
   { key: 'register_banner', label: 'Banner de Cadastro', uploadKey: 'register_banner' },
   { key: 'login_banner', label: 'Banner de Login', uploadKey: 'login_banner' },
+  { key: 'deposit_banner', label: 'Banner de Depósito', uploadKey: 'deposit_banner' },
 ];
 
 export default function SettingsUploadPage() {
@@ -267,13 +268,13 @@ export default function SettingsUploadPage() {
                 </div>
               </Card>
 
-              {/* Banners de Autenticação */}
+              {/* Banners de Autenticação e Depósito */}
               <Card className="bg-neutral-800 border-neutral-700 p-6">
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                   <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
-                  Banners de Autenticação
+                  Banners de Autenticação e Depósito
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {imageFields.slice(4).map(field => (

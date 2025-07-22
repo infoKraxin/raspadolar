@@ -69,6 +69,14 @@ const data = {
           title: "Imagens",
           url: "/v2/administrator/settings/upload",
         },
+        {
+          title: "Credenciais API",
+          url: "/v2/administrator/settings/credentials",
+        },
+        {
+          title: "Licença",
+          url: "/v2/administrator/ggr",
+        },
       ],
     },
   ],

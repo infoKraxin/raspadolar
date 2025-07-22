@@ -26,7 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Search, Edit, Trash2, Users, UserPlus, ChevronLeft, ChevronRight, Eye, X, UserCheck, Settings, UserX, UserCheck2, DollarSign } from "lucide-react"
+import { Search, Edit, Trash2, Users, UserPlus, ChevronLeft, ChevronRight, Eye, X, UserCheck, Settings, UserX, UserCheck2, DollarSign, Star } from "lucide-react"
 import { Poppins } from 'next/font/google'
 import { useAuth } from '@/contexts/AuthContext'
 import {
@@ -52,6 +52,7 @@ interface User {
   full_name: string;
   is_admin: boolean;
   is_active: boolean;
+  is_influencer: boolean;
   created_at: string;
   updated_at: string;
   wallet: Array<{
@@ -63,7 +64,7 @@ interface User {
     games: number;
     invitedUsers: number;
   };
-  commission_rate?: number; // Added for affiliate functionality
+  commission_rate?: number; 
 }
 
 interface UsersResponse {
@@ -121,6 +122,9 @@ export default function UsersPage() {
   const [userDetails, setUserDetails] = useState<any>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [detailsError, setDetailsError] = useState('');
+  
+  // Estados para toggle influencer
+  const [influencerLoading, setInfluencerLoading] = useState<string | null>(null);
 
   const fetchUsers = async (page: number = 1, search: string = '') => {
     if (!token) return;
@@ -143,6 +147,7 @@ export default function UsersPage() {
         throw new Error(data.message || 'Erro ao carregar usuários');
       }
 
+      console.log('Dados dos usuários:', data.data.users);
       setUsers(data.data.users);
       setPagination(data.data.pagination);
       setError('');
@@ -164,6 +169,16 @@ export default function UsersPage() {
 
     return () => clearTimeout(timeoutId);
   }, [searchTerm]);
+
+  // Debug: Log dos dados dos usuários quando mudarem
+  useEffect(() => {
+    if (users.length > 0) {
+      console.log('Usuários carregados:', users);
+      users.forEach(user => {
+        console.log(`User ${user.username}: is_influencer =`, user.is_influencer, 'tipo:', typeof user.is_influencer);
+      });
+    }
+  }, [users]);
 
   const handleEdit = (userId: string) => {
     const user = users.find(u => u.id === userId);
@@ -220,7 +235,7 @@ export default function UsersPage() {
     setDetailsError('');
     try {
       const response = await fetch(
-        `https://api.raspapixoficial.com/v1/api/admin/users/${userId}`,
+        `https://api.raspadinha.fun/v1/api/admin/users/${userId}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -440,6 +455,41 @@ export default function UsersPage() {
     }
   };
 
+  const handleToggleInfluencer = async (userId: string, currentIsInfluencer: boolean) => {
+    if (!token) return;
+    
+    setInfluencerLoading(userId);
+    try {
+      const response = await fetch('https://api.raspadinha.fun/v1/api/admin/affiliates/toggle-influencer', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: userId,
+          isInfluencer: !currentIsInfluencer
+        })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Erro ao alterar status de influencer');
+      }
+
+      toast.success(currentIsInfluencer ? 'Modo influencer removido com sucesso!' : 'Modo influencer adicionado com sucesso!');
+      
+      // Atualizar a lista de usuários
+      await fetchUsers(pagination.page, searchTerm);
+      
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setInfluencerLoading(null);
+    }
+  };
+
   const formatCurrency = (value: string) => {
     const numValue = parseFloat(value);
     return new Intl.NumberFormat('pt-BR', {
@@ -570,8 +620,9 @@ export default function UsersPage() {
                         <TableHead className="text-neutral-300 font-medium w-[70px]">Conv.</TableHead>
                         <TableHead className="text-neutral-300 font-medium w-[60px]">Tipo</TableHead>
                         <TableHead className="text-neutral-300 font-medium w-[60px]">Ativo</TableHead>
+                        <TableHead className="text-neutral-300 font-medium w-[80px]">Influencer</TableHead>
                         <TableHead className="text-neutral-300 font-medium w-[80px]">Cadastro</TableHead>
-                        <TableHead className="text-neutral-300 font-medium text-right w-[100px]">Ações</TableHead>
+                        <TableHead className="text-neutral-300 font-medium text-right w-[120px]">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                   <TableBody>
@@ -601,6 +652,11 @@ export default function UsersPage() {
                             {user.is_active ? 'Ativo' : 'Inativo'}
                           </Badge>
                         </TableCell>
+                        <TableCell>
+                          <Badge className={user.is_influencer ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' : 'bg-neutral-500/10 text-neutral-400 border-neutral-500/20'}>
+                            {user.is_influencer ? 'Sim' : 'Não'}
+                          </Badge>
+                        </TableCell>
                         <TableCell className="text-neutral-300 text-xs">
                           {formatDate(user.created_at)}
                         </TableCell>
@@ -622,6 +678,23 @@ export default function UsersPage() {
                               title="Afiliado"
                             >
                               <UserCheck className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleToggleInfluencer(user.id, user.is_influencer || false)}
+                              className={user.is_influencer 
+                                ? "text-orange-400 hover:text-orange-300 hover:bg-orange-500/10" 
+                                : "text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
+                              }
+                              title={user.is_influencer ? 'Remover modo influencer' : 'Adicionar modo influencer'}
+                              disabled={influencerLoading === user.id}
+                            >
+                              {influencerLoading === user.id ? (
+                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              ) : (
+                                <Star className={`w-4 h-4 ${user.is_influencer ? 'fill-current' : ''}`} />
+                              )}
                             </Button>
                             <Button
                               variant="ghost"

@@ -14,10 +14,11 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { Card } from "@/components/ui/card"
-import { ArrowUpRight, ArrowDownLeft, Wallet, Users, Gift, Ticket, TrendingUp, DollarSign } from "lucide-react"
+import { ArrowUpRight, ArrowDownLeft, Wallet, Users, Gift, Ticket, TrendingUp, DollarSign, BarChart3, Activity } from "lucide-react"
 import { Poppins } from 'next/font/google'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
+import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 const poppins = Poppins({ 
   subsets: ["latin"],
@@ -102,6 +103,54 @@ export default function Page() {
       style: 'currency',
       currency: 'BRL'
     }).format(numValue);
+  };
+
+
+
+  // Dados para gráfico de barras - Comparação de métricas
+  const getMetricsBarData = () => {
+    if (!stats) return [];
+    
+    return [
+      {
+        name: 'Depósitos',
+        aprovados: parseFloat(stats.deposits.approved.amount),
+        pendentes: parseFloat(stats.deposits.pending.amount),
+        rejeitados: parseFloat(stats.deposits.rejected.amount),
+      },
+      {
+        name: 'Saques',
+        aprovados: parseFloat(stats.withdrawals.approved.amount),
+        pendentes: parseFloat(stats.withdrawals.pending.amount),
+        rejeitados: parseFloat(stats.withdrawals.rejected.amount),
+      },
+    ];
+  };
+
+  // Dados para gráfico de área - Volume de transações
+  const getVolumeAreaData = () => {
+    if (!stats) return [];
+    
+    return [
+      {
+        name: 'Depósitos',
+        total: parseFloat(stats.deposits.total.amount),
+        aprovados: parseFloat(stats.deposits.approved.amount),
+        pendentes: parseFloat(stats.deposits.pending.amount),
+      },
+      {
+        name: 'Saques',
+        total: parseFloat(stats.withdrawals.total.amount),
+        aprovados: parseFloat(stats.withdrawals.approved.amount),
+        pendentes: parseFloat(stats.withdrawals.pending.amount),
+      },
+      {
+        name: 'Jogos',
+        total: parseFloat(stats.games.totalBet),
+        distribuido: parseFloat(stats.games.totalDistributed),
+        lucro: stats.games.profit,
+      },
+    ];
   };
 
   const getStatsCards = () => {
@@ -255,15 +304,103 @@ export default function Page() {
               </div>
             )}
             
-            {/* Additional Content Area */}
-            <div className="bg-neutral-800 border border-neutral-700 min-h-[60vh] flex-1 rounded-xl p-6">
-              <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold text-white mb-2">Dashboard em Desenvolvimento</h3>
-                  <p className="text-neutral-400 text-sm">Mais funcionalidades serão adicionadas em breve</p>
-                </div>
+            {/* Gráficos */}
+            {!loading && !error && stats && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Gráfico de Barras - Comparação de Métricas */}
+                <Card className="bg-neutral-800 border-neutral-700 p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <BarChart3 className="w-5 h-5 text-blue-400" />
+                    <h3 className="text-lg font-semibold text-white">Comparação de Métricas</h3>
+                  </div>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={getMetricsBarData()}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                      <XAxis 
+                        dataKey="name" 
+                        stroke="#9ca3af"
+                        fontSize={12}
+                      />
+                      <YAxis 
+                        stroke="#9ca3af"
+                        fontSize={12}
+                        tickFormatter={(value) => formatCurrency(value)}
+                      />
+                      <Tooltip 
+                        formatter={(value: any) => formatCurrency(value)}
+                        contentStyle={{
+                          backgroundColor: '#1f2937',
+                          border: '1px solid #374151',
+                          borderRadius: '8px',
+                          color: '#ffffff'
+                        }}
+                      />
+                      <Legend />
+                      <Bar dataKey="aprovados" fill="#10b981" name="Aprovados" />
+                      <Bar dataKey="pendentes" fill="#f59e0b" name="Pendentes" />
+                      <Bar dataKey="rejeitados" fill="#ef4444" name="Rejeitados" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </Card>
+
+                {/* Gráfico de Área - Volume de Transações */}
+                <Card className="bg-neutral-800 border-neutral-700 p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Activity className="w-5 h-5 text-purple-400" />
+                    <h3 className="text-lg font-semibold text-white">Volume de Transações</h3>
+                  </div>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <AreaChart data={getVolumeAreaData()}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                      <XAxis 
+                        dataKey="name" 
+                        stroke="#9ca3af"
+                        fontSize={12}
+                      />
+                      <YAxis 
+                        stroke="#9ca3af"
+                        fontSize={12}
+                        tickFormatter={(value) => formatCurrency(value)}
+                      />
+                      <Tooltip 
+                        formatter={(value: any) => formatCurrency(value)}
+                        contentStyle={{
+                          backgroundColor: '#1f2937',
+                          border: '1px solid #374151',
+                          borderRadius: '8px',
+                          color: '#ffffff'
+                        }}
+                      />
+                      <Legend />
+                      <Area 
+                        type="monotone" 
+                        dataKey="total" 
+                        stackId="1" 
+                        stroke="#3b82f6" 
+                        fill="#3b82f6" 
+                        name="Total"
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="aprovados" 
+                        stackId="1" 
+                        stroke="#10b981" 
+                        fill="#10b981" 
+                        name="Aprovados"
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="pendentes" 
+                        stackId="1" 
+                        stroke="#f59e0b" 
+                        fill="#f59e0b" 
+                        name="Pendentes"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </Card>
               </div>
-            </div>
+            )}
           </div>
         </SidebarInset>
       </SidebarProvider>
