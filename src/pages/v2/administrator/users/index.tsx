@@ -26,7 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Search, Edit, Trash2, Users, UserPlus, ChevronLeft, ChevronRight, Eye, X, Phone, Calendar, CreditCard, TrendingUp, TrendingDown, Gamepad2, UserCheck, Settings, UserX, UserCheck2, DollarSign } from "lucide-react"
+import { Search, Edit, Trash2, Users, UserPlus, ChevronLeft, ChevronRight, Eye, X, UserCheck, Settings, UserX, UserCheck2, DollarSign } from "lucide-react"
 import { Poppins } from 'next/font/google'
 import { useAuth } from '@/contexts/AuthContext'
 import {
@@ -76,35 +76,7 @@ interface UsersResponse {
   };
 }
 
-interface UserDetails {
-  id: string;
-  email: string;
-  phone: string;
-  cpf: string;
-  username: string;
-  full_name: string;
-  is_admin: boolean;
-  total_scratchs: number;
-  total_wins: number;
-  total_losses: number;
-  total_deposit: string;
-  total_withdraw: string;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-  invitedBy: string | null;
-  wallet: Array<{
-    balance: string;
-  }>;
-  deposits: any[];
-  withdraws: any[];
-  games: any[];
-  invitedUsers: any[];
-  inviter: {
-    id: string;
-    username: string;
-  } | null;
-}
+
 
 export default function UsersPage() {
   const { token } = useAuth();
@@ -118,11 +90,7 @@ export default function UsersPage() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
-  const [detailsLoading, setDetailsLoading] = useState(false);
-  const [detailsError, setDetailsError] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editLoading, setEditLoading] = useState(false);
@@ -238,48 +206,7 @@ export default function UsersPage() {
     fetchUsers(newPage, searchTerm);
   };
 
-  const fetchUserDetails = async (userId: string) => {
-    if (!token) return;
-    
-    setDetailsLoading(true);
-    setDetailsError('');
-    try {
-      const response = await fetch(
-        `https://api.raspapixoficial.com/v1/api/admin/users/${userId}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
 
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Erro ao carregar detalhes do usuário');
-      }
-
-      setUserDetails(data.data);
-    } catch (err: any) {
-      setDetailsError(err.message);
-    } finally {
-      setDetailsLoading(false);
-    }
-  };
-
-  const handleViewDetails = (userId: string) => {
-    setSelectedUserId(userId);
-    setIsModalOpen(true);
-    fetchUserDetails(userId);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedUserId(null);
-    setUserDetails(null);
-    setDetailsError('');
-  };
 
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false);
@@ -634,7 +561,7 @@ export default function UsersPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleViewDetails(user.id)}
+                              onClick={() => window.location.href = `/v2/administrator/users/details/${user.id}`}
                               className="text-green-400 hover:text-green-300 hover:bg-green-500/10"
                             >
                               <Eye className="w-4 h-4" />
@@ -731,140 +658,6 @@ export default function UsersPage() {
         </SidebarInset>
       </SidebarProvider>
       
-      {/* Modal de Detalhes do Usuário */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-[95vw] sm:max-w-[90vw] md:max-w-4xl lg:max-w-5xl max-h-[90vh] overflow-y-auto bg-neutral-800 border-neutral-700 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
-              <Users className="w-4 h-4 sm:w-5 sm:h-5" />
-              Detalhes do Usuário
-            </DialogTitle>
-          </DialogHeader>
-          
-          {detailsLoading && (
-            <div className="flex items-center justify-center h-32">
-              <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            </div>
-          )}
-          
-          {detailsError && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
-              <p className="text-red-400 text-sm">{detailsError}</p>
-            </div>
-          )}
-          
-          {userDetails && !detailsLoading && (
-             <div className="space-y-4 sm:space-y-6">
-               {/* Informações Básicas */}
-               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-                 <Card className="bg-neutral-700 border-neutral-600 p-3 sm:p-4">
-                   <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2">
-                     <UserCheck className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />
-                     Informações Pessoais
-                   </h3>
-                  <div className="space-y-2 sm:space-y-3">
-                     <div>
-                       <label className="text-neutral-400 text-xs sm:text-sm block">Nome Completo</label>
-                       <p className="text-white font-medium text-sm sm:text-base break-words">{userDetails.full_name}</p>
-                     </div>
-                     <div>
-                       <label className="text-neutral-400 text-xs sm:text-sm block">Username</label>
-                       <p className="text-white font-medium text-sm sm:text-base break-words">{userDetails.username}</p>
-                     </div>
-                     <div>
-                       <label className="text-neutral-400 text-xs sm:text-sm block">Email</label>
-                       <p className="text-white font-medium text-sm sm:text-base break-words">{userDetails.email}</p>
-                     </div>
-                     <div>
-                       <label className="text-neutral-400 text-xs sm:text-sm block">CPF</label>
-                       <p className="text-white font-medium text-sm sm:text-base">{formatCPF(userDetails.cpf)}</p>
-                     </div>
-                     <div>
-                       <label className="text-neutral-400 text-xs sm:text-sm block">Telefone</label>
-                       <p className="text-white font-medium text-sm sm:text-base">{userDetails.phone || 'Não informado'}</p>
-                     </div>
-                     <div>
-                       <label className="text-neutral-400 text-xs sm:text-sm block">Tipo de Usuário</label>
-                       <Badge className={`${getStatusColor(userDetails.is_admin)} text-xs`}>
-                         {getStatusText(userDetails.is_admin)}
-                       </Badge>
-                     </div>
-                     {userDetails.inviter && (
-                       <div>
-                         <label className="text-neutral-400 text-xs sm:text-sm block">Convidado por</label>
-                         <p className="text-white font-medium text-sm sm:text-base">{userDetails.inviter.username}</p>
-                       </div>
-                     )}
-                   </div>
-                </Card>
-                
-                <Card className="bg-neutral-700 border-neutral-600 p-3 sm:p-4">
-                   <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2">
-                     <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" />
-                     Informações Financeiras
-                   </h3>
-                   <div className="space-y-2 sm:space-y-3">
-                     <div>
-                       <label className="text-neutral-400 text-xs sm:text-sm block">Saldo Atual</label>
-                       <p className="text-white font-bold text-base sm:text-lg">
-                         {formatCurrency(userDetails.wallet[0]?.balance || '0')}
-                       </p>
-                     </div>
-                     <div>
-                       <label className="text-neutral-400 text-xs sm:text-sm block">Total Depositado</label>
-                       <p className="text-green-400 font-medium text-sm sm:text-base">
-                         {formatCurrency(userDetails.total_deposit)}
-                       </p>
-                     </div>
-                     <div>
-                       <label className="text-neutral-400 text-xs sm:text-sm block">Total Sacado</label>
-                       <p className="text-red-400 font-medium text-sm sm:text-base">
-                         {formatCurrency(userDetails.total_withdraw)}
-                       </p>
-                     </div>
-                     <div>
-                       <label className="text-neutral-400 text-xs sm:text-sm block">Depósitos Realizados</label>
-                       <p className="text-white font-medium text-sm sm:text-base">{userDetails.deposits.length}</p>
-                     </div>
-                     <div>
-                       <label className="text-neutral-400 text-xs sm:text-sm block">Saques Realizados</label>
-                       <p className="text-white font-medium text-sm sm:text-base">{userDetails.withdraws.length}</p>
-                     </div>
-                   </div>
-                 </Card>
-              </div>
-              
-              {/* Estatísticas de Jogos */}
-              <Card className="bg-neutral-700 border-neutral-600 p-4">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <Gamepad2 className="w-5 h-5 text-purple-400" />
-                  Estatísticas de Jogos
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-white">{userDetails.total_scratchs}</p>
-                    <p className="text-neutral-400 text-sm">Total de Jogos</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-green-400">{userDetails.total_wins}</p>
-                    <p className="text-neutral-400 text-sm">Vitórias</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-red-400">{userDetails.total_losses}</p>
-                    <p className="text-neutral-400 text-sm">Derrotas</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-yellow-400">{userDetails.invitedUsers.length}</p>
-                    <p className="text-neutral-400 text-sm">Usuários Convidados</p>
-                  </div>
-                </div>
-              </Card>
-              
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
       {/* Modal de Edição do Usuário */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent className="max-w-md bg-neutral-800 border-neutral-700 text-white">

@@ -110,9 +110,9 @@ export default function Page() {
     return [
       {
         title: "Total de Depósitos",
-        value: formatCurrency(stats.deposits.total.amount),
+        value: formatCurrency(stats.deposits.approved.amount),
         icon: ArrowUpRight,
-        description: `${stats.deposits.total.count} transações`,
+        description: `${stats.deposits.approved.count} transações`,
         color: "text-green-400"
       },
       {
@@ -163,7 +163,35 @@ export default function Page() {
         icon: DollarSign,
         description: "Prêmios pagos",
         color: "text-cyan-400"
-      }
+      },
+      {
+        title: "Total de Depósitos (30 dias)",
+        value: formatCurrency(stats.deposits.approved.amount),
+        icon: DollarSign,
+        description: "Total de Depósitos",
+        color: "text-cyan-400"
+      },
+      {
+        title: "Total de Saques (30 dias)",
+        value: formatCurrency(stats.withdrawals.approved.amount),
+        icon: DollarSign,
+        description: "Total de Saques",
+        color: "text-red-400"
+      },
+      {
+        title: "Total PIX Gerados",
+        value: (stats.deposits.total.count),
+        icon: DollarSign,
+        description: "Total de PIX Gerados",
+        color: "text-blue-400"
+      },
+      {
+        title: "Total de PIX Pagos",
+        value: (stats.deposits.approved.count),
+        icon: DollarSign,
+        description: "Total de PIX Pagos",
+        color: "text-green-400"
+      },
     ];
   };
 

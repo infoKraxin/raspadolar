@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import DepositModal from "@/components/deposit-modal";
+import { getAppColor, getAppColorText } from "@/lib/colors";
 
 export default function Header() {
     const { user, login, logout, updateUser, token } = useAuth();
@@ -117,7 +118,7 @@ export default function Header() {
         setCustomAmount(cleanValue);
         setSelectedAmount(null);
     };
-    
+
     const handleGeneratePayment = async () => {
         const amount = parseFloat(customAmount.replace(',', '.'));
         
@@ -212,7 +213,7 @@ export default function Header() {
                             window.location.href = '/#raspadinhas';
                         }
                     }} className="flex items-center gap-2 px-4 py-2 rounded-lg text-neutral-300 hover:text-white hover:bg-neutral-800/50 transition-all duration-200 font-medium cursor-pointer">
-                        <Ticket size={18} className="text-yellow-400" />
+                        <Ticket size={18} className={`${getAppColorText()}`} />
                         <span>Raspadinhas</span>
                     </a>
                     <a href="#como-funciona" onClick={(e) => {
@@ -248,7 +249,7 @@ export default function Header() {
                     // Usuário logado
                     <>
                         <Button 
-                            className="bg-yellow-600 hover:bg-yellow-700 text-white cursor-pointer border border-yellow-600/30 px-4 py-2 h-[45px]"
+                            className={`${getAppColor ()} hover:bg-neutral-700 text-white cursor-pointer border border-neutral-600/30 px-4 py-2 h-[45px]`}
                             onClick={() => setIsDepositModalOpen(true)}
                         >
                             <Wallet size={16} className="mr-2" />
@@ -261,7 +262,7 @@ export default function Header() {
                             className="flex items-center gap-3 px-4 py-2 rounded-lg bg-neutral-800/50 hover:bg-neutral-800 transition-all duration-200 border border-neutral-700"
                         >
                             <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 bg-yellow-600 rounded-full flex items-center justify-center">
+                                <div className={`w-8 h-8 ${getAppColor()} rounded-full flex items-center justify-center`}>
                                     <User size={16} className="text-white" />
                                 </div>
                                 <div className="hidden md:block text-left">
@@ -284,8 +285,8 @@ export default function Header() {
                                     <p className="text-white font-medium">{user.full_name}</p>
                                     <p className="text-neutral-400 text-sm">{user.email}</p>
                                     <div className="flex items-center gap-2 mt-2">
-                                        <Wallet size={16} className="text-yellow-400" />
-                                        <span className="text-yellow-400 font-medium">
+                                        <Wallet size={16} className={`${getAppColorText()}`} />
+                                        <span className={`${getAppColorText()} font-medium`}>
                                             {user.wallet && user.wallet[0] ? 
                                                 `${user.wallet[0].symbol} ${parseFloat(user.wallet[0].balance).toFixed(2)}` : 
                                                 'R$ 0,00'
@@ -296,7 +297,7 @@ export default function Header() {
                                             className="ml-1 p-1 rounded hover:bg-neutral-700 transition-colors"
                                             title="Atualizar saldo"
                                         >
-                                            <RefreshCw size={14} className="text-yellow-400 hover:text-yellow-300" />
+                                            <RefreshCw size={14} className={`${getAppColorText()} hover:text-neutral-300`} />
                                         </button>
                                     </div>
                                 </div>
@@ -350,13 +351,13 @@ export default function Header() {
                     <>
                         <Button 
                             variant="ghost" 
-                            className="text-neutral-300 hover:text-white hover:bg-yellow-700 cursor-pointer"
+                            className="text-neutral-300 hover:text-white hover:bg-neutral-800/50 cursor-pointer"
                             onClick={() => setIsAuthModalOpen(true)}
                         >
                             Login
                         </Button>
                         <Button 
-                            className="bg-yellow-600 hover:bg-yellow-700 text-white cursor-pointer"
+                            className={`${getAppColor()}  text-white cursor-pointer hover:bg-neutral-800/50`}
                             onClick={() => setIsAuthModalOpen(true)}
                         >
                             Registrar

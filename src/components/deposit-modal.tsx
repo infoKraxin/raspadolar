@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { X, Smartphone, CheckCircle, Copy, Timer } from "lucide-react";
 import { toast } from "sonner";
 import { QRCodeCanvas } from "qrcode.react";
+import { getAppColor, getAppColorText, getAppColorBorder, getAppColorSvg, getAppGradient } from '@/lib/colors';
 
 interface DepositModalProps {
   isOpen: boolean;
@@ -13,7 +14,7 @@ interface DepositModalProps {
   updateUser: (data: any) => void;
 }
 
-const quickAmounts = [10, 25, 50, 100, 200, 500];
+const quickAmounts = [10, 20, 40, 80, 100, 200];
 
 function PaymentModal({ isOpen, onClose, paymentData }: { isOpen: boolean; onClose: () => void; paymentData: any }) {
   const [timeLeft, setTimeLeft] = useState(900); // 15 minutos
@@ -95,7 +96,7 @@ function PaymentModal({ isOpen, onClose, paymentData }: { isOpen: boolean; onClo
           {/* QR Code PIX */}
           <div className="flex flex-col items-center mb-3 sm:mb-4">
             <div className="w-[140px] h-[140px] sm:w-[180px] sm:h-[180px] flex items-center justify-center">
-              <QRCodeCanvas value={paymentData.payment.qrCode} size={140} bgColor="#18181b" fgColor="#facc15" includeMargin={true} />
+              <QRCodeCanvas value={paymentData.payment.qrCode} size={140} bgColor="#18181b" fgColor={getAppColorSvg()} includeMargin={true} />
             </div>
             <span className="text-neutral-400 text-xs mt-2">Escaneie o QR Code com o app do seu banco</span>
           </div>
@@ -113,7 +114,7 @@ function PaymentModal({ isOpen, onClose, paymentData }: { isOpen: boolean; onClo
               />
               <Button
                 onClick={copyPixCode}
-                className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                className={`${getAppGradient()} w-full text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2`}
               >
                 <Copy className="w-4 h-4" />
                 Copiar Código PIX
@@ -124,7 +125,7 @@ function PaymentModal({ isOpen, onClose, paymentData }: { isOpen: boolean; onClo
           {/* Instructions */}
           <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
             <div className="flex items-start gap-2 sm:gap-3">
-              <div className="w-5 h-5 sm:w-6 sm:h-6 bg-yellow-500 rounded-full flex items-center justify-center text-white text-xs font-bold mt-0.5">
+              <div className={`w-5 h-5 sm:w-6 sm:h-6 ${getAppColor()} rounded-full flex items-center justify-center text-white text-xs font-bold mt-0.5`}>
                 1
               </div>
               <p className="text-neutral-300 text-xs sm:text-sm">
@@ -132,7 +133,7 @@ function PaymentModal({ isOpen, onClose, paymentData }: { isOpen: boolean; onClo
               </p>
             </div>
             <div className="flex items-start gap-2 sm:gap-3">
-              <div className="w-5 h-5 sm:w-6 sm:h-6 bg-yellow-500 rounded-full flex items-center justify-center text-white text-xs font-bold mt-0.5">
+              <div className={`w-5 h-5 sm:w-6 sm:h-6 ${getAppColor()} rounded-full flex items-center justify-center text-white text-xs font-bold mt-0.5`}>
                 2
               </div>
               <p className="text-neutral-300 text-xs sm:text-sm">
@@ -140,7 +141,7 @@ function PaymentModal({ isOpen, onClose, paymentData }: { isOpen: boolean; onClo
               </p>
             </div>
             <div className="flex items-start gap-2 sm:gap-3">
-              <div className="w-5 h-5 sm:w-6 sm:h-6 bg-yellow-500 rounded-full flex items-center justify-center text-white text-xs font-bold mt-0.5">
+              <div className={`w-5 h-5 sm:w-6 sm:h-6 ${getAppColor()} rounded-full flex items-center justify-center text-white text-xs font-bold mt-0.5`}>
                 3
               </div>
               <p className="text-neutral-300 text-xs sm:text-sm">
@@ -150,10 +151,10 @@ function PaymentModal({ isOpen, onClose, paymentData }: { isOpen: boolean; onClo
           </div>
 
           {/* Status */}
-          <div className="p-3 sm:p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
+          <div className={`p-3 sm:p-4 bg-neutral-700/20 rounded-lg border border-neutral-400/20`}>
             <div className="flex items-center gap-2 mb-1 sm:mb-2">
-              <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
-              <span className="text-yellow-400 text-xs sm:text-sm font-medium">Aguardando pagamento</span>
+              <div className={`w-2 h-2 ${getAppColor()} rounded-full animate-pulse`} />
+              <span className={`${getAppColorText()} text-xs sm:text-sm font-medium`}>Aguardando pagamento</span>
             </div>
             <p className="text-neutral-300 text-xs">
               O saldo será creditado automaticamente após a confirmação do pagamento
@@ -263,20 +264,31 @@ export default function DepositModal({ isOpen, onClose, token }: DepositModalPro
                 </Label>
                 <div className="grid grid-cols-3 gap-2 sm:gap-3">
                   {quickAmounts.map((amount) => {
-                    const isPopular = [25, 50, 100].includes(amount);
+                    // Definir badges para diferentes valores
+                    let badge = null;
+                    if (amount === 20) {
+                      badge = { text: 'Popular', color: getAppColor() };
+                    } else if (amount === 40) {
+                      badge = { text: '✨ Recomendado', color: getAppColor() };
+                    } else if (amount === 80) {
+                      badge = { text: '+Querido', color: getAppColor() };
+                    } else if (amount === 100) {
+                    badge = { text: '+Chances', color: getAppColor() };
+                  }
+                    
                     return (
                       <button
                         key={amount}
                         onClick={() => handleQuickAmountSelect(amount)}
                         className={`p-2 sm:p-3 rounded-lg border transition-all duration-300 relative ${
                           selectedAmount === amount
-                            ? 'bg-yellow-500/20 border-yellow-500 text-yellow-400'
+                            ? `${getAppGradient()} border-neutral-400/30 text-white`
                             : 'bg-neutral-700 border-neutral-600 text-neutral-300 hover:bg-neutral-600 hover:border-neutral-500'
                         }`}
                       >
-                        {isPopular && (
-                          <div className="absolute -top-1 -right-1 bg-yellow-500/80 backdrop-blur-sm text-white text-[7px] sm:text-[10px] px-1 py-0.5 sm:px-1.5 sm:py-0.5 rounded-full font-bold border border-yellow-400/30">
-                            POPULAR
+                        {badge && (
+                          <div className={`absolute -top-1 -right-1 ${badge.color} backdrop-blur-sm text-white text-[7px] sm:text-[10px] px-1 py-0.5 sm:px-1.5 sm:py-0.5 rounded-full font-bold border border-neutral-400/30`}>
+                            {badge.text}
                           </div>
                         )}
                         <div className="text-center">
@@ -312,9 +324,9 @@ export default function DepositModal({ isOpen, onClose, token }: DepositModalPro
               </div>
 
               {/* Payment Method */}
-              <div className="p-3 sm:p-4 bg-gradient-to-r from-yellow-500/10 to-yellow-600/10 rounded-lg border border-yellow-500/20">
+              <div className={`p-3 sm:p-4 bg-neutral-700/20 rounded-lg border border-neutral-400/20`}>
                 <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
+                  <div className={`w-7 h-7 sm:w-8 sm:h-8 ${getAppColor()} rounded-lg flex items-center justify-center`}>
                     <Smartphone className="w-4 h-4 text-white" />
                   </div>
                   <div>
@@ -332,7 +344,7 @@ export default function DepositModal({ isOpen, onClose, token }: DepositModalPro
               <Button
                 onClick={handleGeneratePayment}
                 disabled={!customAmount || getCurrentAmount() < 1 || isGeneratingPayment}
-                className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 disabled:from-neutral-600 disabled:to-neutral-700 text-white font-semibold py-2 sm:py-3 px-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20 disabled:border-neutral-600/20 text-sm sm:text-base"
+                className={`${getAppGradient()} w-full text-white font-semibold py-2 sm:py-3 px-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-neutral-400/20 disabled:border-neutral-600/20 text-sm sm:text-base`}
               >
                 {isGeneratingPayment ? (
                   <div className="flex items-center gap-2">

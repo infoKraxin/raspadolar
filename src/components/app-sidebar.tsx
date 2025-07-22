@@ -20,6 +20,7 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { getAppColor } from "@/lib/colors"
 
 // This is sample data.
 const data = {
@@ -66,7 +67,7 @@ const data = {
         // },
         {
           title: "Imagens",
-          url: "/v2/administrator/setting/upload",
+          url: "/v2/administrator/settings/upload",
         },
       ],
     },
@@ -97,11 +98,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <a href="#">
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                <div className={`${getAppColor()} text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg`}>
                   <Ticket className="size-4" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">raspa.ae</span>
+                  <span className="font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">{process.env.NEXT_PUBLIC_APP_NAME}</span>
                   <span className="text-sm">v1.0.0</span>
                 </div>
               </a>

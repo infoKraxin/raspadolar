@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import DepositModal from '@/components/deposit-modal';
+import { getAppColor, getAppColorText, getAppColorBorder, getAppColorSvg, getAppGradient } from '@/lib/colors';
 
 const poppins = Poppins({ 
   subsets: ["latin"],
@@ -51,18 +52,18 @@ function SidebarItem({ icon, label, isActive, onClick }: SidebarItemProps) {
       onClick={onClick}
       className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all duration-200 rounded-lg group ${
         isActive 
-          ? 'bg-yellow-500/10 text-yellow-400 border-l-2 border-yellow-500' 
+          ? `${getAppColor()}/10 ${getAppColorText()} border-l-2 ${getAppColorBorder()}` 
           : 'text-neutral-400 hover:text-white hover:bg-neutral-700/50'
       }`}
     >
       <div className={`transition-colors ${
-        isActive ? 'text-yellow-400' : 'text-neutral-500 group-hover:text-white'
+        isActive ? `${getAppColorText()}` : 'text-neutral-500 group-hover:text-white'
       }`}>
         {icon}
       </div>
       <span className="font-medium text-sm">{label}</span>
       <ChevronRight className={`w-4 h-4 ml-auto transition-transform ${
-        isActive ? 'text-yellow-400' : 'text-neutral-600 group-hover:text-neutral-400'
+        isActive ? `${getAppColorText()}` : 'text-neutral-600 group-hover:text-neutral-400'
       }`} />
     </button>
   );
@@ -478,7 +479,7 @@ export default function ProfilePage() {
             <div className="bg-neutral-800 rounded-xl border border-neutral-700 p-6">
               {/* User Info */}
               <div className="flex items-center gap-4 mb-8 pb-6 border-b border-neutral-700">
-                <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center overflow-hidden">
+                <div className={`w-16 h-16 ${getAppGradient()} rounded-full flex items-center justify-center overflow-hidden`}>
                   <Image
                     src="/memojis/male-4.png"
                     alt="memoji"
@@ -499,7 +500,7 @@ export default function ProfilePage() {
 
               {/* Balance */}
               <div className="mb-8 p-4 bg-gradient-to-r from-neutral-500/10 to-neutral-600/10 rounded-lg border border-neutral-500/20">
-                <p className="text-yellow-400 text-sm font-medium mb-1">Seu saldo</p>
+                <p className={`${getAppColorText()} text-sm font-medium mb-1`}>Seu saldo</p>
                 <p className="text-white text-2xl font-bold">
                   {isLoading ? 'Carregando...' : (
                     profileData?.wallet?.[0] ? 
@@ -508,7 +509,7 @@ export default function ProfilePage() {
                   )}
                 </p>
                 <Button 
-                  className="w-full mt-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20"
+                  className={`${getAppGradient()} w-full mt-3 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20`}
                   onClick={() => setIsDepositModalOpen(true)}
                 >
                   Depositar
@@ -667,7 +668,7 @@ export default function ProfilePage() {
                          Tipo de chave PIX
                        </Label>
                        <Select value={withdrawData.keyType} onValueChange={(value) => setWithdrawData(prev => ({ ...prev, keyType: value }))}>
-                         <SelectTrigger className="w-full bg-neutral-700 border-neutral-600 text-white focus:border-yellow-500 focus:ring-yellow-500/20">
+                         <SelectTrigger className="w-full bg-neutral-700 border-neutral-600 text-white focus:border-neutral-500 focus:ring-neutral-500/20">
                            <SelectValue placeholder="Selecione o tipo de chave" />
                          </SelectTrigger>
                          <SelectContent className="bg-neutral-700 border-neutral-600">
@@ -692,7 +693,7 @@ export default function ProfilePage() {
                           const value = e.target.value.replace(/[^\d,]/g, '').replace(',', '.');
                           handleAmountChange(value);
                         }}
-                        className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500 focus:ring-yellow-500/20"
+                        className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-neutral-500 focus:ring-neutral-500/20"
                       />
                     </div>
 
@@ -706,7 +707,7 @@ export default function ProfilePage() {
                         placeholder="Digite sua chave PIX"
                         value={withdrawData.pixKey}
                         onChange={(e) => setWithdrawData(prev => ({ ...prev, pixKey: e.target.value }))}
-                        className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500 focus:ring-yellow-500/20"
+                        className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-neutral-500 focus:ring-neutral-500/20"
                       />
                     </div>
                   </div>
@@ -778,7 +779,7 @@ export default function ProfilePage() {
                       <Button 
                         onClick={fetchFinancialHistory}
                         disabled={isLoadingHistory}
-                        className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20"
+                        className={`${getAppGradient()} text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20`}
                       >
                         {isLoadingHistory ? 'Carregando...' : 'Carregar Histórico'}
                       </Button>
@@ -916,7 +917,7 @@ export default function ProfilePage() {
                       <Button 
                         onClick={fetchGameHistory}
                         disabled={isLoadingGameHistory}
-                        className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20"
+                        className={`${getAppGradient()} text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20`}
                       >
                         {isLoadingGameHistory ? 'Carregando...' : 'Carregar Histórico de Jogos'}
                       </Button>
@@ -999,7 +1000,7 @@ export default function ProfilePage() {
                       <Button 
                         onClick={fetchAffiliatesData}
                         disabled={isLoadingAffiliates}
-                        className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20"
+                        className={`${getAppGradient()} text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-neutral-400/20`}
                       >
                         {isLoadingAffiliates ? 'Carregando...' : 'Carregar Dados de Afiliados'}
                       </Button>

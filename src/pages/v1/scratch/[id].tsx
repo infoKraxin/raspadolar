@@ -793,17 +793,17 @@ const ScratchCardPage = () => {
               scratchCardData.prizes.slice(0, 17).map((prize, index) => (
                 <div key={prize.id} className="flex-shrink-0 w-38 xl:w-auto">
                   <div className="flex flex-col border-2 border-yellow-500/30 p-3 rounded-lg bg-gradient-to-t from-yellow-500/17 from-[0%] to-[35%] to-yellow-400/10 cursor-pointer aspect-square hover:scale-105 transition-all duration-300">
-                    <Image
-                      src={fixImageUrl(prize.image_url) || "/50_money.webp"}
+                  <Image
+                    src={fixImageUrl(prize.image_url) || "/50_money.webp"}
                       alt={prize.type === 'MONEY' ? `${parseFloat(prize.value || '0').toFixed(0)} Reais` : prize.name}
                       width={80}
                       height={80}
                       className="size-full p-3 object-contain"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/50_money.webp';
-                      }}
-                    />
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/50_money.webp';
+                    }}
+                  />
                     <h3 className="text-sm font-semibold mb-3 overflow-hidden text-ellipsis text-nowrap w-30 text-white">
                       {prize.type === 'MONEY' ? `${parseFloat(prize.value || '0').toFixed(0)} Reais` : prize.name}
                     </h3>

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { getAppColor, getAppGradient } from '@/lib/colors';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -217,7 +218,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
               className="object-cover object-center"
               priority
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-yellow-600/20 to-purple-600/20" />
+            <div className="absolute inset-0 bg-gradient-to-r from-neutral-900/20 to-neutral-900/20" /> 
           </div>
 
           {/* Right Side - Forms */}
@@ -249,7 +250,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                 onClick={() => setActiveTab('login')}
                 className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
                   activeTab === 'login'
-                    ? 'bg-yellow-600 text-white shadow-lg'
+                    ? `${getAppColor()} text-white shadow-lg`
                     : 'text-neutral-400 hover:text-white'
                 }`}
               >
@@ -259,7 +260,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                 onClick={() => setActiveTab('register')}
                 className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
                   activeTab === 'register'
-                    ? 'bg-yellow-600 text-white shadow-lg'
+                    ? `${getAppColor()} text-white shadow-lg`
                     : 'text-neutral-400 hover:text-white'
                 }`}
               >
@@ -282,7 +283,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                       placeholder="Nome completo"
                       value={formData.name}
                       onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 transition-all duration-200 outline-none"
+                      className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
                       required
                       disabled={isLoading}
                     />
@@ -300,7 +301,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                       value={formData.phone}
                       onChange={handleInputChange}
                       maxLength={15}
-                      className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 transition-all duration-200 outline-none"
+                      className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
                       required
                       disabled={isLoading}
                     />
@@ -316,7 +317,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                       value={formData.cpf}
                       onChange={handleInputChange}
                       maxLength={14}
-                      className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 transition-all duration-200 outline-none"
+                      className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
                       required
                       disabled={isLoading}
                     />
@@ -335,7 +336,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                   placeholder="E-mail"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 transition-all duration-200 outline-none"
+                  className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
                   required
                   disabled={isLoading}
                 />
@@ -350,7 +351,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                   placeholder="Senha"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="w-full pl-10 pr-12 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 transition-all duration-200 outline-none"
+                  className="w-full pl-10 pr-12 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
                   required
                   disabled={isLoading}
                 />
@@ -374,7 +375,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                     placeholder="Confirmar senha"
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-12 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 transition-all duration-200 outline-none"
+                    className="w-full pl-10 pr-12 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
                     required
                     disabled={isLoading}
                   />
@@ -398,7 +399,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                   </label>
                   <button
                     type="button"
-                    className="text-yellow-400 hover:text-yellow-300 transition-colors"
+                    className="text-neutral-400 hover:text-white transition-colors cursor-pointer"
                   >
                     Esqueceu a senha?
                   </button>
@@ -411,11 +412,11 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                   <Checkbox id="terms" required className="mt-0.5" />
                   <label htmlFor="terms" className="text-neutral-400 cursor-pointer">
                     Concordo com os{' '}
-                    <button type="button" className="text-yellow-400 hover:text-yellow-300 transition-colors">
+                    <button type="button" className="text-neutral-400 hover:text-white transition-colors cursor-pointer">
                       Termos de Uso
                     </button>
                     {' '}e{' '}
-                    <button type="button" className="text-yellow-400 hover:text-yellow-300 transition-colors">
+                    <button type="button" className="text-neutral-400 hover:text-white transition-colors cursor-pointer">
                       Política de Privacidade
                     </button>
                   </label>
@@ -425,7 +426,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
               {/* Submit Button */}
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-white py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                className={`w-full ${getAppGradient()} text-white py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl`}
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -446,7 +447,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                   Não tem uma conta?{' '}
                   <button
                     onClick={() => setActiveTab('register')}
-                    className="text-yellow-400 hover:text-yellow-300 transition-colors font-medium"
+                    className="text-white hover:text-white transition-colors font-medium"
                   >
                     Registre-se
                   </button>
@@ -456,7 +457,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                   Já tem uma conta?{' '}
                   <button
                     onClick={() => setActiveTab('login')}
-                    className="text-yellow-400 hover:text-yellow-300 transition-colors font-medium"
+                    className="text-white hover:text-white transition-colors font-medium"
                   >
                     Faça login
                   </button>

@@ -8,6 +8,7 @@ import Header from '@/components/header';
 import Footer from '@/components/footer';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { getAppColor, getAppColorText, getAppColorBorder, getAppColorSvg, getAppGradient } from '@/lib/colors';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -350,7 +351,7 @@ const InventoryPage: React.FC = () => {
                 </p>
                 <Button 
                   onClick={() => router.push('/')}
-                  className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white"
+                  className={`${getAppGradient()} text-white`}
                 >
                   Jogar Agora
                 </Button>

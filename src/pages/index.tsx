@@ -5,6 +5,8 @@ import { useState, useEffect } from "react";
 import Footer from "@/components/footer";
 import { useRouter } from "next/router";
 import Winners from "@/components/winners";
+import { getAppColor, getAppGradient, getAppColorText, getAppColorSvg, getAppColorBorder } from '@/lib/colors';
+
 
 const poppins = Poppins({ 
   subsets: ["latin"],
@@ -228,19 +230,19 @@ export default function Home() {
           Array(3).fill(0).map((_, i) => (
             <div key={i} className="w-full h-full flex-shrink-0 relative">
               <div className="absolute inset-0 bg-neutral-800 animate-pulse rounded-lg" />
-            </div>
+        </div>
           ))
         ) : (
           banners.map((banner, i) => (
             <div key={i} className="w-full h-full flex-shrink-0 relative">
-              <Image
+          <Image
                 src={banner}
                 alt={`Banner ${i + 1}`}
-                fill
-                className="object-cover"
+            fill
+            className="object-cover"
                 priority={i === 0}
-              />
-            </div>
+          />
+        </div>
           ))
         )}
       </div>
@@ -253,7 +255,7 @@ export default function Home() {
             onClick={() => setCurrentSlide(index)}
             className={`transition-all duration-300 ${
               index === currentSlide
-                ? "w-6 h-1.5 bg-yellow-500 rounded-full" // Ponto ativo alongado azul
+                ? `w-6 h-1.5 ${getAppColor()} rounded-full` // Ponto ativo alongado azul
                 : "w-1.5 h-1.5 bg-white/50 rounded-full hover:bg-white/70" // Pontos inativos menores
             }`}
           />
@@ -271,11 +273,11 @@ export default function Home() {
       <div className="py-8 sm:py-12 bg-neutral-900">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center gap-2 mb-8">
-            <svg width="2em" height="2em" fill="currentColor" className="bi bi-fire text-amber-400 animate-pulse duration-700" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M8 16c3.314 0 6-2 6-5.5 0-1.5-.5-4-2.5-6 .25 1.5-1.25 2-1.25 2C11 4 9 .5 6 0c.357 2 .5 4-2 6-1.25 1-2 2.729-2 4.5C2 14 4.686 16 8 16m0-1c-1.657 0-3-1-3-2.75 0-.75.25-2 1.25-3C6.125 10 7 10.5 7 10.5c-.375-1.25.5-3.25 2-3.5-.179 1-.25 2 1 3 .625.5 1 1.364 1 2.25C11 14 9.657 15 8 15"></path></svg>
-            <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent">
+            <svg width="2em" height="2em" fill="currentColor" className={`${getAppColorText()} animate-pulse duration-700`} viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M8 16c3.314 0 6-2 6-5.5 0-1.5-.5-4-2.5-6 .25 1.5-1.25 2-1.25 2C11 4 9 .5 6 0c.357 2 .5 4-2 6-1.25 1-2 2.729-2 4.5C2 14 4.686 16 8 16m0-1c-1.657 0-3-1-3-2.75 0-.75.25-2 1.25-3C6.125 10 7 10.5 7 10.5c-.375-1.25.5-3.25 2-3.5-.179 1-.25 2 1 3 .625.5 1 1.364 1 2.25C11 14 9.657 15 8 15"></path></svg>
+      <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent">
               Em alta!
-            </h2>
-          </div>
+      </h2>
+    </div>
 
           {/* Grid de Cards em Destaque */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
@@ -294,7 +296,7 @@ export default function Home() {
                 };
                 
                 return (
-                  <div key={card.id} className="bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl border border-yellow-500/80 shadow-lg hover:shadow-xl transition-all duration-300 pt-6 sm:pt-8">
+                  <div key={card.id} className={`bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl border ${getAppColorBorder()} shadow-lg hover:shadow-xl transition-all duration-300 pt-6 sm:pt-8`}>
                     <div className="relative -mt-12 sm:-mt-15">
                       <Image
                         src={fixImageUrl(card.image_url) || '/scratchs/web.webp'}
@@ -324,7 +326,7 @@ export default function Home() {
                         </span>
                         <button 
                           onClick={() => router.push(`v1/scratch/${card.id}`)}
-                          className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                          className={`${getAppGradient()} text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl`}
                         >
                           Jogar
                         </button>
@@ -352,7 +354,7 @@ export default function Home() {
               onClick={() => setFilter('all')}
               className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-medium transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base flex-1 sm:flex-none ${
                 filter === 'all' 
-                  ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white border border-yellow-400/20 hover:from-yellow-600 hover:to-yellow-700' 
+                  ? `${getAppGradient()} text-white border border-neutral-400/20 hover:from-neutral-600 hover:to-neutral-700` 
                   : 'bg-gradient-to-r from-neutral-700 to-neutral-800 text-neutral-300 border border-neutral-600/30 hover:from-neutral-600 hover:to-neutral-700 hover:text-white'
               }`}
             >
@@ -362,7 +364,7 @@ export default function Home() {
               onClick={() => setFilter('money')}
               className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-medium transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base flex-1 sm:flex-none ${
                 filter === 'money' 
-                  ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white border border-yellow-400/20 hover:from-yellow-600 hover:to-yellow-700' 
+                  ? `${getAppGradient()}  text-white border border-neutral-400/20 hover:from-neutral-600 hover:to-neutral-700` 
                   : 'bg-gradient-to-r from-neutral-700 to-neutral-800 text-neutral-300 border border-neutral-600/30 hover:from-neutral-600 hover:to-neutral-700 hover:text-white'
               }`}
             >
@@ -372,7 +374,7 @@ export default function Home() {
               onClick={() => setFilter('products')}
               className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-medium transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base flex-1 sm:flex-none ${
                 filter === 'products' 
-                  ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white border border-yellow-400/20 hover:from-yellow-600 hover:to-yellow-700' 
+                  ? `${getAppGradient()} text-white border border-neutral-400/20 hover:from-neutral-600 hover:to-neutral-700` 
                   : 'bg-gradient-to-r from-neutral-700 to-neutral-800 text-neutral-300 border border-neutral-600/30 hover:from-neutral-600 hover:to-neutral-700 hover:text-white'
               }`}
             >
@@ -406,7 +408,7 @@ export default function Home() {
               <p className="text-red-400 text-lg mb-4">{error}</p>
               <button 
                 onClick={fetchScratchCards}
-                className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                className={`${getAppGradient()} text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl`}
               >
                 Tentar Novamente
               </button>
@@ -461,7 +463,7 @@ export default function Home() {
                       </span>
                       <button 
                         onClick={() => router.push(`v1/scratch/${card.id}`)}
-                        className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                        className={`${getAppGradient()} text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl`}
                       >
                         Jogar
                       </button>
@@ -492,7 +494,7 @@ export default function Home() {
           <div className="bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl border border-neutral-700/50 shadow-lg hover:shadow-xl transition-all duration-300 p-6 sm:p-8 group">
              <div className="flex items-start gap-4 sm:gap-6">
                <div className="relative flex-shrink-0">
-                 <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-yellow-700 to-yellow-500 rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 border border-slate-300/40">
+                 <div className={`w-14 h-14 sm:w-16 sm:h-16 ${getAppColor()} rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 border border-slate-300/40`}>
                     <span className="text-white font-bold text-lg sm:text-xl">1</span>
                   </div>
                </div>
@@ -511,7 +513,7 @@ export default function Home() {
           <div className="bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl border border-neutral-700/50 shadow-lg hover:shadow-xl transition-all duration-300 p-6 sm:p-8 group">
              <div className="flex items-start gap-4 sm:gap-6">
                <div className="relative flex-shrink-0">
-                 <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-yellow-700 to-yellow-500 rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 border border-zinc-300/40">
+                 <div className={`w-14 h-14 sm:w-16 sm:h-16 ${getAppColor()} rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 border border-zinc-300/40`}>
                     <span className="text-white font-bold text-lg sm:text-xl">2</span>
                   </div>
                </div>
@@ -530,7 +532,7 @@ export default function Home() {
           <div className="bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl border border-neutral-700/50 shadow-lg hover:shadow-xl transition-all duration-300 p-6 sm:p-8 group">
              <div className="flex items-start gap-4 sm:gap-6">
                <div className="relative flex-shrink-0">
-                 <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-yellow-700 to-yellow-500 rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 border border-stone-300/40">
+                 <div className={`w-14 h-14 sm:w-16 sm:h-16 ${getAppColor()} rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 border border-stone-300/40`}>
                     <span className="text-white font-bold text-lg sm:text-xl">3</span>
                   </div>
                </div>
@@ -549,7 +551,7 @@ export default function Home() {
           <div className="bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl border border-neutral-700/50 shadow-lg hover:shadow-xl transition-all duration-300 p-6 sm:p-8 group">
              <div className="flex items-start gap-4 sm:gap-6">
                <div className="relative flex-shrink-0">
-                 <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-yellow-700 to-yellow-500 rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 border border-neutral-300/40">
+                 <div className={`w-14 h-14 sm:w-16 sm:h-16 ${getAppColor()} rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 border border-neutral-300/40`}>
                     <span className="text-white font-bold text-lg sm:text-xl">4</span>
                   </div>
                </div>
