@@ -212,7 +212,7 @@ export default function ProfilePage() {
         random: 'RANDOM'
       };
 
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/users/withdraw', {
+      const response = await fetch('https://api.raspadinha.fun/v1/api/users/withdraw', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -277,7 +277,7 @@ export default function ProfilePage() {
     setIsLoadingHistory(true);
 
     try {
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/users/financial-history', {
+      const response = await fetch('https://api.raspadinha.fun/v1/api/users/financial-history', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -338,7 +338,7 @@ export default function ProfilePage() {
     setIsLoadingGameHistory(true);
 
     try {
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/users/game-history?limit=10', {
+      const response = await fetch('https://api.raspadinha.fun/v1/api/users/game-history?limit=10', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -373,7 +373,7 @@ export default function ProfilePage() {
     setIsLoadingAffiliates(true);
 
     try {
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/users/invited-users', {
+      const response = await fetch('https://api.raspadinha.fun/v1/api/users/invited-users', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -429,7 +429,7 @@ export default function ProfilePage() {
 
     const fetchProfileData = async () => {
       try {
-        const response = await fetch('https://api.raspapixoficial.com/v1/api/users/profile', {
+        const response = await fetch('https://api.raspadinha.fun/v1/api/users/profile', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,

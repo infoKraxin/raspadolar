@@ -200,7 +200,7 @@ export default function DepositModal({ isOpen, onClose, token }: DepositModalPro
     }
     setIsGeneratingPayment(true);
     try {
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/deposits/create', {
+      const response = await fetch('https://api.raspadinha.fun/v1/api/deposits/create', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -253,6 +253,15 @@ export default function DepositModal({ isOpen, onClose, token }: DepositModalPro
               >
                 <X size={20} />
               </button>
+            </div>
+
+            {/* Background Image */}
+            <div className="relative mb-4 sm:mb-6">
+              <img 
+                src="/deposit_bg.jpg" 
+                alt="Depósito" 
+                className="w-full h-32 sm:h-40 object-cover rounded-lg"
+              />
             </div>
 
             {/* Amount Selection */}

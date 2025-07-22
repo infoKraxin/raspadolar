@@ -114,6 +114,13 @@ export default function UsersPage() {
   const [invitedUsers, setInvitedUsers] = useState<any[]>([]);
   const [invitedLoading, setInvitedLoading] = useState(false);
   const [invitedError, setInvitedError] = useState('');
+  
+  // Estados para modal de detalhes do usuário
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [userDetails, setUserDetails] = useState<any>(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [detailsError, setDetailsError] = useState('');
 
   const fetchUsers = async (page: number = 1, search: string = '') => {
     if (!token) return;
@@ -121,7 +128,7 @@ export default function UsersPage() {
     setLoading(true);
     try {
       const response = await fetch(
-        `https://api.raspapixoficial.com/v1/api/admin/users?page=${page}&limit=20&search=${encodeURIComponent(search)}`,
+        `https://api.raspadinha.fun/v1/api/admin/users?page=${page}&limit=20&search=${encodeURIComponent(search)}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -178,7 +185,7 @@ export default function UsersPage() {
     
     try {
       const response = await fetch(
-        `https://api.raspapixoficial.com/v1/api/admin/users/${userId}/toggle-status`,
+        `https://api.raspadinha.fun/v1/api/admin/users/${userId}/toggle-status`,
         {
           method: 'PATCH',
           headers: {
@@ -206,7 +213,48 @@ export default function UsersPage() {
     fetchUsers(newPage, searchTerm);
   };
 
+  const fetchUserDetails = async (userId: string) => {
+    if (!token) return;
+    
+    setDetailsLoading(true);
+    setDetailsError('');
+    try {
+      const response = await fetch(
+        `https://api.raspapixoficial.com/v1/api/admin/users/${userId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Erro ao carregar detalhes do usuário');
+      }
+
+      setUserDetails(data.data);
+    } catch (err: any) {
+      setDetailsError(err.message);
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
+
+  const handleViewDetails = (userId: string) => {
+    setSelectedUserId(userId);
+    setIsModalOpen(true);
+    fetchUserDetails(userId);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedUserId(null);
+    setUserDetails(null);
+    setDetailsError('');
+  };
 
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false);
@@ -235,7 +283,7 @@ export default function UsersPage() {
     
     try {
       const response = await fetch(
-        `https://api.raspapixoficial.com/v1/api/admin/users/${editingUser.id}`,
+        `https://api.raspadinha.fun/v1/api/admin/users/${editingUser.id}`,
         {
           method: 'PUT',
           headers: {
@@ -294,7 +342,7 @@ export default function UsersPage() {
     setAdjustLoading(true);
     setAdjustError('');
     try {
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/admin/users/adjust-balance', {
+      const response = await fetch('https://api.raspadinha.fun/v1/api/admin/users/adjust-balance', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -328,7 +376,7 @@ export default function UsersPage() {
     setInvitedLoading(true);
     setInvitedError('');
     try {
-      const response = await fetch(`https://api.raspapixoficial.com/v1/api/admin/affiliates/${user.id}/invited-users`, {
+      const response = await fetch(`https://api.raspadinha.fun/v1/api/admin/affiliates/${user.id}/invited-users`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -366,7 +414,7 @@ export default function UsersPage() {
     setCommissionLoading(true);
     setCommissionError('');
     try {
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/admin/affiliates/edit-commission', {
+      const response = await fetch('https://api.raspadinha.fun/v1/api/admin/affiliates/edit-commission', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -879,6 +927,144 @@ export default function UsersPage() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Detalhes do Usuário */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-4xl bg-neutral-800 border-neutral-700 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-white flex items-center gap-2">
+              <Eye className="w-5 h-5" />
+              Detalhes do Usuário
+            </DialogTitle>
+          </DialogHeader>
+          
+          {detailsLoading && (
+            <div className="flex items-center justify-center h-32">
+              <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            </div>
+          )}
+          
+          {detailsError && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+              <p className="text-red-400 text-sm">{detailsError}</p>
+            </div>
+          )}
+          
+          {userDetails && !detailsLoading && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-white border-b border-neutral-700 pb-2">
+                    Informações Básicas
+                  </h3>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-neutral-400 text-sm">Nome Completo</Label>
+                      <p className="text-white font-medium">{userDetails.full_name}</p>
+                    </div>
+                    <div>
+                      <Label className="text-neutral-400 text-sm">Username</Label>
+                      <p className="text-white font-medium">{userDetails.username}</p>
+                    </div>
+                    <div>
+                      <Label className="text-neutral-400 text-sm">Email</Label>
+                      <p className="text-white font-medium">{userDetails.email}</p>
+                    </div>
+                    <div>
+                      <Label className="text-neutral-400 text-sm">CPF</Label>
+                      <p className="text-white font-medium">{formatCPF(userDetails.cpf)}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-white border-b border-neutral-700 pb-2">
+                    Status e Configurações
+                  </h3>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-neutral-400 text-sm">Tipo de Usuário</Label>
+                      <Badge className={getStatusColor(userDetails.is_admin)}>
+                        {getStatusText(userDetails.is_admin)}
+                      </Badge>
+                    </div>
+                    <div>
+                      <Label className="text-neutral-400 text-sm">Status</Label>
+                      <Badge className={userDetails.is_active ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}>
+                        {userDetails.is_active ? 'Ativo' : 'Inativo'}
+                      </Badge>
+                    </div>
+                    <div>
+                      <Label className="text-neutral-400 text-sm">Data de Cadastro</Label>
+                      <p className="text-white font-medium">{formatDate(userDetails.created_at)}</p>
+                    </div>
+                    <div>
+                      <Label className="text-neutral-400 text-sm">Última Atualização</Label>
+                      <p className="text-white font-medium">{formatDate(userDetails.updated_at)}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-white border-b border-neutral-700 pb-2">
+                  Informações Financeiras
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-neutral-700 rounded-lg p-4">
+                    <Label className="text-neutral-400 text-sm">Saldo Atual</Label>
+                    <p className="text-2xl font-bold text-green-400">
+                      {formatCurrency(userDetails.wallet?.[0]?.balance || '0')}
+                    </p>
+                  </div>
+                  <div className="bg-neutral-700 rounded-lg p-4">
+                    <Label className="text-neutral-400 text-sm">Total de Depósitos</Label>
+                    <p className="text-2xl font-bold text-blue-400">
+                      {userDetails._count?.deposits || 0}
+                    </p>
+                  </div>
+                  <div className="bg-neutral-700 rounded-lg p-4">
+                    <Label className="text-neutral-400 text-sm">Total de Saques</Label>
+                    <p className="text-2xl font-bold text-red-400">
+                      {userDetails._count?.withdraws || 0}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-white border-b border-neutral-700 pb-2">
+                  Atividade
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-neutral-700 rounded-lg p-4">
+                    <Label className="text-neutral-400 text-sm">Total de Jogos</Label>
+                    <p className="text-2xl font-bold text-yellow-400">
+                      {userDetails._count?.games || 0}
+                    </p>
+                  </div>
+                  <div className="bg-neutral-700 rounded-lg p-4">
+                    <Label className="text-neutral-400 text-sm">Usuários Convidados</Label>
+                    <p className="text-2xl font-bold text-purple-400">
+                      {userDetails._count?.invitedUsers || 0}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div className="flex justify-end pt-4">
+            <Button
+              variant="outline"
+              onClick={handleCloseModal}
+              className="bg-neutral-700 border-neutral-600 text-white hover:bg-neutral-600"
+            >
+              Fechar
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

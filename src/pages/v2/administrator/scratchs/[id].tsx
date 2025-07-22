@@ -96,8 +96,8 @@ const formatPercentage = (value: string | number) => {
 const fixImageUrl = (url: string | null) => {
   if (!url) return null;
   
-  // Trocar raspa.ae por api.raspapixoficial.com
-  let fixedUrl = url.replace('https://raspa.ae/', 'https://api.raspapixoficial.com/');
+  // Trocar raspa.ae por api.raspadinha.fun
+  let fixedUrl = url.replace('https://raspa.ae/', 'https://api.raspadinha.fun/');
   
   // Remover 'prizes/' e 'scratchcards/' após 'uploads/'
   fixedUrl = fixedUrl.replace('/uploads/prizes/', '/uploads/');
@@ -125,7 +125,7 @@ export default function ScratchCardDetailsPage() {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`https://api.raspapixoficial.com/v1/api/scratchcards/${id}`, {
+      const response = await fetch(`https://api.raspadinha.fun/v1/api/scratchcards/${id}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

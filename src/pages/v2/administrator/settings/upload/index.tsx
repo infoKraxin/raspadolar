@@ -44,7 +44,7 @@ export default function SettingsUploadPage() {
       setLoading(true);
       setError('');
       try {
-        const response = await fetch('https://api.raspapixoficial.com/v1/api/setting', {
+        const response = await fetch('https://api.raspadinha.fun/v1/api/setting', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -91,7 +91,7 @@ export default function SettingsUploadPage() {
     try {
       const formData = new FormData();
       formData.append(uploadKey, files[fieldKey]!);
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/setting/upload', {
+      const response = await fetch('https://api.raspadinha.fun/v1/api/setting/upload', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
