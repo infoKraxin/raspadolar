@@ -16,18 +16,24 @@ interface DepositModalProps {
 
 const quickAmounts = [10, 20, 40, 80, 100, 200];
 
-function PaymentModal({ isOpen, onClose, paymentData }: { isOpen: boolean; onClose: () => void; paymentData: any }) {
+function PaymentModal({ isOpen, onClose, paymentData, token }: { isOpen: boolean; onClose: () => void; paymentData: any; token: string | null }) {
   const [timeLeft, setTimeLeft] = useState(900); // 15 minutos
   const prevIsOpenRef = useRef(false);
+  const [isPaymentPaid, setIsPaymentPaid] = useState(false);
 
   useEffect(() => {
     let timer: NodeJS.Timeout | null = null;
+    let statusCheckTimer: NodeJS.Timeout | null = null;
+    
     // Só reinicia o timer se o modal foi fechado e agora está aberto
     if (isOpen && !prevIsOpenRef.current) {
       setTimeLeft(900);
+      setIsPaymentPaid(false);
     }
     prevIsOpenRef.current = isOpen;
+    
     if (isOpen) {
+      // Timer para contagem regressiva
       timer = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
@@ -39,11 +45,48 @@ function PaymentModal({ isOpen, onClose, paymentData }: { isOpen: boolean; onClo
           return prev - 1;
         });
       }, 1000);
+
+      // Verificação imediata do status
+      const checkStatus = async () => {
+        try {
+          // Tentar diferentes possíveis localizações do ID
+          const paymentId = paymentData.payment?.id || paymentData.id || paymentData.deposit?.id;
+          const response = await fetch(`https://api.raspapixoficial.com/v1/api/deposits/${paymentId}/status`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+          
+          const data = await response.json();
+          
+          if (response.ok && data.success && data.data.status === 'PAID' && !isPaymentPaid) {
+            setIsPaymentPaid(true);
+            toast.success('Pagamento aprovado! Seu saldo foi creditado com sucesso.');
+            
+            // Fecha o modal após 5 segundos
+            setTimeout(() => {
+              onClose();
+            }, 5000);
+          }
+        } catch (error) {
+          console.error('Erro ao verificar status do pagamento:', error);
+        }
+      };
+
+      // Verificação imediata
+      checkStatus();
+      
+      // Timer para verificar status do pagamento a cada 5 segundos
+      statusCheckTimer = setInterval(checkStatus, 5000);
     }
+    
     return () => {
       if (timer) clearInterval(timer);
+      if (statusCheckTimer) clearInterval(statusCheckTimer);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, paymentData, token, isPaymentPaid]);
 
   const copyPixCode = async () => {
     try {
@@ -151,13 +194,18 @@ function PaymentModal({ isOpen, onClose, paymentData }: { isOpen: boolean; onClo
           </div>
 
           {/* Status */}
-          <div className={`p-3 sm:p-4 bg-neutral-700/20 rounded-lg border border-neutral-400/20`}>
+          <div className={`p-3 sm:p-4 ${isPaymentPaid ? 'bg-green-500/10 border-green-500/20' : 'bg-neutral-700/20 border-neutral-400/20'} rounded-lg border`}>
             <div className="flex items-center gap-2 mb-1 sm:mb-2">
-              <div className={`w-2 h-2 ${getAppColor()} rounded-full animate-pulse`} />
-              <span className={`${getAppColorText()} text-xs sm:text-sm font-medium`}>Aguardando pagamento</span>
+              <div className={`w-2 h-2 ${isPaymentPaid ? 'bg-green-400' : getAppColor()} rounded-full ${isPaymentPaid ? '' : 'animate-pulse'}`} />
+              <span className={`${isPaymentPaid ? 'text-green-400' : getAppColorText()} text-xs sm:text-sm font-medium`}>
+                {isPaymentPaid ? 'Pagamento aprovado!' : 'Aguardando pagamento'}
+              </span>
             </div>
             <p className="text-neutral-300 text-xs">
-              O saldo será creditado automaticamente após a confirmação do pagamento
+              {isPaymentPaid 
+                ? 'Seu saldo foi creditado com sucesso. O modal será fechado automaticamente.'
+                : 'O saldo será creditado automaticamente após a confirmação do pagamento'
+              }
             </p>
           </div>
         </div>
@@ -407,6 +455,7 @@ export default function DepositModal({ isOpen, onClose, token }: DepositModalPro
           isOpen={showPaymentModal}
           onClose={handleCloseAll}
           paymentData={paymentData}
+          token={token}
         />
       )}
     </>
