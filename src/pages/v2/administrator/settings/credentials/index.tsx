@@ -80,7 +80,7 @@ export default function CredentialsPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('https://api.raspadinha.fun/v1/api/setting', {
+      const response = await fetch('https://api.raspapixoficial.com/v1/api/setting', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -148,7 +148,7 @@ export default function CredentialsPage() {
     setEditError('');
     
     try {
-      const response = await fetch('https://api.raspadinha.fun/v1/api/setting/credentials', {
+      const response = await fetch('https://api.raspapixoficial.com/v1/api/setting/credentials', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

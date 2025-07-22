@@ -34,7 +34,7 @@ export default function SettingsPage() {
       setLoading(true);
       setError('');
       try {
-        const response = await fetch('https://api.raspadinha.fun/v1/api/setting', {
+        const response = await fetch('https://api.raspapixoficial.com/v1/api/setting', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -59,7 +59,7 @@ export default function SettingsPage() {
     setSaving(true);
     setError('');
     try {
-      const response = await fetch('https://api.raspadinha.fun/v1/api/setting/update', {
+      const response = await fetch('https://api.raspapixoficial.com/v1/api/setting/update', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

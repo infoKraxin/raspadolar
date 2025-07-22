@@ -184,7 +184,7 @@ export default function DepositModal({ isOpen, onClose, token }: DepositModalPro
     const fetchSettings = async () => {
       setDepositBannerLoading(true);
       try {
-        const response = await fetch('https://api.raspadinha.fun/v1/api/setting');
+        const response = await fetch('https://api.raspapixoficial.com/v1/api/setting');
         const data = await response.json();
         if (response.ok && data.data && data.data[0]?.deposit_banner) {
           setDepositBannerUrl(data.data[0].deposit_banner);
@@ -223,7 +223,7 @@ export default function DepositModal({ isOpen, onClose, token }: DepositModalPro
     }
     setIsGeneratingPayment(true);
     try {
-      const response = await fetch('https://api.raspadinha.fun/v1/api/deposits/create', {
+      const response = await fetch('https://api.raspapixoficial.com/v1/api/deposits/create', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

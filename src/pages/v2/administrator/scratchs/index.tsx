@@ -129,7 +129,7 @@ export default function ScratchCardsPage() {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('https://api.raspadinha.fun/v1/api/scratchcards/admin/all?includeInactive=true', {
+      const response = await fetch('https://api.raspapixoficial.com/v1/api/scratchcards/admin/all?includeInactive=true', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -184,7 +184,7 @@ export default function ScratchCardsPage() {
 
     try {
       setDeleting(true);
-      const response = await fetch(`https://api.raspadinha.fun/v1/api/scratchcards/admin/${cardToDelete.id}`, {
+      const response = await fetch(`https://api.raspapixoficial.com/v1/api/scratchcards/admin/${cardToDelete.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
