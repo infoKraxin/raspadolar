@@ -28,7 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Eye, Trash2, Plus, Gift, DollarSign, Users, TrendingUp, Search, Loader2 } from 'lucide-react';
+import { Eye, Trash2, Plus, Gift, DollarSign, Users, TrendingUp, Search, Loader2, Star } from 'lucide-react';
 import { Poppins } from 'next/font/google';
 
 const poppins = Poppins({ 
@@ -60,6 +60,7 @@ interface ScratchCard {
   price: string;
   image_url: string;
   is_active: boolean;
+  is_featured: boolean;
   target_rtp: string;
   current_rtp: string;
   total_revenue: string;
@@ -113,6 +114,9 @@ export default function ScratchCardsPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [cardToDelete, setCardToDelete] = useState<ScratchCard | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [featureModalOpen, setFeatureModalOpen] = useState(false);
+  const [cardToFeature, setCardToFeature] = useState<ScratchCard | null>(null);
+  const [featuring, setFeaturing] = useState(false);
 
   const fetchScratchCards = async () => {
     if (!token) {
@@ -170,6 +174,11 @@ export default function ScratchCardsPage() {
     setDeleteModalOpen(true);
   };
 
+  const handleToggleFeatured = (card: ScratchCard) => {
+    setCardToFeature(card);
+    setFeatureModalOpen(true);
+  };
+
   const confirmDelete = async () => {
     if (!cardToDelete) return;
 
@@ -201,6 +210,48 @@ export default function ScratchCardsPage() {
   const cancelDelete = () => {
     setDeleteModalOpen(false);
     setCardToDelete(null);
+  };
+
+  const confirmToggleFeatured = async () => {
+    if (!cardToFeature) return;
+
+    try {
+      setFeaturing(true);
+      const response = await fetch('https://api.raspapixoficial.com/v1/api/admin/scratchcards/toggle-featured', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          scratchCardId: cardToFeature.id,
+          isFeatured: !cardToFeature.is_featured
+        })
+      });
+
+      if (response.ok) {
+        // Atualizar o estado local
+        setScratchCards(prev => prev.map(card => 
+          card.id === cardToFeature.id 
+            ? { ...card, is_featured: !card.is_featured }
+            : card
+        ));
+        setFeatureModalOpen(false);
+        setCardToFeature(null);
+      } else {
+        throw new Error('Erro ao alterar destaque da raspadinha');
+      }
+    } catch (err) {
+      console.error('Erro ao alterar destaque da raspadinha:', err);
+      alert('Erro ao alterar destaque da raspadinha');
+    } finally {
+      setFeaturing(false);
+    }
+  };
+
+  const cancelToggleFeatured = () => {
+    setFeatureModalOpen(false);
+    setCardToFeature(null);
   };
 
   const handleCreate = () => {
@@ -453,6 +504,7 @@ export default function ScratchCardsPage() {
                         <th className="text-left p-4 text-neutral-400 font-medium">Jogos</th>
                         <th className="text-left p-4 text-neutral-400 font-medium">Receita</th>
                         <th className="text-left p-4 text-neutral-400 font-medium">Status</th>
+                        <th className="text-left p-4 text-neutral-400 font-medium">Destaque</th>
                         <th className="text-left p-4 text-neutral-400 font-medium">Criado em</th>
                         <th className="text-left p-4 text-neutral-400 font-medium">Ações</th>
                       </tr>
@@ -515,6 +567,18 @@ export default function ScratchCardsPage() {
                             </Badge>
                           </td>
                           <td className="p-4">
+                            <div className="flex items-center gap-2">
+                              {card.is_featured ? (
+                                <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                              ) : (
+                                <Star className="w-4 h-4 text-neutral-400" />
+                              )}
+                              <span className="text-neutral-300 text-sm">
+                                {card.is_featured ? 'Em Destaque' : 'Normal'}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="p-4">
                             <span className="text-neutral-300 text-sm">
                               {formatDate(card.created_at)}
                             </span>
@@ -529,6 +593,19 @@ export default function ScratchCardsPage() {
                                 title="Visualizar detalhes"
                               >
                                 <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleToggleFeatured(card)}
+                                className={`p-2 ${
+                                  card.is_featured 
+                                    ? 'text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10' 
+                                    : 'text-neutral-400 hover:text-yellow-400 hover:bg-yellow-500/10'
+                                }`}
+                                title={card.is_featured ? 'Remover destaque' : 'Adicionar destaque'}
+                              >
+                                <Star className={`h-4 w-4 ${card.is_featured ? 'fill-current' : ''}`} />
                               </Button>
                               <Button
                                 variant="ghost"
@@ -584,6 +661,57 @@ export default function ScratchCardsPage() {
                 </>
               ) : (
                 'Excluir'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Confirmação de Destaque */}
+      <Dialog open={featureModalOpen} onOpenChange={setFeatureModalOpen}>
+        <DialogContent className="bg-neutral-800 border-neutral-700 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <Star className="w-5 h-5 text-yellow-400" />
+              {cardToFeature?.is_featured ? 'Remover Destaque' : 'Adicionar Destaque'}
+            </DialogTitle>
+            <DialogDescription className="text-neutral-400">
+              {cardToFeature?.is_featured ? (
+                <>
+                  Tem certeza que deseja remover o destaque da raspadinha <strong className="text-white">"{cardToFeature?.name}"</strong>?
+                  <br />
+                  Ela não aparecerá mais em destaque na página inicial.
+                </>
+              ) : (
+                <>
+                  Tem certeza que deseja destacar a raspadinha <strong className="text-white">"{cardToFeature?.name}"</strong>?
+                  <br />
+                  Ela aparecerá em destaque na página inicial.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={cancelToggleFeatured}
+              disabled={featuring}
+              className="bg-transparent border-neutral-600 text-neutral-300 hover:bg-neutral-700 hover:text-white"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={confirmToggleFeatured}
+              disabled={featuring}
+              className="bg-yellow-600 hover:bg-yellow-700 text-white"
+            >
+              {featuring ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {cardToFeature?.is_featured ? 'Removendo...' : 'Adicionando...'}
+                </>
+              ) : (
+                cardToFeature?.is_featured ? 'Remover Destaque' : 'Adicionar Destaque'
               )}
             </Button>
           </DialogFooter>
