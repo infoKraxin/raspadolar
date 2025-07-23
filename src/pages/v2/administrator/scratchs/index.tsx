@@ -110,7 +110,7 @@ export default function ScratchCardsPage() {
   const [scratchCards, setScratchCards] = useState<ScratchCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState('Todos');
+  // Removido statusFilter pois agora só mostramos raspadinhas ativas
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [cardToDelete, setCardToDelete] = useState<ScratchCard | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -129,7 +129,7 @@ export default function ScratchCardsPage() {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/scratchcards/admin/all?includeInactive=true', {
+      const response = await fetch('https://api.raspapixoficial.com/v1/api/scratchcards/admin/all?includeInactive=false', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -261,15 +261,12 @@ export default function ScratchCardsPage() {
   const filteredCards = scratchCards.filter(card => {
     const matchesSearch = card.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          card.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'Todos' || 
-                         (statusFilter === 'Ativo' && card.is_active) ||
-                         (statusFilter === 'Inativo' && !card.is_active);
-    return matchesSearch && matchesStatus;
+    // Como agora só carregamos raspadinhas ativas, não precisamos filtrar por status
+    return matchesSearch;
   });
 
-  // Calcular estatísticas
+  // Calcular estatísticas (apenas raspadinhas ativas)
   const totalCards = scratchCards.length;
-  const activeCards = scratchCards.filter(card => card.is_active).length;
   const totalGamesPlayed = scratchCards.reduce((sum, card) => sum + card.total_games_played, 0);
   const totalRevenue = scratchCards.reduce((sum, card) => sum + parseFloat(card.total_revenue || '0'), 0);
 
@@ -283,7 +280,7 @@ export default function ScratchCardsPage() {
     },
     {
       title: "Raspadinhas Ativas",
-      value: activeCards.toString(),
+      value: totalCards.toString(),
       icon: TrendingUp,
       description: "Disponíveis para venda",
       color: "text-green-400"
@@ -462,15 +459,7 @@ export default function ScratchCardsPage() {
                     className="pl-10 bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500"
                   />
                 </div>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-3 py-2 bg-neutral-700 border border-neutral-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                >
-                  <option value="Todos">Todos os Status</option>
-                  <option value="Ativo">Ativo</option>
-                  <option value="Inativo">Inativo</option>
-                </select>
+                {/* Removido filtro de status pois agora só mostramos raspadinhas ativas */}
               </div>
             </Card>
 
@@ -503,7 +492,7 @@ export default function ScratchCardsPage() {
                         <th className="text-left p-4 text-neutral-400 font-medium">RTP Atual</th>
                         <th className="text-left p-4 text-neutral-400 font-medium">Jogos</th>
                         <th className="text-left p-4 text-neutral-400 font-medium">Receita</th>
-                        <th className="text-left p-4 text-neutral-400 font-medium">Status</th>
+                        {/* Removida coluna de status pois agora só mostramos raspadinhas ativas */}
                         <th className="text-left p-4 text-neutral-400 font-medium">Destaque</th>
                         <th className="text-left p-4 text-neutral-400 font-medium">Criado em</th>
                         <th className="text-left p-4 text-neutral-400 font-medium">Ações</th>
@@ -561,11 +550,7 @@ export default function ScratchCardsPage() {
                               {formatCurrency(card.total_revenue)}
                             </span>
                           </td>
-                          <td className="p-4">
-                            <Badge className={getStatusColor(card.is_active)}>
-                              {card.is_active ? 'Ativo' : 'Inativo'}
-                            </Badge>
-                          </td>
+                          {/* Removida célula de status pois agora só mostramos raspadinhas ativas */}
                           <td className="p-4">
                             <div className="flex items-center gap-2">
                               {card.is_featured ? (
