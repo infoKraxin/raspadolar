@@ -13,9 +13,8 @@ interface AuthModalProps {
   onAuthSuccess?: (user: any, token: string) => void;
 }
 
-// **DEFINA A URL BASE DA SUA API AQUI!**
-// SUBSTITUA PELA SUA URL REAL DO RENDER
-const API_BASE_URL = "https://raspadinha-api.onrender.com"; // EX: "https://sua-api.onrender.com"
+// SUA URL DA API FOI COLADA AQUI!
+const API_BASE_URL = "https://raspadinha-api.onrender.com";
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
   const { login } = useAuth();
@@ -27,8 +26,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
     password: '',
     confirmPassword: '',
     name: '', // Será mapeado para 'username' no backend
-    phone: '', // Backend atual não usa
-    cpf: '' // Backend atual não usa
+    phone: '', // Backend atual não usa na API de registro
+    cpf: '' // Backend atual não usa na API de registro
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -113,14 +112,13 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
   };
 
   const handleLogin = async () => {
-    // CORRIGIDO: URL e nome das propriedades do body
-    const response = await fetch(`${API_BASE_URL}/api/login`, {
+    const response = await fetch(`${API_BASE_URL}/api/login`, { // URL CORRIGIDA
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email: formData.email, // Era 'identifier', agora 'email' para corresponder ao backend
+        email: formData.email, // Propriedade 'email' esperada pelo backend
         password: formData.password,
       }),
     });
@@ -131,17 +129,14 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
       throw new Error(data.message || 'Erro ao fazer login');
     }
 
-    // A resposta do backend é diretamente o user e token, não data.data
-    // Verificar a estrutura exata da resposta do seu backend para ajustar aqui.
-    // O backend que te passei retorna { token, user: userPayload, message }
-    // então data.user e data.token
-    if (data.token && data.user) { // Verifique se token e user existem diretamente em 'data'
-      login(data.user, data.token); // Ajustado para data.user e data.token
+    // A estrutura de resposta do backend que te passei tem 'user' e 'token' diretamente no objeto 'data'
+    if (data.token && data.user) {
+      login(data.user, data.token);
       
       toast.success('Login realizado com sucesso!');
       
       if (onAuthSuccess) {
-        onAuthSuccess(data.user, data.token); // Ajustado
+        onAuthSuccess(data.user, data.token);
       }
       
       onClose();
@@ -152,28 +147,26 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
 
   const handleRegister = async () => {
     if (formData.password !== formData.confirmPassword) {
-      throw new new Error('As senhas não coincidem');
+      throw new Error('As senhas não coincidem');
     }
 
     const urlParams = new URLSearchParams(window.location.search);
     const inviteCode = urlParams.get('r');
     
-    // O backend que te passei não espera 'phone' e 'cpf'.
-    // Removi para evitar erros. Se precisar, o server.js terá que ser alterado.
+    // O backend atual espera 'username', 'email' e 'password'.
+    // 'phone' e 'cpf' não são campos na tabela de usuários que te passei, então não serão enviados.
     const registerData: any = {
-      username: formData.name, // Era 'full_name', agora 'username' para corresponder ao backend
+      username: formData.name, // Propriedade 'username' esperada pelo backend
       email: formData.email,
       password: formData.password,
     };
 
     if (inviteCode) {
-      // Se o backend tiver um campo para invite_code, você pode adicionar aqui.
-      // Atualmente, o server.js que te passei não tem.
+      // Se você quiser usar um código de convite no futuro, o backend precisará ser adaptado.
       // registerData.invite_code = inviteCode;
     }
 
-    // CORRIGIDO: URL
-    const response = await fetch(`${API_BASE_URL}/api/register`, {
+    const response = await fetch(`${API_BASE_URL}/api/register`, { // URL CORRIGIDA
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -187,17 +180,14 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
       throw new Error(data.message || 'Erro ao criar conta');
     }
 
-    // A resposta do backend é diretamente o user e token, não data.data
-    // Verificar a estrutura exata da resposta do seu backend para ajustar aqui.
-    // O backend que te passei retorna { user, token, message }
-    // então data.user e data.token
-    if (data.token && data.user) { // Verifique se token e user existem diretamente em 'data'
-      login(data.user, data.token); // Ajustado para data.user e data.token
+    // A estrutura de resposta do backend que te passei tem 'user' e 'token' diretamente no objeto 'data'
+    if (data.token && data.user) {
+      login(data.user, data.token);
       
       toast.success('Conta criada com sucesso!');
       
       if (onAuthSuccess) {
-        onAuthSuccess(data.user, data.token); // Ajustado
+        onAuthSuccess(data.user, data.token);
       }
       
       onClose();
@@ -269,8 +259,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
               </button>
             </div>
 
-
-
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4 flex-1 flex flex-col justify-center">
               {activeTab === 'register' && (
@@ -290,8 +278,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                     />
                   </div>
 
-
-
                   {/* Phone Field (mantido no front-end, mas não enviado ao backend) */}
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={18} />
@@ -303,7 +289,9 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                       onChange={handleInputChange}
                       maxLength={15}
                       className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
-                      required
+                      // removido 'required' temporariamente, pois não está sendo enviado ao backend.
+                      // Se o backend for atualizado para aceitar, você pode adicionar 'required' novamente.
+                      // required
                       disabled={isLoading}
                     />
                   </div>
@@ -319,12 +307,12 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                       onChange={handleInputChange}
                       maxLength={14}
                       className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
-                      required
+                      // removido 'required' temporariamente, pois não está sendo enviado ao backend.
+                      // Se o backend for atualizado para aceitar, você pode adicionar 'required' novamente.
+                      // required
                       disabled={isLoading}
                     />
                   </div>
-
-
                 </>
               )}
 
