@@ -51,7 +51,7 @@ function PaymentModal({ isOpen, onClose, paymentData, token }: { isOpen: boolean
         try {
           // Tentar diferentes possíveis localizações do ID
           const paymentId = paymentData.payment?.id || paymentData.id || paymentData.deposit?.id;
-          const response = await fetch(`https://api.raspapixoficial.com/v1/api/deposits/${paymentId}/status`, {
+          const response = await fetch(`https://raspadinha-api.onrender.com/v1/api/deposits/${paymentId}/status`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -232,7 +232,7 @@ export default function DepositModal({ isOpen, onClose, token }: DepositModalPro
     const fetchSettings = async () => {
       setDepositBannerLoading(true);
       try {
-        const response = await fetch('https://api.raspapixoficial.com/v1/api/setting');
+        const response = await fetch('https://raspadinha-api.onrender.com/v1/api/setting');
         const data = await response.json();
         if (response.ok && data.data && data.data[0]?.deposit_banner) {
           setDepositBannerUrl(data.data[0].deposit_banner);
@@ -271,7 +271,7 @@ export default function DepositModal({ isOpen, onClose, token }: DepositModalPro
     }
     setIsGeneratingPayment(true);
     try {
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/deposits/create', {
+      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/deposits/create', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
