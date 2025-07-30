@@ -32,13 +32,22 @@ const imageFields = [
 ];
 
 export default function SettingsUploadPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [settings, setSettings] = useState<any>({});
   const [previews, setPreviews] = useState<{ [key: string]: string | null }>({});
   const [files, setFiles] = useState<{ [key: string]: File | null }>({});
+
+  // Verificar se o usuário é administrador
+  useEffect(() => {
+    if (user && !user.is_admin) {
+      toast.error('Acesso negado. Apenas administradores podem acessar esta página.');
+      window.location.href = '/';
+      return;
+    }
+  }, [user]);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -150,7 +159,7 @@ export default function SettingsUploadPage() {
             </div>
           </div>
 
-          {loading ? (
+          {loading || !user?.is_admin ? (
             <Card className="bg-neutral-800 border-neutral-700">
               <div className="flex items-center justify-center h-64">
                 <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
