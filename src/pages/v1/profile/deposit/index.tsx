@@ -229,7 +229,7 @@ export default function DepositPage() {
     setIsGeneratingPayment(true);
     
     try {
-      const response = await fetch('https://api.raspapixoficial.com/v1/api/deposits/create', {
+      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/deposits/create', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
