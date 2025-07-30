@@ -297,7 +297,7 @@ export default function Home() {
                 
                 return (
                   <div key={card.id} className={`bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl border ${getAppColorBorder()} shadow-lg hover:shadow-xl transition-all duration-300 pt-6 sm:pt-8`}>
-                    <div className="relative -mt-300 sm:-mt-15">
+                    <div className="relative -mt-12 sm:-mt-15">
                       <Image
                         src={fixImageUrl(card.image_url) || '/scratchs/web.webp'}
                         alt={card.name}
