@@ -235,13 +235,13 @@ export default function Home() {
         ) : (
           banners.map((banner, i) => (
             <div key={i} className="w-full h-full flex-shrink-0 relative">
-          <Image
+            <Image
                 src={banner}
                 alt={`Banner ${i + 1}`}
             fill
             className="object-cover"
                 priority={i === 0}
-          />
+            />
         </div>
           ))
         )}
@@ -274,10 +274,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center gap-2 mb-8">
             <svg width="2em" height="2em" fill="currentColor" className={`${getAppColorText()} animate-pulse duration-700`} viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M8 16c3.314 0 6-2 6-5.5 0-1.5-.5-4-2.5-6 .25 1.5-1.25 2-1.25 2C11 4 9 .5 6 0c.357 2 .5 4-2 6-1.25 1-2 2.729-2 4.5C2 14 4.686 16 8 16m0-1c-1.657 0-3-1-3-2.75 0-.75.25-2 1.25-3C6.125 10 7 10.5 7 10.5c-.375-1.25.5-3.25 2-3.5-.179 1-.25 2 1 3 .625.5 1 1.364 1 2.25C11 14 9.657 15 8 15"></path></svg>
-      <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent">
-              Em alta!
-      </h2>
-    </div>
+          <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent">
+            Em alta!
+          </h2>
+        </div>
 
           {/* Grid de Cards em Destaque */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
@@ -383,7 +383,7 @@ export default function Home() {
           </div>
         </div>
         
-        {/* Scratch Cards Grid */}
+        {/* Raspadinhas Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {loading ? (
             // Loading skeleton
@@ -495,18 +495,18 @@ export default function Home() {
              <div className="flex items-start gap-4 sm:gap-6">
                <div className="relative flex-shrink-0">
                  <div className={`w-14 h-14 sm:w-16 sm:h-16 ${getAppColor()} rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 border border-slate-300/40`}>
-                    <span className="text-white font-bold text-lg sm:text-xl">1</span>
-                  </div>
+                   <span className="text-white font-bold text-lg sm:text-xl">1</span>
+                 </div>
                </div>
-              <div className="flex-1">
-                <h3 className="text-white font-semibold text-lg sm:text-xl mb-2">
-                  Crie sua Conta
-                </h3>
-                <p className="text-neutral-400 text-sm sm:text-base leading-relaxed">
-                  Cadastre-se rapidamente e faça seu primeiro depósito para começar a jogar
-                </p>
-              </div>
-            </div>
+               <div className="flex-1">
+                 <h3 className="text-white font-semibold text-lg sm:text-xl mb-2">
+                   Crie sua Conta
+                 </h3>
+                 <p className="text-neutral-400 text-sm sm:text-base leading-relaxed">
+                   Cadastre-se rapidamente e faça seu primeiro depósito para começar a jogar
+                 </p>
+               </div>
+             </div>
           </div>
 
           {/* Step 2 Card */}
@@ -514,18 +514,18 @@ export default function Home() {
              <div className="flex items-start gap-4 sm:gap-6">
                <div className="relative flex-shrink-0">
                  <div className={`w-14 h-14 sm:w-16 sm:h-16 ${getAppColor()} rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 border border-zinc-300/40`}>
-                    <span className="text-white font-bold text-lg sm:text-xl">2</span>
-                  </div>
+                   <span className="text-white font-bold text-lg sm:text-xl">2</span>
+                 </div>
                </div>
-              <div className="flex-1">
-                <h3 className="text-white font-semibold text-lg sm:text-xl mb-2">
-                  Selecione uma Raspadinha
-                </h3>
-                <p className="text-neutral-400 text-sm sm:text-base leading-relaxed">
-                  Escolha entre diversas opções de raspadinhas com prêmios incríveis
-                </p>
-              </div>
-            </div>
+               <div className="flex-1">
+                 <h3 className="text-white font-semibold text-lg sm:text-xl mb-2">
+                   Selecione uma Raspadinha
+                 </h3>
+                 <p className="text-neutral-400 text-sm sm:text-base leading-relaxed">
+                   Escolha entre diversas opções de raspadinhas com prêmios incríveis
+                 </p>
+               </div>
+             </div>
           </div>
 
           {/* Step 3 Card */}
@@ -533,18 +533,18 @@ export default function Home() {
              <div className="flex items-start gap-4 sm:gap-6">
                <div className="relative flex-shrink-0">
                  <div className={`w-14 h-14 sm:w-16 sm:h-16 ${getAppColor()} rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 border border-stone-300/40`}>
-                    <span className="text-white font-bold text-lg sm:text-xl">3</span>
-                  </div>
+                   <span className="text-white font-bold text-lg sm:text-xl">3</span>
+                 </div>
                </div>
-              <div className="flex-1">
-                <h3 className="text-white font-semibold text-lg sm:text-xl mb-2">
-                  Raspe e Descubra
-                </h3>
-                <p className="text-neutral-400 text-sm sm:text-base leading-relaxed">
-                  Use o dedo ou mouse para raspar e descobrir se você ganhou
-                </p>
-              </div>
-            </div>
+               <div className="flex-1">
+                 <h3 className="text-white font-semibold text-lg sm:text-xl mb-2">
+                   Jogue e Descubra
+                 </h3>
+                 <p className="text-neutral-400 text-sm sm:text-base leading-relaxed">
+                   Interaja com a raspadinha e descubra se você ganhou
+                 </p>
+               </div>
+             </div>
           </div>
 
           {/* Step 4 Card */}
@@ -552,18 +552,18 @@ export default function Home() {
              <div className="flex items-start gap-4 sm:gap-6">
                <div className="relative flex-shrink-0">
                  <div className={`w-14 h-14 sm:w-16 sm:h-16 ${getAppColor()} rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 border border-neutral-300/40`}>
-                    <span className="text-white font-bold text-lg sm:text-xl">4</span>
-                  </div>
+                   <span className="text-white font-bold text-lg sm:text-xl">4</span>
+                 </div>
                </div>
-              <div className="flex-1">
-                <h3 className="text-white font-semibold text-lg sm:text-xl mb-2">
-                  Receba seu Prêmio
-                </h3>
-                <p className="text-neutral-400 text-sm sm:text-base leading-relaxed">
-                  Ganhou? Receba seu prêmio instantaneamente via PIX ou retire produtos
-                </p>
-              </div>
-            </div>
+               <div className="flex-1">
+                 <h3 className="text-white font-semibold text-lg sm:text-xl mb-2">
+                   Receba seu Prêmio
+                 </h3>
+                 <p className="text-neutral-400 text-sm sm:text-base leading-relaxed">
+                   Ganhou? Receba seu prêmio instantaneamente via PIX ou retire produtos
+                 </p>
+               </div>
+             </div>
           </div>
         </div>
       </div>
