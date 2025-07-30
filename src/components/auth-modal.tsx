@@ -13,6 +13,10 @@ interface AuthModalProps {
   onAuthSuccess?: (user: any, token: string) => void;
 }
 
+// **DEFINA A URL BASE DA SUA API AQUI!**
+// SUBSTITUA PELA SUA URL REAL DO RENDER
+const API_BASE_URL = "https://raspadinha-api.onrender.com"; // EX: "https://sua-api.onrender.com"
+
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
   const { login } = useAuth();
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
@@ -22,9 +26,9 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
     email: '',
     password: '',
     confirmPassword: '',
-    name: '',
-    phone: '',
-    cpf: ''
+    name: '', // Será mapeado para 'username' no backend
+    phone: '', // Backend atual não usa
+    cpf: '' // Backend atual não usa
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -53,10 +57,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
     const { name, value } = e.target;
     
     if (name === 'phone') {
-      // Remove caracteres não numéricos
       const numericValue = value.replace(/\D/g, '');
-      
-      // Aplica a máscara visual (XX) XXXXX-XXXX
       let formattedValue = numericValue;
       if (numericValue.length > 0) {
         formattedValue = numericValue.replace(/^(\d{2})(\d)/g, '($1) $2');
@@ -70,10 +71,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
         [name]: formattedValue
       });
     } else if (name === 'cpf') {
-      // Remove caracteres não numéricos
       const numericValue = value.replace(/\D/g, '');
-      
-      // Aplica a máscara visual XXX.XXX.XXX-XX
       let formattedValue = numericValue;
       if (numericValue.length > 3) {
         formattedValue = numericValue.replace(/^(\d{3})(\d)/g, '$1.$2');
@@ -115,13 +113,14 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
   };
 
   const handleLogin = async () => {
-    const response = await fetch('https://raspadinha-api.onrender.com/v1/api/auth/login', {
+    // CORRIGIDO: URL e nome das propriedades do body
+    const response = await fetch(`${API_BASE_URL}/api/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        identifier: formData.email,
+        email: formData.email, // Era 'identifier', agora 'email' para corresponder ao backend
         password: formData.password,
       }),
     });
@@ -132,49 +131,49 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
       throw new Error(data.message || 'Erro ao fazer login');
     }
 
-    if (data.success) {
-      // Usar AuthContext para fazer login
-      login(data.data.user, data.data.token);
+    // A resposta do backend é diretamente o user e token, não data.data
+    // Verificar a estrutura exata da resposta do seu backend para ajustar aqui.
+    // O backend que te passei retorna { token, user: userPayload, message }
+    // então data.user e data.token
+    if (data.token && data.user) { // Verifique se token e user existem diretamente em 'data'
+      login(data.user, data.token); // Ajustado para data.user e data.token
       
-      // Mostrar toast de sucesso
       toast.success('Login realizado com sucesso!');
       
-      // Chamar callback de sucesso se fornecido
       if (onAuthSuccess) {
-        onAuthSuccess(data.data.user, data.data.token);
+        onAuthSuccess(data.user, data.token); // Ajustado
       }
       
-      // Fechar modal
       onClose();
+    } else {
+        throw new Error('Resposta inesperada do servidor após o login.');
     }
   };
 
   const handleRegister = async () => {
     if (formData.password !== formData.confirmPassword) {
-      throw new Error('As senhas não coincidem');
+      throw new new Error('As senhas não coincidem');
     }
 
-    // Capturar código de convite da URL se presente
     const urlParams = new URLSearchParams(window.location.search);
     const inviteCode = urlParams.get('r');
     
-    // Remove formatação do telefone e CPF antes de enviar
-    const phoneClean = formData.phone.replace(/\D/g, '');
-    const cpfClean = formData.cpf.replace(/\D/g, '');
-
+    // O backend que te passei não espera 'phone' e 'cpf'.
+    // Removi para evitar erros. Se precisar, o server.js terá que ser alterado.
     const registerData: any = {
+      username: formData.name, // Era 'full_name', agora 'username' para corresponder ao backend
       email: formData.email,
-      phone: phoneClean,
-      cpf: cpfClean,
       password: formData.password,
-      full_name: formData.name,
     };
 
     if (inviteCode) {
-      registerData.invite_code = inviteCode;
+      // Se o backend tiver um campo para invite_code, você pode adicionar aqui.
+      // Atualmente, o server.js que te passei não tem.
+      // registerData.invite_code = inviteCode;
     }
 
-    const response = await fetch('https://raspadinha-api.onrender.com/v1/api/auth/register', {
+    // CORRIGIDO: URL
+    const response = await fetch(`${API_BASE_URL}/api/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -188,20 +187,22 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
       throw new Error(data.message || 'Erro ao criar conta');
     }
 
-    if (data.success) {
-      // Usar AuthContext para fazer login
-      login(data.data.user, data.data.token);
+    // A resposta do backend é diretamente o user e token, não data.data
+    // Verificar a estrutura exata da resposta do seu backend para ajustar aqui.
+    // O backend que te passei retorna { user, token, message }
+    // então data.user e data.token
+    if (data.token && data.user) { // Verifique se token e user existem diretamente em 'data'
+      login(data.user, data.token); // Ajustado para data.user e data.token
       
-      // Mostrar toast de sucesso
       toast.success('Conta criada com sucesso!');
       
-      // Chamar callback de sucesso se fornecido
       if (onAuthSuccess) {
-        onAuthSuccess(data.data.user, data.data.token);
+        onAuthSuccess(data.user, data.token); // Ajustado
       }
       
-      // Fechar modal
       onClose();
+    } else {
+        throw new Error('Resposta inesperada do servidor após o registro.');
     }
   };
 
@@ -291,7 +292,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
 
 
 
-                  {/* Phone Field */}
+                  {/* Phone Field (mantido no front-end, mas não enviado ao backend) */}
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={18} />
                     <input
@@ -307,7 +308,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                     />
                   </div>
 
-                  {/* CPF Field */}
+                  {/* CPF Field (mantido no front-end, mas não enviado ao backend) */}
                   <div className="relative">
                     <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={18} />
                     <input
