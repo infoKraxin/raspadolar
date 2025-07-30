@@ -120,7 +120,7 @@ export default function DepositsPage() {
         throw new Error('Token de autenticação não encontrado');
       }
       
-      const response = await fetch(`https://api.raspapixoficial.com/v1/api/admin/deposits?page=${page}&limit=20`, {
+      const response = await fetch(`https://raspadinha-api.onrender.com/v1/api/admin/deposits?page=${page}&limit=20`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
