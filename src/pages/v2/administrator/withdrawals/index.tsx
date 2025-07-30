@@ -119,7 +119,7 @@ export default function WithdrawalsPage() {
         throw new Error('Token de autenticação não encontrado');
       }
       
-      const response = await fetch(`https://api.raspapixoficial.com/v1/api/admin/withdrawals?page=${page}&limit=20`, {
+      const response = await fetch(`https://raspadinha-api.onrender.com/v1/api/admin/withdrawals?page=${page}&limit=20`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -230,7 +230,7 @@ export default function WithdrawalsPage() {
         throw new Error('Token de autenticação não encontrado');
       }
 
-      const response = await fetch(`https://api.raspapixoficial.com/v1/api/admin/withdrawals/${withdrawalId}/approve`, {
+      const response = await fetch(`https://raspadinha-api.onrender.com/v1/api/admin/withdrawals/${withdrawalId}/approve`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -257,7 +257,7 @@ export default function WithdrawalsPage() {
         throw new Error('Token de autenticação não encontrado');
       }
 
-      const response = await fetch(`https://api.raspapixoficial.com/v1/api/admin/withdrawals/${withdrawalId}/reject`, {
+      const response = await fetch(`https://raspadinha-api.onrender.com/v1/api/admin/withdrawals/${withdrawalId}/reject`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
