@@ -16,10 +16,24 @@ const nextConfig = {
         port: '',
         pathname: '/storage/v1/object/public/**',
       },
+      // Domínio para as imagens do Vercel Blob
+      {
+        protocol: 'https',
+        hostname: 'hebbkx1anhila5yf.public.blob.vercel-storage.com',
+        port: '',
+        pathname: '/**',
+      },
       // Adicione este bloco para permitir o domínio via.placeholder.com
       {
         protocol: 'https',
         hostname: 'via.placeholder.com',
+        port: '',
+        pathname: '/**',
+      },
+      // Domínio para a URL final do Vercel
+      {
+        protocol: 'https',
+        hostname: 'raspadolar.vercel.app',
         port: '',
         pathname: '/**',
       },
