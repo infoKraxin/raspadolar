@@ -219,7 +219,7 @@ const [banners, setBanners] = useState<string[]>([]);
   }, []);
 
   return (
-  <div 
+  <div> 
   className={`${poppins.className} `}>
     <Header/>
     
