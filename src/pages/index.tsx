@@ -178,42 +178,33 @@ export default function Home() {
   };
 
   // Estado para banners dinâmicos
-  const [banners, setBanners] = useState<string[]>([]);
-  const [bannersLoading, setBannersLoading] = useState(true);
+const [banners, setBanners] = useState<string[]>([]);
+  const [bannersLoading, setBannersLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchBanners = async () => {
-      setBannersLoading(true);
-      try {
-        const response = await fetch('https://raspadinha-api.onrender.com/v1/api/setting');
-        const data = await response.json();
-        if (response.ok && data.data && data.data[0]) {
-          const s = data.data[0];
-          const arr = [s.plataform_banner, s.plataform_banner_2, s.plataform_banner_3].filter(Boolean);
-          setBanners(arr.length > 0 ? arr : [
-            'https://raw.githubusercontent.com/infoKraxin/raspadolar/main/public/banner_orion2.png?raw=true',
-            'https://github.com/infoKraxin/raspadolar/blob/main/public/banner_orion1.png?raw=true',
-            'https://raw.githubusercontent.com/infoKraxin/raspadolar/refs/heads/main/public/banner.webp'
-          ]);
-        } else {
-          setBanners([
-            'https://raw.githubusercontent.com/infoKraxin/raspadolar/main/public/banner_orion2.png?raw=true',
-            'https://github.com/infoKraxin/raspadolar/blob/main/public/banner_orion1.png?raw=true',
-            'https://raw.githubusercontent.com/infoKraxin/raspadolar/refs/heads/main/public/banner.webp'
-          ]);
-        }
-      } catch {
-        setBanners([
-          'https://raw.githubusercontent.com/infoKraxin/raspadolar/main/public/banner_orion2.png?raw=true',
-          'https://github.com/infoKraxin/raspadolar/blob/main/public/banner_orion1.png?raw=true',
-          'https://raw.githubusercontent.com/infoKraxin/raspadolar/refs/heads/main/public/banner.webp'
-        ]);
-      } finally {
-        setBannersLoading(false);
-      }
-    };
-    fetchBanners();
-  }, []);
+  useEffect(() => {
+    const fetchBanners = async () => {
+      setBannersLoading(true);
+      try {
+        const response = await fetch('https://raspadinha-api.onrender.com/v1/api/setting');
+        const data = await response.json();
+        if (response.ok && data.data && data.data[0]) {
+          const s = data.data[0];
+          const arr = [s.plataform_banner, s.plataform_banner_2, s.plataform_banner_3].filter(Boolean);
+          // CORREÇÃO AQUI: Use os banners da API se a chamada for bem-sucedida
+          setBanners(arr.length > 0 ? arr : ['/banner_orion2.png', '/banner_orion2.png', '/banner_orion2.png']);
+        } else {
+          // Fallback para banners locais se a API não retornar dados
+          setBanners(['/banner_orion2.png', '/banner_orion2.png', '/banner_orion2.png']);
+        }
+      } catch {
+        // Fallback para banners locais em caso de erro na requisição
+        setBanners(['/banner_orion2.png', '/banner_orion2.png', '/banner_orion2.png']);
+      } finally {
+        setBannersLoading(false);
+      }
+    };
+    fetchBanners();
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
