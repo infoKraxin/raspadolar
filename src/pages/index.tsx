@@ -224,25 +224,26 @@ const [banners, setBanners] = useState<string[]>([]);
     <Header/>
     
     {/* Banner Carousel */}
-    <div className="bg-neutral-900 mt-4 relative w-full max-w-6xl lg:max-w-7xl mx-auto h-[200px] xs:h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px] xl:h-[450px] overflow-hidden px-2 sm:px-4 lg:px-0">
+    <div className="bg-neutral-900 mt-4 relative w-full max-w-6xl lg:max-w-7xl mx-auto overflow-hidden px-2 sm:px-4 lg:px-0">
       <div 
         className="flex transition-transform duration-500 ease-in-out h-full "
         style={{ transform: `translateX(-${currentSlide * 100}%)` }}
       >
         {bannersLoading ? (
           Array(3).fill(0).map((_, i) => (
-            <div key={i} className="w-full h-full flex-shrink-0 relative">
+            <div key={i} className="w-full relative pt-[56.25%] flex-shrink-0">
               <div className="absolute inset-0 bg-neutral-800 animate-pulse rounded-lg" />
         </div>
           ))
         ) : (
           banners.map((banner, i) => (
-            <div key={i} className="w-full h-full flex-shrink-0 relative">
+            <div key={i} className="w-full flex-shrink-0 relative">
             <Image
                 src={banner}
                 alt={`Banner ${i + 1}`}
-            fill
-            className="object-contain"
+                layout="responsive" // Usando layout="responsive"
+                width={1920} // Largura da imagem para a proporção 16:9
+                height={1080} // Altura da imagem para a proporção 16:9
                 priority={i === 0}
             />
         </div>
@@ -252,7 +253,7 @@ const [banners, setBanners] = useState<string[]>([]);
       
       {/* Dots Indicator */}
       <div className="absolute bottom-3 sm:bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2">
-        {Array.from({ length: totalSlides }).map((_, index) => (
+        {Array.from({ length: banners.length }).map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
@@ -314,30 +315,30 @@ const [banners, setBanners] = useState<string[]>([]);
                       />
                       <div className={`absolute top-2 sm:top-3 right-2 sm:right-3 ${getBadgeColor()} backdrop-blur-sm text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-bold shadow-lg`}>
                         {cardType}
-                      </div>
-                    </div>
-                    <div className="p-4 sm:p-5">
-                      <h3 className="text-white font-semibold text-base sm:text-lg mb-1 truncate" title={card.name}>
-                        {card.name}
-                      </h3>
-                      <p className="text-neutral-400 text-sm mb-3 sm:mb-4 truncate" title={cardType === 'Produtos' ? card.description : maxPrize}>
-                        {cardType === 'Produtos' ? card.description : maxPrize}
-                      </p>
-                      <div className="flex justify-between items-center">
-                        <span className="text-green-400 font-bold text-base sm:text-lg">
-                          R$ {parseFloat(card.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                        </span>
-                        <button 
-                          onClick={() => router.push(`v1/scratch/${card.id}`)}
-                          className={`${getAppGradient()} text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl`}
-                        >
-                          Jogar
-                        </button>
-                      </div>
                     </div>
                   </div>
-                );
-              })}
+                  <div className="p-4 sm:p-5">
+                    <h3 className="text-white font-semibold text-base sm:text-lg mb-1 truncate" title={card.name}>
+                      {card.name}
+                    </h3>
+                    <p className="text-neutral-400 text-sm mb-3 sm:mb-4 truncate" title={cardType === 'Produtos' ? card.description : maxPrize}>
+                      {cardType === 'Produtos' ? card.description : maxPrize}
+                    </p>
+                    <div className="flex justify-between items-center">
+                      <span className="text-green-400 font-bold text-base sm:text-lg">
+                        R$ {parseFloat(card.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </span>
+                      <button 
+                        onClick={() => router.push(`v1/scratch/${card.id}`)}
+                        className={`${getAppGradient()} text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl`}
+                      >
+                        Jogar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -470,7 +471,6 @@ const [banners, setBanners] = useState<string[]>([]);
                       >
                         Jogar
                       </button>
-                    </div>
                   </div>
                 </div>
               );
