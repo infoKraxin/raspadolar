@@ -15,7 +15,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'hebbkx1anhila5yf.public.blob.vercel-storage.com',
+        hostname: 'raw.githubusercontent.com/infoKraxin/raspadolar/main/public/banner_orion2.png?raw=true',
         pathname: '/**',
       },
       {
