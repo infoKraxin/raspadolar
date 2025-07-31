@@ -190,12 +190,24 @@ export default function Home() {
         if (response.ok && data.data && data.data[0]) {
           const s = data.data[0];
           const arr = [s.plataform_banner, s.plataform_banner_2, s.plataform_banner_3].filter(Boolean);
-          setBanners(arr.length > 0 ? arr : ['/banner.webp', '/banner.webp', '/banner.webp']);
+          setBanners(arr.length > 0 ? arr : [
+            'https://raw.githubusercontent.com/infoKraxin/raspadolar/main/public/banner_orion2.png?raw=true',
+            'https://github.com/infoKraxin/raspadolar/blob/main/public/banner_orion1.png?raw=true',
+            'https://raw.githubusercontent.com/infoKraxin/raspadolar/refs/heads/main/public/banner.webp'
+          ]);
         } else {
-          setBanners(['/banner.webp', '/banner.webp', '/banner.webp']);
+          setBanners([
+            'https://raw.githubusercontent.com/infoKraxin/raspadolar/main/public/banner_orion2.png?raw=true',
+            'https://github.com/infoKraxin/raspadolar/blob/main/public/banner_orion1.png?raw=true',
+            'https://raw.githubusercontent.com/infoKraxin/raspadolar/refs/heads/main/public/banner.webp'
+          ]);
         }
       } catch {
-        setBanners(['/banner.webp', '/banner.webp', '/banner.webp']);
+        setBanners([
+          'https://raw.githubusercontent.com/infoKraxin/raspadolar/main/public/banner_orion2.png?raw=true',
+          'https://github.com/infoKraxin/raspadolar/blob/main/public/banner_orion1.png?raw=true',
+          'https://raw.githubusercontent.com/infoKraxin/raspadolar/refs/heads/main/public/banner.webp'
+        ]);
       } finally {
         setBannersLoading(false);
       }
