@@ -16,7 +16,7 @@ interface DepositModalProps {
 
 const quickAmounts = [10, 20, 40, 80, 100, 200];
 
-function PaymentModal({ isOpen, onClose, paymentData, token }: { isOpen: boolean; onClose: () => void; paymentData: any; token: string | null }) {
+function PaymentModal({ isOpen, onClose, paymentData, token, updateUser }: { isOpen: boolean; onClose: () => void; paymentData: any; token: string | null; updateUser: (data: any) => void }) {
   const [timeLeft, setTimeLeft] = useState(900); // 15 minutos
   const prevIsOpenRef = useRef(false);
   const [isPaymentPaid, setIsPaymentPaid] = useState(false);
@@ -25,7 +25,6 @@ function PaymentModal({ isOpen, onClose, paymentData, token }: { isOpen: boolean
     let timer: NodeJS.Timeout | null = null;
     let statusCheckTimer: NodeJS.Timeout | null = null;
     
-    // Só reinicia o timer se o modal foi fechado e agora está aberto
     if (isOpen && !prevIsOpenRef.current) {
       setTimeLeft(900);
       setIsPaymentPaid(false);
@@ -33,7 +32,6 @@ function PaymentModal({ isOpen, onClose, paymentData, token }: { isOpen: boolean
     prevIsOpenRef.current = isOpen;
     
     if (isOpen) {
-      // Timer para contagem regressiva
       timer = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
@@ -46,28 +44,25 @@ function PaymentModal({ isOpen, onClose, paymentData, token }: { isOpen: boolean
         });
       }, 1000);
 
-      // Verificação imediata do status
-      const checkStatus = async () => {
+      // Nova lógica de verificação: não há mais polling para o status.
+      // A atualização do saldo será feita pelo webhook.
+      // O front-end apenas espera a atualização para fechar o modal.
+      const checkUserBalance = async () => {
+        if (!token) return;
         try {
-          // Tentar diferentes possíveis localizações do ID
-          const paymentId = paymentData.payment?.id || paymentData.id || paymentData.deposit?.id;
-          
-          // ALTERAÇÃO AQUI: A URL de verificação de status precisa apontar para o seu novo backend
-          const response = await fetch(`https://blackcat-pay-backend-1.onrender.com/v1/api/deposits/${paymentId}/status`, {
+          const response = await fetch('https://raspadinha-api.onrender.com/v1/api/users/profile', {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
           });
-          
           const data = await response.json();
-          
-          if (response.ok && data.success && data.data.status === 'PAID' && !isPaymentPaid) {
+          if (response.ok && data.success && data.data.balance > parseFloat(paymentData.initialBalance)) {
             setIsPaymentPaid(true);
+            updateUser(data.data); // Atualiza o saldo do usuário na interface
             toast.success('Pagamento aprovado! Seu saldo foi creditado com sucesso.');
             
-            // Fecha o modal após 5 segundos
             setTimeout(() => {
               onClose();
             }, 5000);
@@ -77,18 +72,16 @@ function PaymentModal({ isOpen, onClose, paymentData, token }: { isOpen: boolean
         }
       };
 
-      // Verificação imediata
-      checkStatus();
-      
-      // Timer para verificar status do pagamento a cada 5 segundos
-      statusCheckTimer = setInterval(checkStatus, 5000);
+      // Inicia a verificação do saldo
+      checkUserBalance();
+      statusCheckTimer = setInterval(checkUserBalance, 5000);
     }
     
     return () => {
       if (timer) clearInterval(timer);
       if (statusCheckTimer) clearInterval(statusCheckTimer);
     };
-  }, [isOpen, onClose, paymentData, token, isPaymentPaid]);
+  }, [isOpen, onClose, paymentData, token, isPaymentPaid, updateUser]);
 
   const copyPixCode = async () => {
     try {
@@ -216,7 +209,7 @@ function PaymentModal({ isOpen, onClose, paymentData, token }: { isOpen: boolean
   );
 }
 
-export default function DepositModal({ isOpen, onClose, token }: DepositModalProps) {
+export default function DepositModal({ isOpen, onClose, token, updateUser }: DepositModalProps) {
   const [customAmount, setCustomAmount] = useState('');
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [isGeneratingPayment, setIsGeneratingPayment] = useState(false);
@@ -273,8 +266,8 @@ export default function DepositModal({ isOpen, onClose, token }: DepositModalPro
     }
     setIsGeneratingPayment(true);
     try {
-      // ALTERAÇÃO AQUI: Mudando a URL de volta para sua API principal
-      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/deposits/create', {
+      // --- ALTERAÇÃO CORRIGIDA ---
+      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/deposits/appsnap', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -282,8 +275,6 @@ export default function DepositModal({ isOpen, onClose, token }: DepositModalPro
         },
         body: JSON.stringify({
           amount: amount,
-          paymentMethod: 'PIX',
-          gateway: 'appsnappay',
         })
       });
       const data = await response.json();
@@ -357,7 +348,6 @@ export default function DepositModal({ isOpen, onClose, token }: DepositModalPro
                 </Label>
                 <div className="grid grid-cols-3 gap-2 sm:gap-3">
                   {quickAmounts.map((amount) => {
-                    // Definir badges para diferentes valores
                     let badge = null;
                     if (amount === 20) {
                       badge = { text: 'Popular', color: getAppColor() };
@@ -459,6 +449,7 @@ export default function DepositModal({ isOpen, onClose, token }: DepositModalPro
           onClose={handleCloseAll}
           paymentData={paymentData}
           token={token}
+          updateUser={updateUser}
         />
       )}
     </>
