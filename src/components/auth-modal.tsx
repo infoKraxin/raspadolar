@@ -153,12 +153,13 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
     const urlParams = new URLSearchParams(window.location.search);
     const inviteCode = urlParams.get('r');
     
-    // O backend atual espera 'username', 'email' e 'password'.
-    // 'phone' e 'cpf' não são campos na tabela de usuários que te passei, então não serão enviados.
+    // O backend atual espera 'username', 'email', 'password', 'phone' e 'document'.
     const registerData: any = {
-      username: formData.name, // Propriedade 'username' esperada pelo backend
+      username: formData.name,
       email: formData.email,
       password: formData.password,
+      phone: formData.phone.replace(/\D/g, ''), // Incluído
+      document: formData.cpf.replace(/\D/g, '') // Incluído
     };
 
     if (inviteCode) {
@@ -166,7 +167,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
       // registerData.invite_code = inviteCode;
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/register`, { // URL CORRIGIDA
+    const response = await fetch(`${API_BASE_URL}/api/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -291,7 +292,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                       className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
                       // removido 'required' temporariamente, pois não está sendo enviado ao backend.
                       // Se o backend for atualizado para aceitar, você pode adicionar 'required' novamente.
-                      // required
+                      required
                       disabled={isLoading}
                     />
                   </div>
@@ -309,7 +310,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                       className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
                       // removido 'required' temporariamente, pois não está sendo enviado ao backend.
                       // Se o backend for atualizado para aceitar, você pode adicionar 'required' novamente.
-                      // required
+                      required
                       disabled={isLoading}
                     />
                   </div>
