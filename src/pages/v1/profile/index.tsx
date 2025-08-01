@@ -457,6 +457,13 @@ export default function ProfilePage() {
     fetchProfileData();
   }, [user, token, router, authLoading]);
 
+  // Novo useEffect para carregar o histórico financeiro automaticamente
+  useEffect(() => {
+    if (activeSection === 'financial' && token) {
+      fetchFinancialHistory();
+    }
+  }, [activeSection, token]);
+
   const sidebarItems = [
     { id: 'personal', icon: <User className="w-5 h-5" />, label: 'Informações Pessoais' },
     { id: 'inventory', icon: <Package className="w-5 h-5" />, label: 'Inventário' },
@@ -774,15 +781,18 @@ export default function ProfilePage() {
                     </p>
                   </div>
 
-                  {!financialHistory ? (
-                    <div className="text-center py-8">
-                      <Button 
-                        onClick={fetchFinancialHistory}
-                        disabled={isLoadingHistory}
-                        className={`${getAppGradient()} text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20`}
-                      >
-                        {isLoadingHistory ? 'Carregando...' : 'Carregar Histórico'}
-                      </Button>
+                  {isLoadingHistory ? (
+                    <div className="text-center py-12">
+                      <div className="flex items-center justify-center">
+                        <div className="w-8 h-8 border-2 border-yellow-400/30 border-t-yellow-400 rounded-full animate-spin" />
+                      </div>
+                      <p className="text-neutral-400 mt-4">Carregando histórico financeiro...</p>
+                    </div>
+                  ) : !financialHistory || (financialHistory.deposits.length === 0 && financialHistory.withdraws.length === 0) ? (
+                    <div className="text-center py-12">
+                      <CreditCard className="w-16 h-16 text-neutral-600 mx-auto mb-4" />
+                      <p className="text-neutral-400 text-lg mb-2">Nenhuma transação encontrada</p>
+                      <p className="text-neutral-500 text-sm">Suas transações aparecerão aqui quando você realizar depósitos ou saques</p>
                     </div>
                   ) : (
                     <div className="space-y-6">
@@ -872,28 +882,6 @@ export default function ProfilePage() {
                               </div>
                             ))}
                           </div>
-                        </div>
-                      )}
-
-                      {/* Botão para recarregar */}
-                      <div className="text-center pt-4">
-                        <Button 
-                          onClick={fetchFinancialHistory}
-                          disabled={isLoadingHistory}
-                          variant="outline"
-                          className="bg-neutral-700 border-neutral-600 text-white hover:bg-neutral-600"
-                        >
-                          {isLoadingHistory ? 'Carregando...' : 'Atualizar Histórico'}
-                        </Button>
-                      </div>
-
-                      {/* Mensagem quando não há transações */}
-                      {(!financialHistory.deposits || financialHistory.deposits.length === 0) && 
-                       (!financialHistory.withdraws || financialHistory.withdraws.length === 0) && (
-                        <div className="text-center py-12">
-                          <CreditCard className="w-16 h-16 text-neutral-600 mx-auto mb-4" />
-                          <p className="text-neutral-400 text-lg mb-2">Nenhuma transação encontrada</p>
-                          <p className="text-neutral-500 text-sm">Suas transações aparecerão aqui quando você realizar depósitos ou saques</p>
                         </div>
                       )}
                     </div>
