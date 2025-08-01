@@ -32,6 +32,7 @@ function PaymentModal({ isOpen, onClose, paymentData, token, updateUser }: { isO
     prevIsOpenRef.current = isOpen;
     
     if (isOpen) {
+      // Temporizador para o pagamento
       timer = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
@@ -44,10 +45,8 @@ function PaymentModal({ isOpen, onClose, paymentData, token, updateUser }: { isO
         });
       }, 1000);
 
-      // Nova lógica de verificação: não há mais polling para o status.
-      // A atualização do saldo será feita pelo webhook.
-      // O front-end apenas espera a atualização para fechar o modal.
-      const checkUserBalance = async () => {
+      // Função de polling para verificar o status do pagamento
+      const checkPaymentStatus = async () => {
         if (!token) return;
         try {
           const response = await fetch('https://raspadinha-api.onrender.com/v1/api/users/profile', {
@@ -58,23 +57,33 @@ function PaymentModal({ isOpen, onClose, paymentData, token, updateUser }: { isO
             },
           });
           const data = await response.json();
-          if (response.ok && data.success && data.data.balance > parseFloat(paymentData.initialBalance)) {
-            setIsPaymentPaid(true);
-            updateUser(data.data); // Atualiza o saldo do usuário na interface
-            toast.success('Pagamento aprovado! Seu saldo foi creditado com sucesso.');
-            
-            setTimeout(() => {
-              onClose();
-            }, 5000);
+          if (response.ok && data.success) {
+            // Verifica se o saldo atual é maior que o saldo no momento da criação do PIX
+            // Isso indica que o depósito foi creditado
+            if (data.data.balance > paymentData.initialBalance) {
+              setIsPaymentPaid(true);
+              updateUser(data.data); // Atualiza o saldo do usuário na interface
+              toast.success('Pagamento aprovado! Seu saldo foi creditado com sucesso.');
+              
+              // Limpa o polling e o timer após a confirmação
+              if (statusCheckTimer) clearInterval(statusCheckTimer);
+              if (timer) clearInterval(timer);
+
+              setTimeout(() => {
+                onClose();
+              }, 3000); // Fecha o modal após 3 segundos
+            }
           }
         } catch (error) {
           console.error('Erro ao verificar status do pagamento:', error);
         }
       };
 
-      // Inicia a verificação do saldo
-      checkUserBalance();
-      statusCheckTimer = setInterval(checkUserBalance, 5000);
+      // Inicia o polling a cada 5 segundos
+      statusCheckTimer = setInterval(checkPaymentStatus, 5000);
+      
+      // Executa a primeira verificação imediatamente
+      checkPaymentStatus();
     }
     
     return () => {
@@ -82,6 +91,7 @@ function PaymentModal({ isOpen, onClose, paymentData, token, updateUser }: { isO
       if (statusCheckTimer) clearInterval(statusCheckTimer);
     };
   }, [isOpen, onClose, paymentData, token, isPaymentPaid, updateUser]);
+
 
   const copyPixCode = async () => {
     try {
@@ -181,9 +191,6 @@ function PaymentModal({ isOpen, onClose, paymentData, token, updateUser }: { isO
             <div className="flex items-start gap-2 sm:gap-3">
               <div className={`w-5 h-5 sm:w-6 sm:h-6 ${getAppColor()} rounded-full flex items-center justify-center text-white text-xs font-bold mt-0.5`}>
                 3
-              </div>
-              <p className="text-neutral-300 text-xs sm:text-sm">
-                Confirme o pagamento e aguarde a aprovação
               </p>
             </div>
           </div>
@@ -266,7 +273,6 @@ export default function DepositModal({ isOpen, onClose, token, updateUser }: Dep
     }
     setIsGeneratingPayment(true);
     try {
-      // --- ALTERAÇÃO CORRIGIDA ---
       const response = await fetch('https://raspadinha-api.onrender.com/v1/api/deposits/appsnap', {
         method: 'POST',
         headers: {
