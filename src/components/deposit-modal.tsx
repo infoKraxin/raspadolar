@@ -44,9 +44,6 @@ function PaymentModal({ isOpen, onClose, paymentData, token, updateUser }: { isO
         });
       }, 1000);
 
-      // Nova lógica de verificação: não há mais polling para o status.
-      // A atualização do saldo será feita pelo webhook.
-      // O front-end apenas espera a atualização para fechar o modal.
       const checkUserBalance = async () => {
         if (!token) return;
         try {
@@ -60,7 +57,7 @@ function PaymentModal({ isOpen, onClose, paymentData, token, updateUser }: { isO
           const data = await response.json();
           if (response.ok && data.success && data.data.balance > parseFloat(paymentData.initialBalance)) {
             setIsPaymentPaid(true);
-            updateUser(data.data); // Atualiza o saldo do usuário na interface
+            updateUser(data.data);
             toast.success('Pagamento aprovado! Seu saldo foi creditado com sucesso.');
             
             setTimeout(() => {
@@ -72,7 +69,6 @@ function PaymentModal({ isOpen, onClose, paymentData, token, updateUser }: { isO
         }
       };
 
-      // Inicia a verificação do saldo
       checkUserBalance();
       statusCheckTimer = setInterval(checkUserBalance, 5000);
     }
@@ -266,7 +262,6 @@ export default function DepositModal({ isOpen, onClose, token, updateUser }: Dep
     }
     setIsGeneratingPayment(true);
     try {
-      // --- ALTERAÇÃO CORRIGIDA ---
       const response = await fetch('https://raspadinha-api.onrender.com/v1/api/deposits/appsnap', {
         method: 'POST',
         headers: {
