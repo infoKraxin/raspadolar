@@ -448,6 +448,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                 </p>
               )}
             </div>
+          </div>
         </div>
       </div>
     </div>
