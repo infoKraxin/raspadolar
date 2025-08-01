@@ -215,10 +215,6 @@ export default function DepositModal({ isOpen, onClose, token, updateUser }: Dep
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [depositBannerUrl, setDepositBannerUrl] = useState<string | null>(null);
   const [depositBannerLoading, setDepositBannerLoading] = useState(true);
-  
-  // --- NOVO ESTADO PARA TELEFONE E CPF ---
-  const [phone, setPhone] = useState('');
-  const [document, setDocument] = useState('');
 
   const handleQuickAmountSelect = (amount: number) => {
     setSelectedAmount(amount);
@@ -266,11 +262,6 @@ export default function DepositModal({ isOpen, onClose, token, updateUser }: Dep
       toast.error('Erro de autenticação');
       return;
     }
-    // --- NOVA VALIDAÇÃO ---
-    if (!phone || !document) {
-      toast.error('Telefone e CPF são obrigatórios para o pagamento.');
-      return;
-    }
     setIsGeneratingPayment(true);
     try {
       const response = await fetch('https://raspadinha-api.onrender.com/v1/api/deposits/appsnap', {
@@ -281,9 +272,6 @@ export default function DepositModal({ isOpen, onClose, token, updateUser }: Dep
         },
         body: JSON.stringify({
           amount: amount,
-          // --- CAMPOS ADICIONADOS ---
-          phone: phone,
-          document: document,
         })
       });
       const data = await response.json();
@@ -291,8 +279,7 @@ export default function DepositModal({ isOpen, onClose, token, updateUser }: Dep
         throw new Error(data.message || 'Erro ao gerar pagamento');
       }
       if (data.success) {
-        // Guarda o saldo inicial do usuário para comparação
-        setPaymentData({...data.data, initialBalance: data.data.deposit.user_id?.balance || 0 });
+        setPaymentData(data.data);
         setShowPaymentModal(true);
         toast.success('Pagamento PIX gerado com sucesso!');
       }
@@ -366,8 +353,8 @@ export default function DepositModal({ isOpen, onClose, token, updateUser }: Dep
                     } else if (amount === 80) {
                       badge = { text: '+Querido', color: getAppColor() };
                     } else if (amount === 100) {
-                    badge = { text: '+Chances', color: getAppColor() };
-                  }
+                      badge = { text: '+Chances', color: getAppColor() };
+                    }
                    
                     return (
                       <button
@@ -415,37 +402,6 @@ export default function DepositModal({ isOpen, onClose, token, updateUser }: Dep
                   Valor mínimo: R$ 1,00
                 </p>
               </div>
-
-              {/* --- NOVOS CAMPOS PARA TELEFONE E CPF --- */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1 sm:space-y-2">
-                  <Label htmlFor="phone" className="text-white font-medium">
-                    Telefone
-                  </Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="(xx) xxxxx-xxxx"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500 focus:ring-yellow-500/20 text-sm sm:text-base"
-                  />
-                </div>
-                <div className="space-y-1 sm:space-y-2">
-                  <Label htmlFor="document" className="text-white font-medium">
-                    CPF
-                  </Label>
-                  <Input
-                    id="document"
-                    type="text"
-                    placeholder="000.000.000-00"
-                    value={document}
-                    onChange={(e) => setDocument(e.target.value)}
-                    className="bg-neutral-700 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-yellow-500 focus:ring-yellow-500/20 text-sm sm:text-base"
-                  />
-                </div>
-              </div>
-
 
               {/* Payment Method */}
               <div className={`p-3 sm:p-4 bg-neutral-700/20 rounded-lg border border-neutral-400/20`}>
