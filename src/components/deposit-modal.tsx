@@ -1,3 +1,5 @@
+// DepositModal.tsx
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,7 +53,9 @@ function PaymentModal({ isOpen, onClose, paymentData, token }: { isOpen: boolean
         try {
           // Tentar diferentes possíveis localizações do ID
           const paymentId = paymentData.payment?.id || paymentData.id || paymentData.deposit?.id;
-          const response = await fetch(`https://raspadinha-api.onrender.com/v1/api/deposits/${paymentId}/status`, {
+          
+          // ALTERAÇÃO AQUI: A URL de verificação de status precisa apontar para o seu novo backend
+          const response = await fetch(`https://blackcat-pay-backend-1.onrender.com/v1/api/deposits/${paymentId}/status`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -271,7 +275,8 @@ export default function DepositModal({ isOpen, onClose, token }: DepositModalPro
     }
     setIsGeneratingPayment(true);
     try {
-      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/deposits/create', {
+      // ALTERAÇÃO AQUI: Mudando a URL para o seu backend de pagamentos
+      const response = await fetch('https://blackcat-pay-backend-1.onrender.com/api/create-payment', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -280,7 +285,8 @@ export default function DepositModal({ isOpen, onClose, token }: DepositModalPro
         body: JSON.stringify({
           amount: amount,
           paymentMethod: 'PIX',
-          gateway: 'pluggou'
+          // ALTERAÇÃO AQUI: Adicionando o gateway correto
+          gateway: 'appsnappay',
         })
       });
       const data = await response.json();
@@ -460,4 +466,4 @@ export default function DepositModal({ isOpen, onClose, token }: DepositModalPro
       )}
     </>
   );
-} 
+}
