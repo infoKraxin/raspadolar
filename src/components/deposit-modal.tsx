@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { X, Smartphone, CheckCircle, Copy, Timer } from "lucide-react";
 import { toast } from "sonner";
 import { QRCodeCanvas } from "qrcode.react";
-import { getAppColor, getAppColorText, getAppColorBorder, getAppColorSvg, getAppGradient } from '@/lib/colors';
+import { getAppColor, getAppColorText, getAppColorSvg, getAppGradient } from '@/lib/colors';
 
 interface DepositModalProps {
   isOpen: boolean;
@@ -191,6 +191,9 @@ function PaymentModal({ isOpen, onClose, paymentData, token, updateUser }: { isO
             <div className="flex items-start gap-2 sm:gap-3">
               <div className={`w-5 h-5 sm:w-6 sm:h-6 ${getAppColor()} rounded-full flex items-center justify-center text-white text-xs font-bold mt-0.5`}>
                 3
+              </div>
+              <p className="text-neutral-300 text-xs sm:text-sm">
+                Confirme o pagamento e aguarde a aprovação
               </p>
             </div>
           </div>
