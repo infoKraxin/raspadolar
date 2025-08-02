@@ -263,7 +263,7 @@ export default function Home() {
 
   return (
     <div className={`${poppins.className}`}>
-      <Header />
+       <Header balance={balance} />
 
       {/* Banner Carousel */}
       <div className="bg-neutral-900 mt-4 relative w-full max-w-6xl lg:max-w-7xl mx-auto overflow-hidden px-2 sm:px-4 lg:px-0">
@@ -549,4 +549,5 @@ export default function Home() {
     </div>
   );
 }
+
 
