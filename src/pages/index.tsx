@@ -64,6 +64,7 @@ export default function Home() {
   const [filter, setFilter] = useState('all');
   const [banners, setBanners] = useState<string[]>([]);
   const [bannersLoading, setBannersLoading] = useState(true);
+  const [balance, setBalance] = useState<number>(0); // Estado para o saldo do usuário
 
   const maleMemojis = [
     '/memojis/male-1.png', '/memojis/male-2.png', '/memojis/male-3.png',
@@ -148,6 +149,29 @@ export default function Home() {
     }
   };
 
+  const fetchUserData = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/users/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setBalance(data.data.balance);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar dados do usuário:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserData(); // Busca o saldo inicial ao carregar a página
+  }, []);
+
   useEffect(() => {
     const fetchBanners = async () => {
       setBannersLoading(true);
@@ -202,9 +226,10 @@ export default function Home() {
 
         const data = await response.json();
 
-        if (data.success && data.newBalance !== null) {
-          console.log('Saldo corrigido com sucesso! Novo saldo:', data.newBalance);
-          // Adicione a lógica para atualizar o saldo no seu Header ou em um contexto global aqui
+        if (data.success) {
+          console.log('Verificação de depósitos concluída.');
+          // Após a verificação, buscamos o saldo atualizado para exibi-lo
+          await fetchUserData();
         } else {
           console.log('Nenhum depósito pendente de atualização encontrado.');
         }
@@ -225,7 +250,7 @@ export default function Home() {
 
   return (
     <div className={`${poppins.className}`}>
-      <Header />
+      <Header balance={balance} />
 
       {/* Banner Carousel */}
       <div className="bg-neutral-900 mt-4 relative w-full max-w-6xl lg:max-w-7xl mx-auto overflow-hidden px-2 sm:px-4 lg:px-0">
