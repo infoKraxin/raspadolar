@@ -74,6 +74,11 @@ interface GameResult {
   isWinner: boolean;
   amountWon: string;
   prize: GamePrize | null;
+scratchCard: { // <-- ADICIONE ESTE BLOCO INTEIRO
+    id: string;
+    name: string;
+    price: string;
+    image_url: string;
 }
 
 // --- INTERFACE CORRIGIDA --- 
@@ -613,3 +618,4 @@ const ScratchCardPage = () => {
 };
 
 export default ScratchCardPage;
+
