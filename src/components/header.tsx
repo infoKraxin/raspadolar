@@ -67,7 +67,7 @@ export default function Header() {
 
             if (response.ok && data.success) {
                 // Adicionado um segundo log para ver o saldo que a API retornou
-                console.log("Saldo recebido da API:", data.data?.wallet?.[0]?.balance);
+                console.log("Saldo recebido da API:", data.data?.balance);
                 updateUser(data.data);
                 toast.success('Saldo atualizado com sucesso!');
             } else {
@@ -276,11 +276,9 @@ export default function Header() {
                                 <div className="hidden md:block text-left">
                                     <p className="text-white text-sm font-medium">{user.full_name}</p>
                                     <p className="text-neutral-400 text-xs">
-                                        {user.wallet && user.wallet[0] ? 
-                                            `${user.wallet[0].symbol} ${parseFloat(user.wallet[0].balance).toFixed(2)}` : 
-                                            'R$ 0,00'
-                                        }
-                                    </p>
+    {/* Verificamos se 'balance' existe e é um número antes de formatar */}
+    R$ {(typeof user.balance === 'number') ? user.balance.toFixed(2) : '0,00'}
+</p>
                                 </div>
                             </div>
                             <ChevronDown size={16} className="text-neutral-400" />
@@ -496,3 +494,4 @@ export default function Header() {
     </div>
     )
 }
+
