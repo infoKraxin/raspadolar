@@ -63,7 +63,7 @@ export default function Header() {
             const data = await response.json();
 
             // Adicionado um log para depuração. Verifique o console!
-            console.log("Resposta da API de perfil:", data);
+            console.log("Resposta completa da API de perfil:", data);
 
             if (response.ok && data.success) {
                 // Adicionado um segundo log para ver o saldo que a API retornou
