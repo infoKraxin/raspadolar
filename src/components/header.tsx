@@ -62,14 +62,21 @@ export default function Header() {
 
             const data = await response.json();
 
-            // Adicionado um log para depuração. Verifique o console!
             console.log("Resposta completa da API de perfil:", data);
 
             if (response.ok && data.success) {
-                // Adicionado um segundo log para ver o saldo que a API retornou
+                // Log para ver o conteúdo completo do array wallet
+                console.log("Conteúdo do array wallet:", data.data?.wallet);
+                // Log para ver o saldo que a API retornou
                 console.log("Saldo recebido da API:", data.data?.wallet?.[0]?.balance);
-                updateUser(data.data);
-                toast.success('Saldo atualizado com sucesso!');
+
+                if (data.data?.wallet?.[0]?.balance) {
+                    updateUser(data.data);
+                    toast.success('Saldo atualizado com sucesso!');
+                } else {
+                    console.error("Saldo não encontrado no objeto de resposta.");
+                    toast.error('Saldo não encontrado na resposta do servidor.');
+                }
             } else {
                 toast.error('Erro ao buscar saldo: ' + (data.message || 'Erro desconhecido'));
             }
