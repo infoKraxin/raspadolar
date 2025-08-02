@@ -13,7 +13,7 @@ import ScratchCard from 'react-scratchcard-v4';
 import Winners from '@/components/winners';
 import { toast } from 'sonner';
 
-const poppins = Poppins({ 
+const poppins = Poppins({
   subsets: ["latin"],
   weight: ["100", "200", "300","400","500", "600", "700"],
 });
@@ -146,7 +146,7 @@ const ScratchCardPage = () => {
       setLoading(false);
     }
   };
-  
+
   useEffect(() => {
     if (id) {
       fetchScratchCardData();
@@ -155,22 +155,18 @@ const ScratchCardPage = () => {
 
   const generateScratchItems = (result: GameResult): ScratchItem[] => {
     if (!scratchCardData?.prizes?.length) return [];
-    
     const allPrizesAsItems = scratchCardData.prizes.map(p => ({
       type: p.id,
       icon: fixImageUrl(p.image_url),
       value: parseFloat(p.value || p.redemption_value || '0')
     }));
-
     const items: ScratchItem[] = [];
-    
     if (result.isWinner && result.prize) {
       const winningItem = allPrizesAsItems.find(p => p.type === result.prize?.id);
       if (winningItem) {
         for (let i = 0; i < 3; i++) items.push({ id: items.length, ...winningItem });
       }
     }
-
     const nonWinningItems = allPrizesAsItems.filter(p => p.type !== result.prize?.id);
     let i = items.length;
     while (i < 9) {
@@ -178,7 +174,6 @@ const ScratchCardPage = () => {
       items.push({ id: i, ...randomItem });
       i++;
     }
-
     return items.sort(() => Math.random() - 0.5);
   };
 
@@ -202,7 +197,6 @@ const ScratchCardPage = () => {
       if (!isAuthenticated) toast.error("Você precisa fazer login para jogar.");
       return;
     }
-
     setGameState('loading');
     setPlayingGame(true);
     setScratchComplete(false);
@@ -210,7 +204,6 @@ const ScratchCardPage = () => {
     setHasWon(false);
     setTotalWinnings(0);
     setGameResult(null);
-
     try {
       const response = await fetch('https://raspadinha-api.onrender.com/v1/api/scratchcards/play', {
         method: 'POST',
@@ -220,21 +213,17 @@ const ScratchCardPage = () => {
           },
         body: JSON.stringify({ scratchCardId: id })
       });
-      
       const data: PlayGameResponse = await response.json();
-      
       if (data.success) {
         const result: GameResult = {
           isWinner: data.prize && parseFloat(data.prize.value) > 0,
           amountWon: data.prize ? data.prize.value : '0',
           prize: data.prize,
         };
-
         setGameResult(result);
         const items = generateScratchItems(result);
         setScratchItems(items);
         setGameState('playing');
-        
         if (user && typeof data.newBalance === 'number') {
           updateUser({ ...user, balance: data.newBalance });
         }
@@ -253,16 +242,13 @@ const ScratchCardPage = () => {
 
   const handleScratchComplete = async () => {
     if (scratchComplete || !gameResult) return;
-    
     setScratchComplete(true);
     setHasWon(gameResult.isWinner);
     setTotalWinnings(parseFloat(gameResult.amountWon));
-    
     if (gameResult.isWinner) {
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 5000);
     }
-    
     setGameState('completed');
     await refreshUserBalance();
   };
