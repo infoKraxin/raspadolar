@@ -528,7 +528,6 @@ const ScratchCardPage = () => {
           </div>
         </div>
       </div>
-
       <Footer />
     </div>
   );
