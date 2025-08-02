@@ -62,12 +62,20 @@ export default function Header() {
 
             const data = await response.json();
 
+            // Adicionado um log para depuração. Verifique o console!
+            console.log("Resposta da API de perfil:", data);
+
             if (response.ok && data.success) {
-                // Atualizar o contexto de autenticação com os dados atualizados
+                // Adicionado um segundo log para ver o saldo que a API retornou
+                console.log("Saldo recebido da API:", data.data?.wallet?.[0]?.balance);
                 updateUser(data.data);
+                toast.success('Saldo atualizado com sucesso!');
+            } else {
+                toast.error('Erro ao buscar saldo: ' + (data.message || 'Erro desconhecido'));
             }
         } catch (error) {
             console.error('Erro ao atualizar saldo do usuário:', error);
+            toast.error('Erro de rede ao atualizar saldo.');
         }
     };
 
@@ -293,7 +301,10 @@ export default function Header() {
                                             }
                                         </span>
                                         <button
-                                            onClick={refreshUserBalance}
+                                            onClick={() => {
+                                                refreshUserBalance();
+                                                toast.info('Atualizando saldo...');
+                                            }}
                                             className="ml-1 p-1 rounded hover:bg-neutral-700 transition-colors"
                                             title="Atualizar saldo"
                                         >
