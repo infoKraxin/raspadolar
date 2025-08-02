@@ -154,7 +154,7 @@ export default function Home() {
     if (!token) return;
 
     try {
-      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/users/me', {
+      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/users/profile', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -536,3 +536,4 @@ export default function Home() {
     </div>
   );
 }
+
