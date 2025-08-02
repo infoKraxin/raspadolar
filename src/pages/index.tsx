@@ -64,7 +64,7 @@ export default function Home() {
   const [filter, setFilter] = useState('all');
   const [banners, setBanners] = useState<string[]>([]);
   const [bannersLoading, setBannersLoading] = useState(true);
-  const [balance, setBalance] = useState<number>(0); // Estado para o saldo do usuário
+  const [balance, setBalance] = useState<number>(0);
 
   const maleMemojis = [
     '/memojis/male-1.png', '/memojis/male-2.png', '/memojis/male-3.png',
@@ -149,7 +149,7 @@ export default function Home() {
     }
   };
 
-  // FUNÇÃO fetchUserData CORRIGIDA E MELHORADA
+  // FUNÇÃO fetchUserData CORRIGIDA
   const fetchUserData = async () => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -165,21 +165,13 @@ export default function Home() {
       });
       const data = await response.json();
 
-      console.log('Resposta completa da API de perfil:', data);
-     
-      // Tenta a primeira estrutura (mais comum)
+      // Verificamos se a resposta foi um sucesso e se a propriedade 'balance' existe em data.data
       if (data.success && data.data && typeof data.data.balance !== 'undefined') {
         setBalance(data.data.balance);
-        console.log('Saldo recebido da API:', data.data.balance);
-      } 
-      // Se não encontrar, tenta a segunda estrutura (aninhada)
-      else if (data.success && data.data && data.data.user && typeof data.data.user.balance !== 'undefined') {
-        setBalance(data.data.user.balance);
-        console.log('Saldo recebido da API (aninhado):', data.data.user.balance);
-      }
-      else {
-        console.log('Saldo não encontrado no objeto de resposta. Verifique a estrutura da API.');
-        setBalance(0); // Define o saldo como 0 para evitar erros de exibição
+        console.log('Saldo atualizado com sucesso:', data.data.balance);
+      } else {
+        console.log('Estrutura da resposta da API de perfil inesperada ou saldo não encontrado.');
+        setBalance(0);
       }
     } catch (error) {
       console.error('Erro ao buscar dados do usuário:', error);
@@ -188,7 +180,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    fetchUserData(); // Busca o saldo inicial ao carregar a página
+    fetchUserData();
   }, []);
 
   useEffect(() => {
@@ -225,7 +217,6 @@ export default function Home() {
     fetchScratchCards();
   }, []);
 
-  // NOVO CÓDIGO: useEffect para verificar e corrigir o saldo
   useEffect(() => {
     const checkAndCorrectBalance = async () => {
       const token = localStorage.getItem('token');
@@ -247,7 +238,6 @@ export default function Home() {
 
         if (data.success) {
           console.log('Verificação de depósitos concluída.');
-          // Após a verificação, buscamos o saldo atualizado para exibi-lo
           await fetchUserData();
         } else {
           console.log('Nenhum depósito pendente de atualização encontrado.');
@@ -318,7 +308,7 @@ export default function Home() {
       {/* Winners Slider */}
       <div className="py-8 sm:py-12 bg-neutral-900 max-w-7xl mx-auto px-4">
         <Winners />
-        </div>
+      </div>
 
       {/* Raspadinhas em Destaque */}
       {scratchCards.some(card => card.is_featured) && (
@@ -543,8 +533,8 @@ export default function Home() {
                     <p className="text-neutral-400 text-sm sm:text-base leading-relaxed">
                       {step.desc}
                     </p>
-                  </div>
                 </div>
+              </div>
               </div>
             ))}
           </div>
