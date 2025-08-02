@@ -105,11 +105,11 @@ interface GameData {
 }
 
 // --- INTERFACE CORRIGIDA ---
-// Esta interface agora reflete a resposta real da sua API de jogo.
+// A propriedade 'prize' agora pode ser null, como a API envia.
 interface PlayGameResponse {
   success: boolean;
   message: string;
-  prize: GamePrize | null;
+  prize: GamePrize | null; 
   newBalance: number;
 }
 
@@ -310,7 +310,6 @@ const ScratchCardPage = () => {
     return { hasWon: false };
   };
 
-  // --- FUNÇÃO DE JOGO CORRIGIDA ---
   const playGame = async (authToken: string): Promise<{ result: GameResult | null, errorMessage?: string }> => {
     if (!id || !authToken) return { result: null, errorMessage: "Dados de autenticação ausentes." };
     
@@ -330,9 +329,10 @@ const ScratchCardPage = () => {
       const data: PlayGameResponse = await response.json();
 
       if (data.success) {
-        // CORREÇÃO: Construímos o objeto GameResult a partir da resposta real da API
+        // --- CORREÇÃO APLICADA AQUI ---
+        // Garantimos que 'isWinner' seja sempre um booleano (true/false)
         const result: GameResult = {
-          isWinner: data.prize && parseFloat(data.prize.value) > 0,
+          isWinner: !!(data.prize && parseFloat(data.prize.value) > 0),
           amountWon: data.prize ? data.prize.value : '0',
           prize: data.prize,
           scratchCard: {
@@ -343,12 +343,11 @@ const ScratchCardPage = () => {
           }
         };
 
-        // Atualizamos o saldo do usuário aqui mesmo
         if (user && typeof data.newBalance === 'number') {
           updateUser({ ...user, balance: data.newBalance });
         }
         
-        return { result: result };
+        return { result };
       } else {
         console.error('Erro ao jogar:', data.message);
         return { result: null, errorMessage: data.message };
