@@ -657,12 +657,8 @@ export default function ProfilePage() {
                   <div className="mb-8 p-6 bg-gradient-to-r from-green-500/10 to-green-600/10 rounded-lg border border-green-500/20">
                     <p className="text-green-400 text-sm font-medium mb-1">Saldo disponível para saque</p>
                     <p className="text-white text-3xl font-bold">
-                      {isLoading ? 'Carregando...' : (
-                        profileData?.wallet?.[0] ? 
-                          `${profileData.wallet[0].symbol} ${parseFloat(profileData.wallet[0].balance).toFixed(2)}` : 
-                          'R$ 0,00'
-                      )}
-                    </p>
+  {isLoading ? 'Carregando...' : `R$ ${(typeof profileData?.balance === 'number') ? profileData.balance.toFixed(2) : '0.00'}`}
+</p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1124,4 +1120,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
 
