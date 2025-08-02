@@ -70,19 +70,19 @@ interface GamePrize {
   image_url: string;
 }
 
+// --- INTERFACE CORRIGIDA ---
 interface GameResult {
   isWinner: boolean;
   amountWon: string;
   prize: GamePrize | null;
-scratchCard: { // <-- ADICIONE ESTE BLOCO INTEIRO
+  scratchCard: {
     id: string;
     name: string;
     price: string;
     image_url: string;
+  };
 }
 
-// --- INTERFACE CORRIGIDA --- 
-// Esta interface agora reflete a resposta real da sua API de jogo.
 interface PlayGameResponse {
   success: boolean;
   message: string;
@@ -276,13 +276,11 @@ const ScratchCardPage = () => {
       }
   };
 
-  // --- FUNÇÃO DE JOGO CORRIGIDA PARA PROCESSAR A RESPOSTA CORRETA DA API ---
   const handlePlay = async () => {
       if (!isAuthenticated || playingGame || !id || !token) {
           if (!isAuthenticated) toast.error("Você precisa fazer login para jogar.");
           return;
       }
-
       setGameState('loading');
       setPlayingGame(true);
       setScratchComplete(false);
@@ -290,7 +288,6 @@ const ScratchCardPage = () => {
       setHasWon(false);
       setTotalWinnings(0);
       setGameResult(null);
-
       try {
           const response = await fetch('https://raspadinha-api.onrender.com/v1/api/scratchcards/play', {
               method: 'POST',
@@ -300,15 +297,12 @@ const ScratchCardPage = () => {
               },
               body: JSON.stringify({ scratchCardId: id })
           });
-
           const data: PlayGameResponse = await response.json();
-
           if (data.success) {
               const result: GameResult = {
                   isWinner: data.prize && parseFloat(data.prize.value) > 0,
                   amountWon: data.prize ? data.prize.value : '0',
                   prize: data.prize,
-                  // Adicionamos os dados da raspadinha ao resultado
                   scratchCard: {
                       id: scratchCardData!.id,
                       name: scratchCardData!.name,
@@ -316,12 +310,10 @@ const ScratchCardPage = () => {
                       image_url: scratchCardData!.image_url
                   }
               };
-
               setGameResult(result);
               const items = generateScratchItems(result);
               setScratchItems(items);
               setGameState('playing');
-
               if (user && typeof data.newBalance === 'number') {
                   updateUser({ ...user, balance: data.newBalance });
               }
@@ -414,7 +406,7 @@ const ScratchCardPage = () => {
                 <Button 
                   onClick={handlePlay}
                   disabled={!isAuthenticated || !scratchCardData}
-                  className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 disabled:from-neutral-600 disabled:to-neutral-700 text-white font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-xl w-full lg:w-1/2 transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20 disabled:border-neutral-600/20 cursor-pointer disabled:cursor-not-allowed text-sm sm:text-base"
+                  className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 disabled:from-neutral-600 disabled:to-neutral-700 text-white font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-xl w-full lg:w-1-2 transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20 disabled:border-neutral-600/20 cursor-pointer disabled:cursor-not-allowed text-sm sm:text-base"
                 >
                   {!isAuthenticated ? 'Faça login para jogar' : scratchCardData ? `Comprar e Raspar (R$ ${parseFloat(scratchCardData.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})` : 'Carregando...'}
                 </Button>
@@ -613,9 +605,8 @@ const ScratchCardPage = () => {
           </div>
         </div>
         <Footer />
-    </div>
+      </div>
   );
 };
 
 export default ScratchCardPage;
-
