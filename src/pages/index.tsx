@@ -182,6 +182,40 @@ export default function Home() {
     fetchScratchCards();
   }, []);
 
+  // NOVO CÓDIGO: useEffect para verificar e corrigir o saldo
+  useEffect(() => {
+    const checkAndCorrectBalance = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log("Usuário não logado. Não é possível verificar o saldo.");
+        return;
+      }
+
+      try {
+        const response = await fetch('https://raspadinha-api.onrender.com/v1/api/users/check-unprocessed-deposits', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.newBalance !== null) {
+          console.log('Saldo corrigido com sucesso! Novo saldo:', data.newBalance);
+          // Adicione a lógica para atualizar o saldo no seu Header ou em um contexto global aqui
+        } else {
+          console.log('Nenhum depósito pendente de atualização encontrado.');
+        }
+      } catch (error) {
+        console.error('Erro ao verificar depósitos não processados:', error);
+      }
+    };
+    
+    checkAndCorrectBalance();
+  }, []);
+
   const getBadgeColor = (cardType: string) => {
     if (cardType === 'Dinheiro') return 'bg-green-500/90';
     if (cardType === 'Produtos') return 'bg-yellow-500/90';
