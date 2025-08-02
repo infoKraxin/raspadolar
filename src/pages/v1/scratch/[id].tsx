@@ -76,6 +76,8 @@ interface GameResult {
   prize: GamePrize | null;
 }
 
+// --- INTERFACE CORRIGIDA --- 
+// Esta interface agora reflete a resposta real da sua API de jogo.
 interface PlayGameResponse {
   success: boolean;
   message: string;
@@ -83,6 +85,7 @@ interface PlayGameResponse {
   newBalance: number;
 }
 
+// Tipos para os itens da raspadinha
 interface ScratchItem {
   id: number;
   type: string;
@@ -90,6 +93,7 @@ interface ScratchItem {
   icon: string;
 }
 
+// Estados do jogo
 type GameState = 'idle' | 'loading' | 'playing' | 'completed';
 
 const ScratchCardPage = () => {
@@ -104,15 +108,19 @@ const ScratchCardPage = () => {
     const handleResize = () => {
       setScreenWidth(window.innerWidth);
     };
+
     if (typeof window !== 'undefined') {
       window.addEventListener('resize', handleResize);
       return () => window.removeEventListener('resize', handleResize);
     }
   }, []);
 
+  // Estados da API
   const [scratchCardData, setScratchCardData] = useState<ScratchCardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Estados do jogo
   const [gameState, setGameState] = useState<GameState>('idle');
   const [scratchItems, setScratchItems] = useState<ScratchItem[]>([]);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -124,9 +132,10 @@ const ScratchCardPage = () => {
 
   const fixImageUrl = (url: string) => {
     if (!url) return '';
-    if (url.startsWith('http')) return url;
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://raspadolar.vercel.app';
-    return `${baseUrl}${url}`;
+    return url
+      .replace('raspa.ae', 'https://raspadinha-api.onrender.com')
+      .replace('/uploads/scratchcards/', '/uploads/')
+      .replace('/uploads/prizes/', '/uploads/');
   };
 
   const fetchScratchCardData = async () => {
@@ -142,11 +151,12 @@ const ScratchCardPage = () => {
       }
     } catch (err) {
       setError('Erro ao carregar raspadinha');
+      console.error('Erro ao buscar raspadinha:', err);
     } finally {
       setLoading(false);
     }
   };
-  
+
   useEffect(() => {
     if (id) {
       fetchScratchCardData();
@@ -154,38 +164,34 @@ const ScratchCardPage = () => {
   }, [id]);
 
   const generateScratchItems = (result: GameResult): ScratchItem[] => {
-    if (!scratchCardData?.prizes?.length) return [];
-    
-    const allPrizesAsItems = scratchCardData.prizes.map(p => ({
-      type: p.id,
-      icon: fixImageUrl(p.image_url),
-      value: parseFloat(p.value || p.redemption_value || '0')
-    }));
-
-    const items: ScratchItem[] = [];
-    
-    if (result.isWinner && result.prize) {
-      const winningItem = allPrizesAsItems.find(p => p.type === result.prize?.id);
-      if (winningItem) {
-        for (let i = 0; i < 3; i++) items.push({ id: items.length, ...winningItem });
+      if (!scratchCardData?.prizes?.length) return [];
+      const allPrizesAsItems = scratchCardData.prizes.map(p => ({
+          type: p.id,
+          icon: fixImageUrl(p.image_url),
+          value: parseFloat(p.value || p.redemption_value || '0')
+      }));
+      const items: ScratchItem[] = [];
+      if (result.isWinner && result.prize) {
+          const winningItem = allPrizesAsItems.find(p => p.type === result.prize?.id);
+          if (winningItem) {
+              for (let i = 0; i < 3; i++) items.push({ id: items.length, ...winningItem });
+          }
       }
-    }
-
-    const nonWinningItems = allPrizesAsItems.filter(p => p.type !== result.prize?.id);
-    let i = items.length;
-    while (i < 9) {
-      const randomItem = nonWinningItems[Math.floor(Math.random() * nonWinningItems.length)] || { type: 'loser', icon: '/50_money.webp', value: 0 };
-      items.push({ id: i, ...randomItem });
-      i++;
-    }
-
-    return items.sort(() => Math.random() - 0.5);
+      const nonWinningItems = allPrizesAsItems.filter(p => p.type !== result.prize?.id);
+      let i = items.length;
+      while (i < 9) {
+          const randomItem = nonWinningItems[Math.floor(Math.random() * nonWinningItems.length)] || { type: 'loser', icon: '/50_money.webp', value: 0 };
+          items.push({ id: i, ...randomItem });
+          i++;
+      }
+      return items.sort(() => Math.random() - 0.5);
   };
-
+  
   const refreshUserBalance = async () => {
     if (!token) return;
     try {
       const response = await fetch('https://raspadinha-api.onrender.com/v1/api/users/profile', {
+        method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` },
       });
       const data = await response.json();
@@ -197,52 +203,59 @@ const ScratchCardPage = () => {
     }
   };
 
-  const playGameAndHandleResult = async () => {
-    if (!isAuthenticated || playingGame || !id || !token) {
-      if (!isAuthenticated) toast.error("Você precisa fazer login para jogar.");
-      return;
-    }
-    setGameState('loading');
-    setPlayingGame(true);
-    setScratchComplete(false);
-    setShowConfetti(false);
-    setHasWon(false);
-    setTotalWinnings(0);
-    setGameResult(null);
-    try {
-      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/scratchcards/play', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-        body: JSON.stringify({ scratchCardId: id })
-      });
-      const data: PlayGameResponse = await response.json();
-      if (data.success) {
-        const result: GameResult = {
-          isWinner: data.prize && parseFloat(data.prize.value) > 0,
-          amountWon: data.prize ? data.prize.value : '0',
-          prize: data.prize,
-        };
-        setGameResult(result);
-        const items = generateScratchItems(result);
-        setScratchItems(items);
-        setGameState('playing');
-        if (user && typeof data.newBalance === 'number') {
-          updateUser({ ...user, balance: data.newBalance });
-        }
-      } else {
-        setGameState('idle');
-        toast.error(data.message || 'Erro ao iniciar o jogo. Tente novamente.');
+  // --- FUNÇÃO DE JOGO CORRIGIDA E UNIFICADA ---
+  const handlePlay = async () => {
+      if (!isAuthenticated || playingGame || !id || !token) {
+          if (!isAuthenticated) toast.error("Você precisa fazer login para jogar.");
+          return;
       }
-    } catch (error) {
-        setGameState('idle');
-        toast.error('Erro de conexão ao tentar jogar.');
-        console.error('Erro na requisição de jogo:', error);
-    } finally {
-        setPlayingGame(false);
-    }
+
+      setGameState('loading');
+      setPlayingGame(true);
+      setScratchComplete(false);
+      setShowConfetti(false);
+      setHasWon(false);
+      setTotalWinnings(0);
+      setGameResult(null);
+
+      try {
+          const response = await fetch('https://raspadinha-api.onrender.com/v1/api/scratchcards/play', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({ scratchCardId: id })
+          });
+
+          const data: PlayGameResponse = await response.json();
+
+          if (data.success) {
+              const result: GameResult = {
+                  isWinner: data.prize && parseFloat(data.prize.value) > 0,
+                  amountWon: data.prize ? data.prize.value : '0',
+                  prize: data.prize,
+              };
+
+              setGameResult(result);
+              const items = generateScratchItems(result);
+              setScratchItems(items);
+              setGameState('playing');
+
+              if (user && typeof data.newBalance === 'number') {
+                  updateUser({ ...user, balance: data.newBalance });
+              }
+          } else {
+              setGameState('idle');
+              toast.error(data.message || 'Erro ao iniciar o jogo. Tente novamente.');
+          }
+      } catch (error) {
+          setGameState('idle');
+          toast.error('Erro de conexão ao tentar jogar.');
+          console.error('Erro na requisição de jogo:', error);
+      } finally {
+          setPlayingGame(false);
+      }
   };
 
   const handleScratchComplete = async () => {
@@ -319,7 +332,7 @@ const ScratchCardPage = () => {
                 Se preferir receber o produto físico, basta entrar em contato com o nosso suporte.
                 </p>
                 <Button 
-                  onClick={playGameAndHandleResult}
+                  onClick={handlePlay} // CORREÇÃO APLICADA AQUI
                   disabled={!isAuthenticated || !scratchCardData}
                   className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 disabled:from-neutral-600 disabled:to-neutral-700 text-white font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-xl w-full lg:w-1/2 transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20 disabled:border-neutral-600/20 cursor-pointer disabled:cursor-not-allowed text-sm sm:text-base"
                 >
@@ -469,7 +482,7 @@ const ScratchCardPage = () => {
                     </Button>
                   ) : (
                     <Button 
-                      onClick={playGameAndHandleResult}
+                      onClick={handlePlay} // CORREÇÃO APLICADA AQUI
                       disabled={!isAuthenticated || !scratchCardData}
                       className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 disabled:from-neutral-600 disabled:to-neutral-700 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300 disabled:cursor-not-allowed"
                     >
