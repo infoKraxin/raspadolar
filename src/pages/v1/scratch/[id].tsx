@@ -76,8 +76,6 @@ interface GameResult {
   prize: GamePrize | null;
 }
 
-// --- INTERFACE CORRIGIDA --- 
-// Esta interface agora reflete a resposta real da sua API de jogo.
 interface PlayGameResponse {
   success: boolean;
   message: string;
@@ -85,7 +83,6 @@ interface PlayGameResponse {
   newBalance: number;
 }
 
-// Tipos para os itens da raspadinha
 interface ScratchItem {
   id: number;
   type: string;
@@ -93,7 +90,6 @@ interface ScratchItem {
   icon: string;
 }
 
-// Estados do jogo
 type GameState = 'idle' | 'loading' | 'playing' | 'completed';
 
 const ScratchCardPage = () => {
@@ -108,19 +104,15 @@ const ScratchCardPage = () => {
     const handleResize = () => {
       setScreenWidth(window.innerWidth);
     };
-
     if (typeof window !== 'undefined') {
       window.addEventListener('resize', handleResize);
       return () => window.removeEventListener('resize', handleResize);
     }
   }, []);
 
-  // Estados da API
   const [scratchCardData, setScratchCardData] = useState<ScratchCardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Estados do jogo
   const [gameState, setGameState] = useState<GameState>('idle');
   const [scratchItems, setScratchItems] = useState<ScratchItem[]>([]);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -128,7 +120,6 @@ const ScratchCardPage = () => {
   const [totalWinnings, setTotalWinnings] = useState(0);
   const [scratchComplete, setScratchComplete] = useState(false);
   const [gameResult, setGameResult] = useState<GameResult | null>(null);
-
   const [playingGame, setPlayingGame] = useState(false);
 
   const fixImageUrl = (url: string) => {
@@ -206,7 +197,6 @@ const ScratchCardPage = () => {
     }
   };
 
-  // --- FUNÇÕES DE JOGO CORRIGIDAS E UNIFICADAS ---
   const playGameAndHandleResult = async () => {
     if (!isAuthenticated || playingGame || !id || !token) {
       if (!isAuthenticated) toast.error("Você precisa fazer login para jogar.");
@@ -338,7 +328,7 @@ const ScratchCardPage = () => {
                 Se preferir receber o produto físico, basta entrar em contato com o nosso suporte.
                 </p>
                 <Button 
-                  onClick={playGameAndHandleResult} // CORREÇÃO: Chamar a nova função unificada
+                  onClick={playGameAndHandleResult}
                   disabled={!isAuthenticated || !scratchCardData}
                   className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 disabled:from-neutral-600 disabled:to-neutral-700 text-white font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-xl w-full lg:w-1/2 transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20 disabled:border-neutral-600/20 cursor-pointer disabled:cursor-not-allowed text-sm sm:text-base"
                 >
@@ -488,7 +478,7 @@ const ScratchCardPage = () => {
                     </Button>
                   ) : (
                     <Button 
-                      onClick={playGameAndHandleResult} // CORREÇÃO: Chamar a nova função unificada
+                      onClick={playGameAndHandleResult}
                       disabled={!isAuthenticated || !scratchCardData}
                       className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 disabled:from-neutral-600 disabled:to-neutral-700 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300 disabled:cursor-not-allowed"
                     >
