@@ -315,13 +315,19 @@ export default function ProfilePage() {
   };
 
   // Função para obter status em português
-  const getStatusText = (status: boolean, type: 'deposit' | 'withdraw') => {
-    if (type === 'deposit') {
-      return status ? 'Pago' : 'Pendente';
-    } else {
-      return status ? 'Processado' : 'Aguardando aprovação';
+const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
+  if (type === 'deposit') {
+    if (status === 'paid' || status === 'COMPLETED') {
+      return 'Pago';
     }
-  };
+    return 'Pendente'; // Para qualquer outro status
+  } else {
+    if (status === 'processed') {
+      return 'Processado';
+    }
+    return 'Aguardando aprovação';
+  }
+};
 
   // Função para obter cor do status
   const getStatusColor = (status: boolean) => {
@@ -1120,5 +1126,6 @@ export default function ProfilePage() {
     </div>
   );
 }
+
 
 
