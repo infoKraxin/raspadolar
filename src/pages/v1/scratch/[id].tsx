@@ -82,37 +82,14 @@ interface GameResult {
   };
 }
 
-interface GameData {
-  id: string;
-  userId: string;
-  scratchCardId: string;
-  prizeId: string | null;
-  is_winner: boolean;
-  amount_won: string;
-  prize_type: string | null;
-  redemption_choice: boolean;
-  status: string;
-  played_at: string;
-  created_at: string;
-  updated_at: string;
-  scratchCard: {
-    id: string;
-    name: string;
-    price: string;
-    image_url: string;
-  };
-  prize: GamePrize | null;
-}
-
 // --- INTERFACE CORRIGIDA ---
-// A propriedade 'prize' agora pode ser null, como a API envia.
+// A propriedade 'prize' agora pode ser null, e não há mais o aninhamento 'data'.
 interface PlayGameResponse {
   success: boolean;
   message: string;
   prize: GamePrize | null; 
   newBalance: number;
 }
-
 
 // Tipos para os itens da raspadinha
 interface ScratchItem {
@@ -239,11 +216,13 @@ const ScratchCardPage = () => {
         do {
           selectedType = remainingTypes[Math.floor(Math.random() * remainingTypes.length)];
           attempts++;
-        } while ((typeUsageCount[selectedType.type] || 0) >= 2 && attempts < 20);
-        if ((typeUsageCount[selectedType.type] || 0) >= 2) {
+        } while (selectedType && (typeUsageCount[selectedType.type] || 0) >= 2 && attempts < 20);
+        if (!selectedType || (typeUsageCount[selectedType.type] || 0) >= 2) {
           const availableTypes = remainingTypes.filter(t => (typeUsageCount[t.type] || 0) < 2);
           if (availableTypes.length > 0) {
             selectedType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+          } else {
+            selectedType = itemTypes[0] || { type: 'coin', icon: '/50_money.webp', baseValue: 0, prizeData: null };
           }
         }
         typeUsageCount[selectedType.type] = (typeUsageCount[selectedType.type] || 0) + 1;
@@ -263,7 +242,6 @@ const ScratchCardPage = () => {
         { type: 'diamond' as const, icon: '/50_money.webp', baseValue: 0, prizeData: null },
         { type: 'trophy' as const, icon: '/50_money.webp', baseValue: 0, prizeData: null }
       ];
-      const allTypes = [...availableTypes, ...dummyTypes];
       const pattern = [];
       const maxTypesPerPattern = Math.ceil(8 / availableTypes.length);
       for (let i = 0; i < availableTypes.length; i++) {
@@ -310,6 +288,7 @@ const ScratchCardPage = () => {
     return { hasWon: false };
   };
 
+  // --- FUNÇÃO DE JOGO CORRIGIDA ---
   const playGame = async (authToken: string): Promise<{ result: GameResult | null, errorMessage?: string }> => {
     if (!id || !authToken) return { result: null, errorMessage: "Dados de autenticação ausentes." };
     
@@ -329,8 +308,7 @@ const ScratchCardPage = () => {
       const data: PlayGameResponse = await response.json();
 
       if (data.success) {
-        // --- CORREÇÃO APLICADA AQUI ---
-        // Garantimos que 'isWinner' seja sempre um booleano (true/false)
+        // CORREÇÃO: Construímos o objeto GameResult a partir da resposta real da API
         const result: GameResult = {
           isWinner: !!(data.prize && parseFloat(data.prize.value) > 0),
           amountWon: data.prize ? data.prize.value : '0',
@@ -343,6 +321,7 @@ const ScratchCardPage = () => {
           }
         };
 
+        // Atualizamos o saldo do usuário aqui mesmo
         if (user && typeof data.newBalance === 'number') {
           updateUser({ ...user, balance: data.newBalance });
         }
