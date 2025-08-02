@@ -7,6 +7,7 @@ interface User {
   cpf: string;
   username: string;
   full_name: string;
+  balance: number;
   is_admin: boolean;
   total_scratchs: number;
   total_wins: number;
