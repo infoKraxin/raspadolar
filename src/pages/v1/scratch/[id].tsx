@@ -91,6 +91,9 @@ interface ScratchItem {
   type: string;
   value: number;
   icon: string;
+  name?: string;
+  image?: string;
+  isWin?: boolean;
 }
 
 // Estados do jogo
@@ -130,6 +133,7 @@ const ScratchCardPage = () => {
   const [gameResult, setGameResult] = useState<GameResult | null>(null);
   const [playingGame, setPlayingGame] = useState(false);
 
+  // Função para corrigir URLs das imagens
   const fixImageUrl = (url: string) => {
     if (!url) return '';
     return url
@@ -138,6 +142,7 @@ const ScratchCardPage = () => {
       .replace('/uploads/prizes/', '/uploads/');
   };
 
+  // Função para buscar dados da raspadinha
   const fetchScratchCardData = async () => {
     if (!id) return;
     try {
@@ -157,6 +162,10 @@ const ScratchCardPage = () => {
     }
   };
 
+  const handleBackClick = () => {
+    router.push('/');
+  };
+
   useEffect(() => {
     if (id) {
       fetchScratchCardData();
@@ -165,45 +174,104 @@ const ScratchCardPage = () => {
 
   const generateScratchItems = (result: GameResult): ScratchItem[] => {
       if (!scratchCardData?.prizes?.length) return [];
-      const allPrizesAsItems = scratchCardData.prizes.map(p => ({
-          type: p.id,
-          icon: fixImageUrl(p.image_url),
-          value: parseFloat(p.value || p.redemption_value || '0')
+      const visualTypes = ['coin', 'gem', 'star', 'crown', 'heart', 'diamond', 'trophy', 'medal', 'gift', 'ticket', 'chest'];
+      const itemTypes = scratchCardData.prizes.map((prize, index) => ({
+          type: visualTypes[index % visualTypes.length] as 'coin' | 'gem' | 'star' | 'crown' | 'heart',
+          icon: fixImageUrl(prize.image_url) || '/50_money.webp',
+          baseValue: parseFloat(prize.value || prize.redemption_value || '0'),
+          prizeData: prize
       }));
       const items: ScratchItem[] = [];
       if (result.isWinner && result.prize) {
-          const winningItem = allPrizesAsItems.find(p => p.type === result.prize?.id);
-          if (winningItem) {
-              for (let i = 0; i < 3; i++) items.push({ id: items.length, ...winningItem });
+          const winningPrize = scratchCardData.prizes.find(p => p.id === result.prize?.id);
+          const winningTypeIndex = winningPrize ? scratchCardData.prizes.findIndex(p => p.id === winningPrize.id) : 0;
+          const winningType = itemTypes[winningTypeIndex % itemTypes.length];
+          for (let i = 0; i < 3; i++) {
+              items.push({
+                  id: i,
+                  type: winningType.type,
+                  value: parseFloat(result.prize.value || result.prize.redemption_value || '0'),
+                  icon: fixImageUrl(result.prize.image_url) || winningType.icon
+              });
           }
-      }
-      const nonWinningItems = allPrizesAsItems.filter(p => p.type !== result.prize?.id);
-      let i = items.length;
-      while (i < 9) {
-          const randomItem = nonWinningItems[Math.floor(Math.random() * nonWinningItems.length)] || { type: 'loser', icon: '/50_money.webp', value: 0 };
-          items.push({ id: i, ...randomItem });
-          i++;
+          const remainingTypes = itemTypes.filter(t => t.type !== winningType.type);
+          const typeUsageCount: { [key: string]: number } = {};
+          for (let i = 3; i < 9; i++) {
+              let selectedType;
+              let attempts = 0;
+              do {
+                  selectedType = remainingTypes[Math.floor(Math.random() * remainingTypes.length)];
+                  attempts++;
+              } while ((typeUsageCount[selectedType.type] || 0) >= 2 && attempts < 20);
+              if ((typeUsageCount[selectedType.type] || 0) >= 2) {
+                  const availableTypes = remainingTypes.filter(t => (typeUsageCount[t.type] || 0) < 2);
+                  if (availableTypes.length > 0) {
+                      selectedType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+                  }
+              }
+              typeUsageCount[selectedType.type] = (typeUsageCount[selectedType.type] || 0) + 1;
+              items.push({
+                  id: i,
+                  type: selectedType.type,
+                  value: selectedType.baseValue,
+                  icon: selectedType.icon
+              });
+          }
+      } else {
+          const availableTypes = [...itemTypes];
+          const dummyTypes = [
+              { type: 'coin' as const, icon: '/50_money.webp', baseValue: 0, prizeData: null },
+              { type: 'gem' as const, icon: '/50_money.webp', baseValue: 0, prizeData: null },
+              { type: 'star' as const, icon: '/50_money.webp', baseValue: 0, prizeData: null },
+              { type: 'diamond' as const, icon: '/50_money.webp', baseValue: 0, prizeData: null },
+              { type: 'trophy' as const, icon: '/50_money.webp', baseValue: 0, prizeData: null }
+          ];
+          const allTypes = [...availableTypes, ...dummyTypes];
+          const pattern = [];
+          const maxTypesPerPattern = Math.ceil(8 / availableTypes.length);
+          for (let i = 0; i < availableTypes.length; i++) {
+              const timesToAdd = Math.min(maxTypesPerPattern, 2);
+              for (let j = 0; j < timesToAdd; j++) {
+                  if (pattern.length < 8) {
+                      pattern.push(availableTypes[i]);
+                  }
+              }
+          }
+          while (pattern.length < 9) {
+              const dummyIndex: number = (pattern.length - availableTypes.length * 2) % dummyTypes.length;
+              pattern.push(dummyTypes[dummyIndex]);
+          }
+          const shuffledPattern = pattern.sort(() => Math.random() - 0.5);
+          for (let i = 0; i < 9; i++) {
+              const typeData = shuffledPattern[i];
+              items.push({
+                  id: i,
+                  type: typeData.type,
+                  value: typeData.baseValue,
+                  icon: typeData.icon
+              });
+          }
       }
       return items.sort(() => Math.random() - 0.5);
   };
-  
+
   const refreshUserBalance = async () => {
-    if (!token) return;
-    try {
-      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/users/profile', {
-        method: 'GET',
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      const data = await response.json();
-      if (response.ok && data.success) {
-        updateUser(data.data);
+      if (!token) return;
+      try {
+          const response = await fetch('https://raspadinha-api.onrender.com/v1/api/users/profile', {
+              method: 'GET',
+              headers: { 'Authorization': `Bearer ${token}` },
+          });
+          const data = await response.json();
+          if (response.ok && data.success) {
+              updateUser(data.data);
+          }
+      } catch (error) {
+          console.error('Erro ao atualizar saldo do usuário:', error);
       }
-    } catch (error) {
-      console.error('Erro ao atualizar saldo do usuário:', error);
-    }
   };
 
-  // --- FUNÇÃO DE JOGO CORRIGIDA E UNIFICADA ---
+  // --- FUNÇÃO DE JOGO CORRIGIDA PARA PROCESSAR A RESPOSTA CORRETA DA API ---
   const handlePlay = async () => {
       if (!isAuthenticated || playingGame || !id || !token) {
           if (!isAuthenticated) toast.error("Você precisa fazer login para jogar.");
@@ -235,6 +303,13 @@ const ScratchCardPage = () => {
                   isWinner: data.prize && parseFloat(data.prize.value) > 0,
                   amountWon: data.prize ? data.prize.value : '0',
                   prize: data.prize,
+                  // Adicionamos os dados da raspadinha ao resultado
+                  scratchCard: {
+                      id: scratchCardData!.id,
+                      name: scratchCardData!.name,
+                      price: scratchCardData!.price,
+                      image_url: scratchCardData!.image_url
+                  }
               };
 
               setGameResult(result);
@@ -259,16 +334,16 @@ const ScratchCardPage = () => {
   };
 
   const handleScratchComplete = async () => {
-    if (scratchComplete || !gameResult) return;
-    setScratchComplete(true);
-    setHasWon(gameResult.isWinner);
-    setTotalWinnings(parseFloat(gameResult.amountWon));
-    if (gameResult.isWinner) {
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 5000);
-    }
-    setGameState('completed');
-    await refreshUserBalance();
+      if (scratchComplete || !gameResult) return;
+      setScratchComplete(true);
+      setHasWon(gameResult.isWinner);
+      setTotalWinnings(parseFloat(gameResult.amountWon));
+      if (gameResult.isWinner) {
+          setShowConfetti(true);
+          setTimeout(() => setShowConfetti(false), 5000);
+      }
+      setGameState('completed');
+      await refreshUserBalance();
   };
 
   return (
@@ -332,7 +407,7 @@ const ScratchCardPage = () => {
                 Se preferir receber o produto físico, basta entrar em contato com o nosso suporte.
                 </p>
                 <Button 
-                  onClick={handlePlay} // CORREÇÃO APLICADA AQUI
+                  onClick={handlePlay}
                   disabled={!isAuthenticated || !scratchCardData}
                   className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 disabled:from-neutral-600 disabled:to-neutral-700 text-white font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-xl w-full lg:w-1/2 transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20 disabled:border-neutral-600/20 cursor-pointer disabled:cursor-not-allowed text-sm sm:text-base"
                 >
@@ -482,7 +557,7 @@ const ScratchCardPage = () => {
                     </Button>
                   ) : (
                     <Button 
-                      onClick={handlePlay} // CORREÇÃO APLICADA AQUI
+                      onClick={handlePlay}
                       disabled={!isAuthenticated || !scratchCardData}
                       className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 disabled:from-neutral-600 disabled:to-neutral-700 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300 disabled:cursor-not-allowed"
                     >
@@ -494,45 +569,45 @@ const ScratchCardPage = () => {
             </div>
           )}
 
-        <div className="rounded-xl">
-          <h2 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4 text-start">
-            Prêmios Disponíveis
-          </h2>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
-            {scratchCardData?.prizes && scratchCardData.prizes.length > 0 ? (
-              scratchCardData.prizes.slice(0, 17).map((prize) => (
-                <div key={prize.id} className="flex-shrink-0 w-38 xl:w-auto">
-                  <div className="flex flex-col border-2 border-yellow-500/30 p-3 rounded-lg bg-gradient-to-t from-yellow-500/17 from-[0%] to-[35%] to-yellow-400/10 cursor-pointer aspect-square hover:scale-105 transition-all duration-300">
-                  <Image
-                    src={fixImageUrl(prize.image_url) || "/50_money.webp"}
-                      alt={prize.type === 'MONEY' ? `${parseFloat(prize.value || '0').toFixed(0)} Reais` : prize.name}
-                      width={80}
-                      height={80}
-                      className="size-full p-3 object-contain"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = '/50_money.webp';
-                    }}
-                  />
-                    <h3 className="text-sm font-semibold mb-3 overflow-hidden text-ellipsis text-nowrap w-30 text-white">
-                      {prize.type === 'MONEY' ? `${parseFloat(prize.value || '0').toFixed(0)} Reais` : prize.name}
-                    </h3>
-                    <div className="px-1.5 py-1 bg-white text-neutral-900 rounded-sm text-sm font-semibold self-start">
-                      R$ {prize.type === 'MONEY' ? parseFloat(prize.value || '0').toFixed(2).replace('.', ',') : parseFloat(prize.redemption_value || '0').toFixed(2).replace('.', ',')}
+          <div className="rounded-xl">
+            <h2 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4 text-start">
+              Prêmios Disponíveis
+            </h2>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
+              {scratchCardData?.prizes && scratchCardData.prizes.length > 0 ? (
+                scratchCardData.prizes.slice(0, 17).map((prize) => (
+                  <div key={prize.id} className="flex-shrink-0 w-38 xl:w-auto">
+                    <div className="flex flex-col border-2 border-yellow-500/30 p-3 rounded-lg bg-gradient-to-t from-yellow-500/17 from-[0%] to-[35%] to-yellow-400/10 cursor-pointer aspect-square hover:scale-105 transition-all duration-300">
+                    <Image
+                      src={fixImageUrl(prize.image_url) || "/50_money.webp"}
+                        alt={prize.type === 'MONEY' ? `${parseFloat(prize.value || '0').toFixed(0)} Reais` : prize.name}
+                        width={80}
+                        height={80}
+                        className="size-full p-3 object-contain"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/50_money.webp';
+                      }}
+                    />
+                      <h3 className="text-sm font-semibold mb-3 overflow-hidden text-ellipsis text-nowrap w-30 text-white">
+                        {prize.type === 'MONEY' ? `${parseFloat(prize.value || '0').toFixed(0)} Reais` : prize.name}
+                      </h3>
+                      <div className="px-1.5 py-1 bg-white text-neutral-900 rounded-sm text-sm font-semibold self-start">
+                        R$ {prize.type === 'MONEY' ? parseFloat(prize.value || '0').toFixed(2).replace('.', ',') : parseFloat(prize.redemption_value || '0').toFixed(2).replace('.', ',')}
+                      </div>
                     </div>
                   </div>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-8">
+                  <p className="text-neutral-400 text-sm">Nenhum prêmio disponível</p>
                 </div>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-8">
-                <p className="text-neutral-400 text-sm">Nenhum prêmio disponível</p>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
-      </div>
-      <Footer />
+        <Footer />
     </div>
   );
 };
