@@ -508,13 +508,9 @@ export default function ProfilePage() {
               {/* Balance */}
               <div className="mb-8 p-4 bg-gradient-to-r from-neutral-500/10 to-neutral-600/10 rounded-lg border border-neutral-500/20">
                 <p className={`${getAppColorText()} text-sm font-medium mb-1`}>Seu saldo</p>
-                <p className="text-white text-2xl font-bold">
-                  {isLoading ? 'Carregando...' : (
-                    profileData?.wallet?.[0] ? 
-                      `${profileData.wallet[0].symbol} ${parseFloat(profileData.wallet[0].balance).toFixed(2)}` : 
-                      'R$ 0,00'
-                  )}
-                </p>
+               <p className="text-white text-2xl font-bold">
+  {isLoading ? 'Carregando...' : `R$ ${(typeof profileData?.balance === 'number') ? profileData.balance.toFixed(2) : '0.00'}`}
+</p>
                 <Button 
                   className={`${getAppGradient()} w-full mt-3 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20`}
                   onClick={() => setIsDepositModalOpen(true)}
@@ -1128,3 +1124,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+
