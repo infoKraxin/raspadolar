@@ -136,11 +136,9 @@ const ScratchCardPage = () => {
   const [totalWinnings, setTotalWinnings] = useState(0);
   const [scratchComplete, setScratchComplete] = useState(false);
   const [gameResult, setGameResult] = useState<GameResult | null>(null);
-
   const [playingGame, setPlayingGame] = useState(false);
 
 
-  // Função para corrigir URLs das imagens
   const fixImageUrl = (url: string) => {
     if (!url) return '';
     return url
@@ -149,15 +147,12 @@ const ScratchCardPage = () => {
       .replace('/uploads/prizes/', '/uploads/');
   };
 
-  // Função para buscar dados da raspadinha
   const fetchScratchCardData = async () => {
     if (!id) return;
-    
     try {
       setLoading(true);
       const response = await fetch(`https://raspadinha-api.onrender.com/v1/api/scratchcards/${id}`);
       const data: ApiResponse = await response.json();
-      
       if (data.success) {
         setScratchCardData(data.data);
       } else {
@@ -175,14 +170,12 @@ const ScratchCardPage = () => {
     router.push('/');
   };
 
-  // Buscar dados da raspadinha quando o ID estiver disponível
   useEffect(() => {
     if (id) {
       fetchScratchCardData();
     }
   }, [id]);
 
-  // --- FUNÇÃO CORRIGIDA ---
   const generateScratchItems = (result: GameResult): ScratchItem[] => {
     if (!scratchCardData?.prizes?.length) {
       return [];
@@ -212,23 +205,18 @@ const ScratchCardPage = () => {
       for (let i = 3; i < 9; i++) {
         let selectedType;
         let attempts = 0;
-        
-        if(remainingTypes.length > 0) {
-            do {
-              selectedType = remainingTypes[Math.floor(Math.random() * remainingTypes.length)];
-              attempts++;
-            } while (selectedType && (typeUsageCount[selectedType.type] || 0) >= 2 && attempts < 20);
-        }
-
+        do {
+          selectedType = remainingTypes[Math.floor(Math.random() * remainingTypes.length)];
+          attempts++;
+        } while (selectedType && (typeUsageCount[selectedType.type] || 0) >= 2 && attempts < 20);
         if (!selectedType || (typeUsageCount[selectedType.type] || 0) >= 2) {
           const availableTypes = remainingTypes.filter(t => (typeUsageCount[t.type] || 0) < 2);
           if (availableTypes.length > 0) {
             selectedType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
           } else {
-            selectedType = remainingTypes[0] || itemTypes[0] || { type: 'coin', icon: '/50_money.webp', baseValue: 0, prizeData: null };
+             selectedType = remainingTypes[0] || itemTypes[0] || { type: 'coin', icon: '/50_money.webp', baseValue: 0, prizeData: null };
           }
         }
-        
         typeUsageCount[selectedType.type] = (typeUsageCount[selectedType.type] || 0) + 1;
         items.push({
           id: i,
@@ -241,17 +229,14 @@ const ScratchCardPage = () => {
       const availableTypes = [...itemTypes];
       const pattern = [];
       const typeCounts: { [key: string]: number } = {};
-
       while (pattern.length < 9) {
           let randomType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
           let currentCount = typeCounts[randomType.type] || 0;
-          
           if (currentCount < 2) {
               pattern.push(randomType);
               typeCounts[randomType.type] = currentCount + 1;
           }
       }
-
       const shuffledPattern = pattern.sort(() => Math.random() - 0.5);
       for (let i = 0; i < 9; i++) {
         const typeData = shuffledPattern[i];
@@ -286,7 +271,6 @@ const ScratchCardPage = () => {
 
   const playGame = async (authToken: string): Promise<{ result: GameResult | null, errorMessage?: string }> => {
     if (!id || !authToken) return { result: null, errorMessage: "Dados de autenticação ausentes." };
-    
     try {
       setPlayingGame(true);
       const response = await fetch('https://raspadinha-api.onrender.com/v1/api/scratchcards/play', {
@@ -299,12 +283,10 @@ const ScratchCardPage = () => {
           scratchCardId: id
         })
       });
-      
       const data: PlayGameResponse = await response.json();
-
       if (data.success) {
         const result: GameResult = {
-          isWinner: !!(data.prize && parseFloat(data.prize.value) > 0),
+          isWinner: !!(data.prize && data.prize.type !== 'NONE'),
           amountWon: data.prize ? data.prize.value : '0',
           prize: data.prize,
           scratchCard: {
@@ -314,11 +296,9 @@ const ScratchCardPage = () => {
             image_url: scratchCardData!.image_url,
           }
         };
-
         if (user && typeof data.newBalance === 'number') {
           updateUser({ ...user, balance: data.newBalance });
         }
-        
         return { result };
       } else {
         console.error('Erro ao jogar:', data.message);
@@ -682,6 +662,7 @@ const ScratchCardPage = () => {
           </div>
         </div>
       </div>
+
       <Footer />
     </div>
   );
