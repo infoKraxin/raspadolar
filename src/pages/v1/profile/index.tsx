@@ -954,6 +954,7 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
                               </div>
                             </div>
                           </div>
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -1117,6 +1118,7 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
     </div>
   );
 }
+
 
 
 
