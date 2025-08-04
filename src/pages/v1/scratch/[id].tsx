@@ -188,70 +188,76 @@ const ScratchCardPage = () => {
       prizeData: prize
     }));
     const items: ScratchItem[] = [];
+
     if (result.isWinner && result.prize) {
-      const winningPrize = scratchCardData.prizes.find(p => p.id === result.prize?.id);
-      const winningTypeIndex = winningPrize ? scratchCardData.prizes.findIndex(p => p.id === winningPrize.id) : 0;
+      const winningPrizeData = scratchCardData.prizes.find(p => p.id === result.prize?.id);
+      const winningTypeIndex = winningPrizeData ? scratchCardData.prizes.findIndex(p => p.id === winningPrizeData.id) : 0;
       const winningType = itemTypes[winningTypeIndex % itemTypes.length];
       
       // --- CORREÇÃO APLICADA AQUI ---
-      // Garantimos que o 'value' do item seja o valor de resgate para produtos
-      const prizeDisplayValue = parseFloat(result.prize.type === 'PRODUCT' ? (result.prize.redemption_value || '0') : result.prize.value);
+      // Determinamos o valor a ser exibido: para PRODUTOS, usamos o redemption_value. Para DINHEIRO, usamos o value.
+      const prizeDisplayValue = parseFloat(
+        result.prize.type === 'PRODUCT' 
+          ? (result.prize.redemption_value || '0') 
+          : result.prize.value
+      );
 
       for (let i = 0; i < 3; i++) {
         items.push({
           id: i,
           type: winningType.type,
-          value: prizeDisplayValue, // Usamos o valor corrigido
+          value: prizeDisplayValue, // Usamos o valor correto
           icon: fixImageUrl(result.prize.image_url) || winningType.icon
         });
       }
+
       const remainingTypes = itemTypes.filter(t => t.type !== winningType.type);
       const typeUsageCount: { [key: string]: number } = {};
+
       for (let i = 3; i < 9; i++) {
         let selectedType;
-        let attempts = 0;
-        if(remainingTypes.length > 0) {
-            do {
-              selectedType = remainingTypes[Math.floor(Math.random() * remainingTypes.length)];
-              attempts++;
-            } while (selectedType && (typeUsageCount[selectedType.type] || 0) >= 2 && attempts < 20);
-        }
-        if (!selectedType || (typeUsageCount[selectedType.type] || 0) >= 2) {
+        if (remainingTypes.length > 0) {
           const availableTypes = remainingTypes.filter(t => (typeUsageCount[t.type] || 0) < 2);
           if (availableTypes.length > 0) {
             selectedType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
           } else {
-            selectedType = remainingTypes[0] || itemTypes[0] || { type: 'coin', icon: '/50_money.webp', baseValue: 0, prizeData: null };
+            selectedType = remainingTypes[0]; 
           }
+        } else {
+            selectedType = itemTypes[0] || { type: 'coin', icon: '/50_money.webp', baseValue: 0, prizeData: null };
         }
+        
         typeUsageCount[selectedType.type] = (typeUsageCount[selectedType.type] || 0) + 1;
         items.push({
           id: i,
           type: selectedType.type,
-          value: 0, // Itens perdedores sempre têm valor 0
+          value: 0, // Itens de preenchimento têm valor 0
           icon: selectedType.icon
         });
       }
     } else {
-      // Lógica para quando o jogador perde (não precisa de alteração)
+      // Lógica para quando o jogador perde
       const availableTypes = [...itemTypes];
       const pattern = [];
       const typeCounts: { [key: string]: number } = {};
+
       while (pattern.length < 9) {
-          let randomType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
-          let currentCount = typeCounts[randomType.type] || 0;
-          if (currentCount < 2) {
-              pattern.push(randomType);
-              typeCounts[randomType.type] = currentCount + 1;
-          }
+        let randomType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+        let currentCount = typeCounts[randomType.type] || 0;
+        
+        if (currentCount < 2) {
+            pattern.push(randomType);
+            typeCounts[randomType.type] = currentCount + 1;
+        }
       }
+
       const shuffledPattern = pattern.sort(() => Math.random() - 0.5);
       for (let i = 0; i < 9; i++) {
         const typeData = shuffledPattern[i];
         items.push({
           id: i,
           type: typeData.type,
-          value: 0,
+          value: 0, // Itens perdedores sempre têm valor 0
           icon: typeData.icon
         });
       }
@@ -677,4 +683,5 @@ const ScratchCardPage = () => {
 };
 
 export default ScratchCardPage;
+
 
