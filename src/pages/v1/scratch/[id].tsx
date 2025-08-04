@@ -176,7 +176,7 @@ const ScratchCardPage = () => {
     }
   }, [id]);
 
- const generateScratchItems = (result: GameResult): ScratchItem[] => {
+const generateScratchItems = (result: GameResult): ScratchItem[] => {
     if (!scratchCardData?.prizes?.length) {
       return [];
     }
@@ -230,13 +230,11 @@ const ScratchCardPage = () => {
           id: i,
           type: selectedType.type,
           // --- CORREÇÃO APLICADA AQUI ---
-          // Agora os itens de preenchimento usam seu valor real, e não mais '0'.
-          value: selectedType.baseValue, 
+          value: selectedType.baseValue, // Usando o valor real do prêmio, e não mais '0'.
           icon: selectedType.icon
         });
       }
     } else {
-      // Quando o jogador perde, todos os itens mostram seus valores reais para não haver trio.
       const availableTypes = [...itemTypes];
       const pattern = [];
       const typeCounts: { [key: string]: number } = {};
@@ -258,7 +256,7 @@ const ScratchCardPage = () => {
         items.push({
           id: i,
           type: typeData.type,
-          value: typeData.baseValue, // Mostra o valor real
+          value: typeData.baseValue,
           icon: typeData.icon
         });
       }
@@ -528,7 +526,7 @@ const ScratchCardPage = () => {
                               />
                             </div>
                             <p className="text-white text-xs font-bold text-center">
-  {item.value > 0 ? `R$ ${item.value.toFixed(2)}` : 'Ops! Hoje não'}
+  {item.value > 0 ? `R$ ${item.value.toFixed(2).replace('.', ',')}` : 'Ops! Hoje não'}
 </p>
                           </div>
                         ))}
@@ -685,6 +683,7 @@ const ScratchCardPage = () => {
 };
 
 export default ScratchCardPage;
+
 
 
 
