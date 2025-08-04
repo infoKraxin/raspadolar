@@ -235,6 +235,7 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
         });
       }
     } else {
+      // Quando o jogador perde, todos os itens também mostram seus valores
       const availableTypes = [...itemTypes];
       const pattern = [];
       const typeCounts: { [key: string]: number } = {};
@@ -256,7 +257,7 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
         items.push({
           id: i,
           type: typeData.type,
-          value: typeData.baseValue,
+          value: typeData.baseValue, // Usando o valor real do prêmio
           icon: typeData.icon
         });
       }
@@ -683,6 +684,7 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
 };
 
 export default ScratchCardPage;
+
 
 
 
