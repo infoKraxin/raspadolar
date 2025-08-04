@@ -685,3 +685,4 @@ const ScratchCardPage = () => {
 export default ScratchCardPage;
 
 
+
