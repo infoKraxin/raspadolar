@@ -646,7 +646,7 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
           
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
             {scratchCardData?.prizes && scratchCardData.prizes.length > 0 ? (
-              scratchCardData.prizes.slice(0, 17).map((prize) => (
+              scratchCardData.prizes.map((prize) => (
                 <div key={prize.id} className="flex-shrink-0 w-38 xl:w-auto">
                   <div className="flex flex-col border-2 border-yellow-500/30 p-3 rounded-lg bg-gradient-to-t from-yellow-500/17 from-[0%] to-[35%] to-yellow-400/10 cursor-pointer aspect-square hover:scale-105 transition-all duration-300">
                   <Image
@@ -684,6 +684,7 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
 };
 
 export default ScratchCardPage;
+
 
 
 
