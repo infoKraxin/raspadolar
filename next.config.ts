@@ -28,7 +28,7 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'raw.githubusercontent.com',
-        pathname: '/infoKraxin/raspadolar/main/**',
+        pathname: '/infoKraxin/raspadolar/**',
       },
       // --- NOVO DOMÍNIO ADICIONADO AQUI ---
       {
@@ -41,3 +41,4 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
+
