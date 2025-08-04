@@ -587,9 +587,9 @@ const ScratchCardPage = () => {
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-xs sm:text-sm font-bold text-center text-white">
-                           {item.value > 0 ? `R$ ${item.value}` : 'Ops! Hoje não'}
-                          </p>
+                        <p className="text-white text-xs font-bold text-center">
+  {item.value > 0 ? `R$ ${item.value.toFixed(2).replace('.', ',')}` : 'Ops! Hoje não'}
+</p>
                       </div>
                     </div>
                   ))}
@@ -683,6 +683,7 @@ const ScratchCardPage = () => {
 };
 
 export default ScratchCardPage;
+
 
 
 
