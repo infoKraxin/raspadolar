@@ -917,15 +917,13 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
                         </div>
                       ) : (
                         <div className="space-y-4">
-                          <h3 className="text-lg font-semibold text-white mb-4">Últimos 10 Jogos</h3>
-                          
-                          <div className="space-y-3">
-                           {gameHistory.map((game: any) => (
+                      <h3 className="text-lg font-semibold text-white mb-4">Últimos {gameHistory.length} Jogos</h3>
+                      <div className="space-y-3">
+                        {gameHistory.map((game: any) => (
                           <div key={game.id} className="bg-neutral-700/50 rounded-lg p-4 border border-neutral-600">
                             <div className="flex items-center justify-between">
                               <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-2">
-                                  {/* --- CORREÇÃO APLICADA --- */}
                                   <h4 className="text-white font-medium">{game.scratch_card_name}</h4>
                                   <span className={`text-sm font-medium ${getGameStatusColor(game.is_winner)}`}>
                                     {getGameStatusText(game.is_winner)}
@@ -934,7 +932,6 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                                   <div>
                                     <p className="text-neutral-400">Custo</p>
-                                    {/* --- CORREÇÃO APLICADA --- */}
                                     <p className="text-white font-medium">R$ {parseFloat(game.price_paid).toFixed(2)}</p>
                                   </div>
                                   <div>
@@ -1118,6 +1115,7 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
     </div>
   );
 }
+
 
 
 
