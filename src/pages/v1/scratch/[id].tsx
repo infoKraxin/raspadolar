@@ -194,8 +194,6 @@ const ScratchCardPage = () => {
       const winningTypeIndex = winningPrizeData ? scratchCardData.prizes.findIndex(p => p.id === winningPrizeData.id) : 0;
       const winningType = itemTypes[winningTypeIndex % itemTypes.length];
       
-      // --- CORREÇÃO APLICADA AQUI ---
-      // Determinamos o valor a ser exibido: para PRODUTOS, usamos o redemption_value. Para DINHEIRO, usamos o value.
       const prizeDisplayValue = parseFloat(
         result.prize.type === 'PRODUCT' 
           ? (result.prize.redemption_value || '0') 
@@ -206,7 +204,7 @@ const ScratchCardPage = () => {
         items.push({
           id: i,
           type: winningType.type,
-          value: prizeDisplayValue, // Usamos o valor correto
+          value: prizeDisplayValue,
           icon: fixImageUrl(result.prize.image_url) || winningType.icon
         });
       }
@@ -231,24 +229,27 @@ const ScratchCardPage = () => {
         items.push({
           id: i,
           type: selectedType.type,
-          value: 0, // Itens de preenchimento têm valor 0
+          // --- CORREÇÃO APLICADA AQUI ---
+          // Agora os itens de preenchimento usam seu valor real, e não mais '0'.
+          value: selectedType.baseValue, 
           icon: selectedType.icon
         });
       }
     } else {
-      // Lógica para quando o jogador perde
+      // Quando o jogador perde, todos os itens mostram seus valores reais para não haver trio.
       const availableTypes = [...itemTypes];
       const pattern = [];
       const typeCounts: { [key: string]: number } = {};
 
       while (pattern.length < 9) {
-        let randomType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
-        let currentCount = typeCounts[randomType.type] || 0;
-        
-        if (currentCount < 2) {
-            pattern.push(randomType);
-            typeCounts[randomType.type] = currentCount + 1;
-        }
+          let randomType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+          if (!randomType) continue;
+          let currentCount = typeCounts[randomType.type] || 0;
+          
+          if (currentCount < 2) {
+              pattern.push(randomType);
+              typeCounts[randomType.type] = currentCount + 1;
+          }
       }
 
       const shuffledPattern = pattern.sort(() => Math.random() - 0.5);
@@ -257,7 +258,7 @@ const ScratchCardPage = () => {
         items.push({
           id: i,
           type: typeData.type,
-          value: 0, // Itens perdedores sempre têm valor 0
+          value: typeData.baseValue, // Mostra o valor real
           icon: typeData.icon
         });
       }
@@ -683,6 +684,7 @@ const ScratchCardPage = () => {
 };
 
 export default ScratchCardPage;
+
 
 
 
