@@ -176,7 +176,7 @@ const ScratchCardPage = () => {
     }
   }, [id]);
 
-  const generateScratchItems = (result: GameResult): ScratchItem[] => {
+ const generateScratchItems = (result: GameResult): ScratchItem[] => {
     if (!scratchCardData?.prizes?.length) {
       return [];
     }
@@ -192,11 +192,16 @@ const ScratchCardPage = () => {
       const winningPrize = scratchCardData.prizes.find(p => p.id === result.prize?.id);
       const winningTypeIndex = winningPrize ? scratchCardData.prizes.findIndex(p => p.id === winningPrize.id) : 0;
       const winningType = itemTypes[winningTypeIndex % itemTypes.length];
+      
+      // --- CORREÇÃO APLICADA AQUI ---
+      // Garantimos que o 'value' do item seja o valor de resgate para produtos
+      const prizeDisplayValue = parseFloat(result.prize.type === 'PRODUCT' ? (result.prize.redemption_value || '0') : result.prize.value);
+
       for (let i = 0; i < 3; i++) {
         items.push({
           id: i,
           type: winningType.type,
-          value: parseFloat(result.prize.value || result.prize.redemption_value || '0'),
+          value: prizeDisplayValue, // Usamos o valor corrigido
           icon: fixImageUrl(result.prize.image_url) || winningType.icon
         });
       }
@@ -205,27 +210,30 @@ const ScratchCardPage = () => {
       for (let i = 3; i < 9; i++) {
         let selectedType;
         let attempts = 0;
-        do {
-          selectedType = remainingTypes[Math.floor(Math.random() * remainingTypes.length)];
-          attempts++;
-        } while (selectedType && (typeUsageCount[selectedType.type] || 0) >= 2 && attempts < 20);
+        if(remainingTypes.length > 0) {
+            do {
+              selectedType = remainingTypes[Math.floor(Math.random() * remainingTypes.length)];
+              attempts++;
+            } while (selectedType && (typeUsageCount[selectedType.type] || 0) >= 2 && attempts < 20);
+        }
         if (!selectedType || (typeUsageCount[selectedType.type] || 0) >= 2) {
           const availableTypes = remainingTypes.filter(t => (typeUsageCount[t.type] || 0) < 2);
           if (availableTypes.length > 0) {
             selectedType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
           } else {
-             selectedType = remainingTypes[0] || itemTypes[0] || { type: 'coin', icon: '/50_money.webp', baseValue: 0, prizeData: null };
+            selectedType = remainingTypes[0] || itemTypes[0] || { type: 'coin', icon: '/50_money.webp', baseValue: 0, prizeData: null };
           }
         }
         typeUsageCount[selectedType.type] = (typeUsageCount[selectedType.type] || 0) + 1;
         items.push({
           id: i,
           type: selectedType.type,
-          value: selectedType.baseValue,
+          value: 0, // Itens perdedores sempre têm valor 0
           icon: selectedType.icon
         });
       }
     } else {
+      // Lógica para quando o jogador perde (não precisa de alteração)
       const availableTypes = [...itemTypes];
       const pattern = [];
       const typeCounts: { [key: string]: number } = {};
@@ -243,7 +251,7 @@ const ScratchCardPage = () => {
         items.push({
           id: i,
           type: typeData.type,
-          value: typeData.baseValue,
+          value: 0,
           icon: typeData.icon
         });
       }
@@ -513,8 +521,8 @@ const ScratchCardPage = () => {
                               />
                             </div>
                             <p className="text-white text-xs font-bold text-center">
-                              {item.value > 0 ? `R$ ${item.value}` : 'Ops! Hoje não'}
-                            </p>
+  {item.value > 0 ? `R$ ${item.value.toFixed(2)}` : 'Ops! Hoje não'}
+</p>
                           </div>
                         ))}
                       </div>
@@ -669,3 +677,4 @@ const ScratchCardPage = () => {
 };
 
 export default ScratchCardPage;
+
