@@ -925,46 +925,37 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
                                 <div className="flex items-center justify-between">
                                   <div className="flex-1">
                                     <div className="flex items-center gap-3 mb-2">
-                                      <h4 className="text-white font-medium">{game.scratchCard.name}</h4>
-                                      <span className={`text-sm font-medium ${
-                                        getGameStatusColor(game.is_winner, game.status)
-                                      }`}>
-                                        {getGameStatusText(game.is_winner, game.status)}
-                                      </span>
-                                    </div>
-                                    
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                      <div>
-                                        <p className="text-neutral-400">Valor do jogo</p>
-                                        <p className="text-white font-medium">R$ {parseFloat(game.scratchCard.price).toFixed(2)}</p>
-                                      </div>
-                                      
-                                      <div>
-                                        <p className="text-neutral-400">Valor ganho</p>
-                                        <p className={`font-medium ${
-                                          parseFloat(game.amount_won) > 0 ? 'text-green-400' : 'text-neutral-400'
-                                        }`}>
-                                          R$ {parseFloat(game.amount_won).toFixed(2)}
-                                        </p>
-                                      </div>
-                                      
-                                      <div>
-                                        <p className="text-neutral-400">Tipo de prêmio</p>
-                                        <p className="text-white">{game.prize_type || 'Nenhum'}</p>
-                                      </div>
-                                      
-                                      <div>
-                                        <p className="text-neutral-400">Data do jogo</p>
-                                        <p className="text-white">{formatDate(game.played_at)}</p>
-                                      </div>
-                                    </div>
+                                      <h4 className="text-white font-medium">{game.scratch_card_name}</h4>
+                                  <span className={`text-sm font-medium ${getGameStatusColor(game.is_winner)}`}>
+                                    {getGameStatusText(game.is_winner)}
+                                  </span>
+                                </div>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                  <div>
+                                    <p className="text-neutral-400">Custo</p>
+                                    {/* --- CORREÇÃO APLICADA AQUI --- */}
+                                    <p className="text-white font-medium">R$ {parseFloat(game.price_paid).toFixed(2)}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-neutral-400">Prêmio</p>
+                                    <p className={`font-medium ${parseFloat(game.amount_won) > 0 ? 'text-green-400' : 'text-neutral-400'}`}>
+                                      R$ {parseFloat(game.amount_won).toFixed(2)}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-neutral-400">Prêmio Ganhado</p>
+                                    <p className="text-white">{game.prize_won_name || 'Nenhum'}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-neutral-400">Data</p>
+                                    <p className="text-white">{formatDate(game.played_at)}</p>
                                   </div>
                                 </div>
                               </div>
-                            ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
