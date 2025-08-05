@@ -115,6 +115,12 @@ export default function UsersPage() {
   const [invitedLoading, setInvitedLoading] = useState(false);
   const [invitedError, setInvitedError] = useState('');
   
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | number | null>(null);
+  const [userDetails, setUserDetails] = useState<any>(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [detailsError, setDetailsError] = useState('');
+  
   const [influencerLoading, setInfluencerLoading] = useState<string | number | null>(null);
 
   const fetchUsers = async (page: number = 1, search: string = '') => {
@@ -566,7 +572,7 @@ export default function UsersPage() {
                     {!loading && !error && users.map((user) => (
                       <TableRow key={user.id} className="border-neutral-700 hover:bg-neutral-700/30">
                         <TableCell className="text-neutral-400 font-mono text-xs">
-                          {String(user.id)}
+                          {String(user.id).substring(0, 8)}...
                         </TableCell>
                         <TableCell className="text-white font-medium">{user.full_name}</TableCell>
                         <TableCell className="text-neutral-300">{user.username}</TableCell>
@@ -606,53 +612,6 @@ export default function UsersPage() {
                               className="text-green-400 hover:text-green-300 hover:bg-green-500/10"
                             >
                               <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleOpenAffiliateModal(user)}
-                              className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
-                              title="Afiliado"
-                            >
-                              <UserCheck className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleToggleInfluencer(user.id, user.is_influencer || false)}
-                              className={user.is_influencer 
-                                ? "text-orange-400 hover:text-orange-300 hover:bg-orange-500/10" 
-                                : "text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
-                              }
-                              title={user.is_influencer ? 'Remover modo influencer' : 'Adicionar modo influencer'}
-                              disabled={influencerLoading === String(user.id)}
-                            >
-                              {influencerLoading === String(user.id) ? (
-                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                              ) : (
-                                <Star className={`w-4 h-4 ${user.is_influencer ? 'fill-current' : ''}`} />
-                              )}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleOpenAdjustModal(user)}
-                              className="text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10"
-                              title="Ajustar saldo"
-                            >
-                              <DollarSign className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleToggleStatus(user.id, user.is_active)}
-                              className={user.is_active 
-                                ? "text-red-400 hover:text-red-300 hover:bg-red-500/10" 
-                                : "text-green-400 hover:text-green-300 hover:bg-green-500/10"
-                              }
-                              title={user.is_active ? 'Desativar usuário' : 'Ativar usuário'}
-                            >
-                              {user.is_active ? <UserX className="w-4 h-4" /> : <UserCheck2 className="w-4 h-4" />}
                             </Button>
                           </div>
                         </TableCell>
@@ -707,7 +666,7 @@ export default function UsersPage() {
         </SidebarInset>
       </SidebarProvider>
       
-      {/* Modal de Edição do Usuário */}
+      {/* Modals */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent className="max-w-md bg-neutral-800 border-neutral-700 text-white">
           <DialogHeader>
@@ -794,7 +753,6 @@ export default function UsersPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Modal de Ajuste de Saldo */}
       <Dialog open={isAdjustModalOpen} onOpenChange={setIsAdjustModalOpen}>
         <DialogContent className="max-w-md bg-neutral-800 border-neutral-700 text-white">
           <DialogHeader>
@@ -848,7 +806,6 @@ export default function UsersPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Modal de Afiliado */}
       <Dialog open={isAffiliateModalOpen} onOpenChange={setIsAffiliateModalOpen}>
         <DialogContent className="max-w-2xl bg-neutral-800 border-neutral-700 text-white">
           <DialogHeader>
@@ -859,7 +816,6 @@ export default function UsersPage() {
           </DialogHeader>
           {affiliateUser && (
             <div className="space-y-6">
-              {/* Editar Comissão */}
               <div className="bg-neutral-700 border border-neutral-600 rounded-lg p-4 mb-2">
                 <div className="flex flex-col sm:flex-row sm:items-end gap-3">
                   <div className="flex-1">
@@ -888,7 +844,6 @@ export default function UsersPage() {
                 </div>
                 {commissionError && <div className="text-red-400 text-sm mt-2">{commissionError}</div>}
               </div>
-              {/* Listagem de convidados */}
               <div className="bg-neutral-700 border border-neutral-600 rounded-lg p-4">
                 <h3 className="text-white font-semibold text-base mb-3">Usuários Convidados</h3>
                 {invitedLoading ? (
@@ -930,146 +885,7 @@ export default function UsersPage() {
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Modal de Detalhes do Usuário */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-4xl bg-neutral-800 border-neutral-700 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-white flex items-center gap-2">
-              <Eye className="w-5 h-5" />
-              Detalhes do Usuário
-            </DialogTitle>
-          </DialogHeader>
-          
-          {detailsLoading && (
-            <div className="flex items-center justify-center h-32">
-              <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            </div>
-          )}
-          
-          {detailsError && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
-              <p className="text-red-400 text-sm">{detailsError}</p>
-            </div>
-          )}
-          
-          {userDetails && !detailsLoading && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-white border-b border-neutral-700 pb-2">
-                    Informações Básicas
-                  </h3>
-                  <div className="space-y-3">
-                    <div>
-                      <Label className="text-neutral-400 text-sm">Nome Completo</Label>
-                      <p className="text-white font-medium">{userDetails.full_name}</p>
-                    </div>
-                    <div>
-                      <Label className="text-neutral-400 text-sm">Username</Label>
-                      <p className="text-white font-medium">{userDetails.username}</p>
-                    </div>
-                    <div>
-                      <Label className="text-neutral-400 text-sm">Email</Label>
-                      <p className="text-white font-medium">{userDetails.email}</p>
-                    </div>
-                    <div>
-                      <Label className="text-neutral-400 text-sm">CPF</Label>
-                      <p className="text-white font-medium">{formatCPF(userDetails.cpf)}</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-white border-b border-neutral-700 pb-2">
-                    Status e Configurações
-                  </h3>
-                  <div className="space-y-3">
-                    <div>
-                      <Label className="text-neutral-400 text-sm">Tipo de Usuário</Label>
-                      <Badge className={getStatusColor(userDetails.is_admin)}>
-                        {getStatusText(userDetails.is_admin)}
-                      </Badge>
-                    </div>
-                    <div>
-                      <Label className="text-neutral-400 text-sm">Status</Label>
-                      <Badge className={userDetails.is_active ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}>
-                        {userDetails.is_active ? 'Ativo' : 'Inativo'}
-                      </Badge>
-                    </div>
-                    <div>
-                      <Label className="text-neutral-400 text-sm">Data de Cadastro</Label>
-                      <p className="text-white font-medium">{formatDate(userDetails.created_at)}</p>
-                    </div>
-                    <div>
-                      <Label className="text-neutral-400 text-sm">Última Atualização</Label>
-                      <p className="text-white font-medium">{formatDate(userDetails.updated_at)}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-white border-b border-neutral-700 pb-2">
-                  Informações Financeiras
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-neutral-700 rounded-lg p-4">
-                    <Label className="text-neutral-400 text-sm">Saldo Atual</Label>
-                    <p className="text-2xl font-bold text-green-400">
-                      {formatCurrency(userDetails.wallet?.[0]?.balance || '0')}
-                    </p>
-                  </div>
-                  <div className="bg-neutral-700 rounded-lg p-4">
-                    <Label className="text-neutral-400 text-sm">Total de Depósitos</Label>
-                    <p className="text-2xl font-bold text-blue-400">
-                      {userDetails._count?.deposits || 0}
-                    </p>
-                  </div>
-                  <div className="bg-neutral-700 rounded-lg p-4">
-                    <Label className="text-neutral-400 text-sm">Total de Saques</Label>
-                    <p className="text-2xl font-bold text-red-400">
-                      {userDetails._count?.withdraws || 0}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-white border-b border-neutral-700 pb-2">
-                  Atividade
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-neutral-700 rounded-lg p-4">
-                    <Label className="text-neutral-400 text-sm">Total de Jogos</Label>
-                    <p className="text-2xl font-bold text-yellow-400">
-                      {userDetails._count?.games || 0}
-                    </p>
-                  </div>
-                  <div className="bg-neutral-700 rounded-lg p-4">
-                    <Label className="text-neutral-400 text-sm">Usuários Convidados</Label>
-                    <p className="text-2xl font-bold text-purple-400">
-                      {userDetails._count?.invitedUsers || 0}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          <div className="flex justify-end pt-4">
-            <Button
-              variant="outline"
-              onClick={handleCloseModal}
-              className="bg-neutral-700 border-neutral-600 text-white hover:bg-neutral-600"
-            >
-              Fechar
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      
     </div>
   );
 }
-
-
