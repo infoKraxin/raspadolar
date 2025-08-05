@@ -15,12 +15,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { 
-  User, 
-  Settings, 
-  Shield, 
-  CreditCard, 
-  History, 
+import {
+  User,
+  Settings,
+  Shield,
+  CreditCard,
+  History,
   Bell,
   ChevronRight,
   ArrowDownLeft,
@@ -36,7 +36,7 @@ import Image from 'next/image';
 import DepositModal from '@/components/deposit-modal';
 import { getAppColor, getAppColorText, getAppColorBorder, getAppColorSvg, getAppGradient } from '@/lib/colors';
 
-const poppins = Poppins({ 
+const poppins = Poppins({
   subsets: ["latin"],
   weight: ["100", "200", "300","400","500", "600", "700"],
 });
@@ -53,8 +53,8 @@ function SidebarItem({ icon, label, isActive, onClick }: SidebarItemProps) {
     <button
       onClick={onClick}
       className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all duration-200 rounded-lg group ${
-        isActive 
-          ? `${getAppColor()}/10 ${getAppColorText()} border-l-2 ${getAppColorBorder()}` 
+        isActive
+          ? `${getAppColor()}/10 ${getAppColorText()} border-l-2 ${getAppColorBorder()}`
           : 'text-neutral-400 hover:text-white hover:bg-neutral-700/50'
       }`}
     >
@@ -169,7 +169,7 @@ export default function ProfilePage() {
       toast.error('Digite sua chave PIX');
       return;
     }
-    
+
     setIsWithdrawing(true);
 
     try {
@@ -202,7 +202,7 @@ export default function ProfilePage() {
 
       if (data.success) {
         toast.success(data.message || 'Solicitação de saque criada com sucesso!');
-        
+
         setWithdrawData({
           pixKey: '',
           keyType: 'cpf',
@@ -401,7 +401,7 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
         }
     }
   }, [router.query.section, router]);
-  
+
   useEffect(() => {
     if (activeSection === 'financial' && token) {
       fetchFinancialHistory();
@@ -426,7 +426,7 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
   return (
     <div className={`${poppins.className} min-h-screen bg-neutral-900`}>
       <Header />
-      
+
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-1">
@@ -455,7 +455,7 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
                 <p className="text-white text-2xl font-bold">
                     {isLoading ? 'Carregando...' : `R$ ${(typeof profileData?.balance === 'number') ? profileData.balance.toFixed(2).replace('.', ',') : '0,00'}`}
                 </p>
-                <Button 
+                <Button
                   className={`${getAppGradient()} w-full mt-3 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20`}
                   onClick={() => setIsDepositModalOpen(true)}
                 >
@@ -636,7 +636,7 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
                   </div>
                   <div className="mt-8 pt-6 border-t border-neutral-700">
                     <div className="flex flex-col sm:flex-row gap-4">
-                      <Button 
+                      <Button
                         onClick={handleWithdraw}
                         disabled={isWithdrawing || isLoading}
                         className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-green-400/20 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -821,118 +821,106 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
                 </div>
               )}
 
-{activeSection === 'affiliates' && (
-    <div>
-        <div className="mb-8">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent mb-2">
-                Afiliados
-            </h2>
-            <p className="text-neutral-400 text-sm">
-                Gerencie seus afiliados e acompanhe suas comissões
-            </p>
-        </div>
-
-        {/* --- LÓGICA DE RENDERIZAÇÃO CORRIGIDA E COMPLETA --- */}
-
-        {isLoadingAffiliates ? (
-            // 1. MOSTRA "CARREGANDO" ENQUANTO BUSCA OS DADOS
-            <div className="text-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-yellow-500 mx-auto" />
-                <p className="text-neutral-400 mt-4">Carregando dados de afiliados...</p>
-            </div>
-        ) : affiliatesData ? (
-            // 2. MOSTRA OS DADOS QUANDO ELES CHEGAM
-            <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {/* Total de Convites */}
-                    <div className="bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 p-6 rounded-lg border border-yellow-400/20">
-                        <div className="flex items-center gap-3 mb-2">
+              {activeSection === 'affiliates' && (
+                <div>
+                  <div className="mb-8">
+                    <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent mb-2">
+                        Afiliados
+                    </h2>
+                    <p className="text-neutral-400 text-sm">
+                        Gerencie seus afiliados e acompanhe suas comissões
+                    </p>
+                  </div>
+                  {isLoadingAffiliates ? (
+                    <div className="text-center py-12">
+                        <Loader2 className="w-8 h-8 animate-spin text-yellow-500 mx-auto" />
+                        <p className="text-neutral-400 mt-4">Carregando dados de afiliados...</p>
+                    </div>
+                  ) : affiliatesData ? (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <div className="bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 p-6 rounded-lg border border-yellow-400/20">
+                          <div className="flex items-center gap-3 mb-2">
                             <Users className="w-6 h-6 text-yellow-400" />
                             <h3 className="text-white font-semibold">Total de Convites</h3>
+                          </div>
+                          <p className="text-2xl font-bold text-yellow-400">{affiliatesData.stats.total_invites}</p>
                         </div>
-                        <p className="text-2xl font-bold text-yellow-400">{affiliatesData.stats.total_invites}</p>
-                    </div>
-                    {/* Total de Comissões */}
-                    <div className="bg-gradient-to-br from-green-500/20 to-green-600/20 p-6 rounded-lg border border-green-400/20">
-                        <div className="flex items-center gap-3 mb-2">
+                        <div className="bg-gradient-to-br from-green-500/20 to-green-600/20 p-6 rounded-lg border border-green-400/20">
+                          <div className="flex items-center gap-3 mb-2">
                             <DollarSign className="w-6 h-6 text-green-400" />
                             <h3 className="text-white font-semibold">Total de Comissões</h3>
+                          </div>
+                          <p className="text-2xl font-bold text-green-400">R$ {parseFloat(affiliatesData.stats.total_commission).toFixed(2)}</p>
                         </div>
-                        <p className="text-2xl font-bold text-green-400">R$ {parseFloat(affiliatesData.stats.total_commission).toFixed(2)}</p>
-                    </div>
-                    {/* Sua Comissão */}
-                    <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 p-6 rounded-lg border border-blue-400/20">
-                        <div className="flex items-center gap-3 mb-2">
+                        <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 p-6 rounded-lg border border-blue-400/20">
+                          <div className="flex items-center gap-3 mb-2">
                             <Percent className="w-6 h-6 text-blue-400" />
                             <h3 className="text-white font-semibold">Sua Comissão</h3>
+                          </div>
+                          <p className="text-2xl font-bold text-blue-400">{affiliatesData.stats.commission_rate}%</p>
                         </div>
-                        <p className="text-2xl font-bold text-blue-400">{affiliatesData.stats.commission_rate}%</p>
-                    </div>
-                </div>
-                {/* Lista de Usuários Convidados */}
-                <div>
-                    <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                        <UserCheck className="w-5 h-5 text-yellow-400" />
-                        Usuários Convidados
-                    </h3>
-                    {affiliatesData.invitedUsers.length === 0 ? (
-                        <div className="text-center py-12">
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                          <UserCheck className="w-5 h-5 text-yellow-400" />
+                          Usuários Convidados
+                        </h3>
+                        {affiliatesData.invitedUsers.length === 0 ? (
+                          <div className="text-center py-12">
                             <Users className="w-16 h-16 text-neutral-600 mx-auto mb-4" />
                             <p className="text-neutral-400 text-lg mb-2">Nenhum usuário convidado</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-3">
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
                             {affiliatesData.invitedUsers.map((user: any, index: number) => (
-                                <div key={index} className="p-4 bg-neutral-700/50 rounded-lg border border-neutral-600">
-                                    <div className="flex justify-between items-start">
-                                        <div className="flex-1">
-                                            <p className="text-white font-medium">{user.name}</p>
-                                            <p className="text-neutral-400 text-sm">{user.email}</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-neutral-300 text-sm">Cadastro:</p>
-                                            <p className="text-white text-sm">{formatDate(user.created_at)}</p>
-                                        </div>
-                                    </div>
+                              <div key={index} className="p-4 bg-neutral-700/50 rounded-lg border border-neutral-600">
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <p className="text-white font-medium">{user.name}</p>
+                                    <p className="text-neutral-400 text-sm">{user.email}</p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-neutral-300 text-sm">Cadastro:</p>
+                                    <p className="text-white text-sm">{formatDate(user.created_at)}</p>
+                                  </div>
                                 </div>
+                              </div>
                             ))}
-                        </div>
-                    )}
-                </div>
-            </div>
-        ) : (
-            // 3. MOSTRA UMA MENSAGEM DE ERRO SE ALGO FALHAR
-            <div className="text-center py-12">
-                <p className="text-neutral-400 text-lg mb-2">Não foi possível carregar os dados de afiliado.</p>
-                <p className="text-neutral-500 text-sm mb-4">Tente novamente mais tarde.</p>
-                <Button 
-                    onClick={fetchAffiliatesData}
-                    variant="outline"
-                    className="bg-neutral-700 border-neutral-600 text-white hover:bg-neutral-600"
-                >
-                    Tentar Novamente
-                </Button>
-            </div>
-        )}
-    </div>
-)}
-                      <div className="text-center pt-4">
-                        <Button 
-                          onClick={fetchAffiliatesData}
-                          disabled={isLoadingAffiliates}
-                          variant="outline"
-                          className="bg-neutral-700 border-neutral-600 text-white hover:bg-neutral-600"
-                        >
-                          {isLoadingAffiliates ? 'Carregando...' : 'Atualizar Dados'}
-                        </Button>
+                          </div>
+                        )}
                       </div>
                     </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <p className="text-neutral-400 text-lg mb-2">Não foi possível carregar os dados de afiliado.</p>
+                      <p className="text-neutral-500 text-sm mb-4">Tente novamente mais tarde.</p>
+                      <Button
+                          onClick={fetchAffiliatesData}
+                          variant="outline"
+                          className="bg-neutral-700 border-neutral-600 text-white hover:bg-neutral-600"
+                      >
+                          Tentar Novamente
+                      </Button>
+                    </div>
                   )}
+                  {/* Botão de atualizar dados dentro do bloco 'affiliates' */}
+                  <div className="text-center pt-4">
+                    <Button 
+                      onClick={fetchAffiliatesData}
+                      disabled={isLoadingAffiliates}
+                      variant="outline"
+                      className="bg-neutral-700 border-neutral-600 text-white hover:bg-neutral-600"
+                    >
+                      {isLoadingAffiliates ? 'Carregando...' : 'Atualizar Dados'}
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
           </div>
         </div>
+      </div>
       <Footer />
       <DepositModal
         isOpen={isDepositModalOpen}
@@ -940,9 +928,6 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
         token={token}
         updateUser={updateUser}
       />
+    </div>
   );
 }
-
-
-
-
