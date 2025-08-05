@@ -603,18 +603,49 @@ export default function UsersPage() {
                         <TableCell className="text-neutral-300 text-xs">
                           {formatDate(user.created_at)}
                         </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleViewDetails(String(user.id))}
-                              className="text-green-400 hover:text-green-300 hover:bg-green-500/10"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
+                       <TableCell className="text-right">
+  <div className="flex items-center justify-end gap-1">
+    {/* Botão de Ajustar Saldo */}
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => handleOpenAdjustModal(user)}
+      className="text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10"
+    >
+      <DollarSign className="w-4 h-4" />
+    </Button>
+
+    {/* Botão de Gerenciar Afiliação */}
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => handleOpenAffiliateModal(user)}
+      className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
+    >
+      <UserCheck className="w-4 h-4" />
+    </Button>
+
+    {/* Botão de Ativar/Inativar */}
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => handleToggleStatus(String(user.id), user.is_active)}
+      className={user.is_active ? "text-red-400 hover:text-red-300 hover:bg-red-500/10" : "text-green-400 hover:text-green-300 hover:bg-green-500/10"}
+    >
+      {user.is_active ? <UserX className="w-4 h-4" /> : <UserCheck2 className="w-4 h-4" />}
+    </Button>
+
+    {/* Botão de Visualizar (já existente) */}
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => handleViewDetails(String(user.id))}
+      className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+    >
+      <Eye className="w-4 h-4" />
+    </Button>
+  </div>
+</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -889,3 +920,4 @@ export default function UsersPage() {
     </div>
   );
 }
+
