@@ -37,7 +37,7 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'raspagreen.cloud',
-        pathname: '/storage/prizes/**',
+        pathname: '/storage/**',
       },
       // --------------------------
     ],
@@ -45,3 +45,4 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
+
