@@ -821,100 +821,101 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
                 </div>
               )}
 
-              {activeSection === 'affiliates' && (
-                <div>
-                  <div className="mb-8">
-                    <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent mb-2">
-                      Afiliados
-                    </h2>
-                    <p className="text-neutral-400 text-sm">
-                      Gerencie seus afiliados e acompanhe suas comissões
-                    </p>
-                  </div>
-<div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 p-6 rounded-lg border border-blue-400/20">
-    <div className="flex items-center gap-3 mb-2">
-        <Percent className="w-6 h-6 text-blue-400" />
-        <h3 className="text-white font-semibold">Sua Comissão</h3>
-    </div>
-    <p className="text-2xl font-bold text-blue-400">{affiliatesData.stats.commission_rate}%</p>
-</div>
-                  {!affiliatesData ? (
-                    <div className="text-center py-12">
-                      <Button 
-                        onClick={fetchAffiliatesData}
-                        disabled={isLoadingAffiliates}
-                        className={`${getAppGradient()} text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-neutral-400/20`}
-                      >
-                        {isLoadingAffiliates ? 'Carregando...' : 'Carregar Dados de Afiliados'}
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 p-6 rounded-lg border border-yellow-400/20">
-                          <div className="flex items-center gap-3 mb-2">
+{activeSection === 'affiliates' && (
+    <div>
+        <div className="mb-8">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent mb-2">
+                Afiliados
+            </h2>
+            <p className="text-neutral-400 text-sm">
+                Gerencie seus afiliados e acompanhe suas comissões
+            </p>
+        </div>
+
+        {/* --- LÓGICA DE RENDERIZAÇÃO CORRIGIDA E COMPLETA --- */}
+
+        {isLoadingAffiliates ? (
+            // 1. MOSTRA "CARREGANDO" ENQUANTO BUSCA OS DADOS
+            <div className="text-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-yellow-500 mx-auto" />
+                <p className="text-neutral-400 mt-4">Carregando dados de afiliados...</p>
+            </div>
+        ) : affiliatesData ? (
+            // 2. MOSTRA OS DADOS QUANDO ELES CHEGAM
+            <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {/* Total de Convites */}
+                    <div className="bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 p-6 rounded-lg border border-yellow-400/20">
+                        <div className="flex items-center gap-3 mb-2">
                             <Users className="w-6 h-6 text-yellow-400" />
                             <h3 className="text-white font-semibold">Total de Convites</h3>
-                          </div>
-                          <p className="text-2xl font-bold text-yellow-400">{affiliatesData.stats.total_invites}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-green-500/20 to-green-600/20 p-6 rounded-lg border border-green-400/20">
-                          <div className="flex items-center gap-3 mb-2">
+                        <p className="text-2xl font-bold text-yellow-400">{affiliatesData.stats.total_invites}</p>
+                    </div>
+                    {/* Total de Comissões */}
+                    <div className="bg-gradient-to-br from-green-500/20 to-green-600/20 p-6 rounded-lg border border-green-400/20">
+                        <div className="flex items-center gap-3 mb-2">
                             <DollarSign className="w-6 h-6 text-green-400" />
                             <h3 className="text-white font-semibold">Total de Comissões</h3>
-                          </div>
-                          <p className="text-2xl font-bold text-green-400">R$ {parseFloat(affiliatesData.stats.total_commission).toFixed(2)}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 p-6 rounded-lg border border-purple-400/20">
-                          <div className="flex items-center gap-3 mb-2">
-                            <UserCheck className="w-6 h-6 text-purple-400" />
-                            <h3 className="text-white font-semibold">Convites Ativos</h3>
-                          </div>
-                          <p className="text-2xl font-bold text-purple-400">{affiliatesData.stats.active_invites}</p>
+                        <p className="text-2xl font-bold text-green-400">R$ {parseFloat(affiliatesData.stats.total_commission).toFixed(2)}</p>
+                    </div>
+                    {/* Sua Comissão */}
+                    <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 p-6 rounded-lg border border-blue-400/20">
+                        <div className="flex items-center gap-3 mb-2">
+                            <Percent className="w-6 h-6 text-blue-400" />
+                            <h3 className="text-white font-semibold">Sua Comissão</h3>
                         </div>
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                          <Users className="w-5 h-5 text-yellow-400" />
-                          Usuários Convidados
-                        </h3>
-                        {affiliatesData.invitedUsers.length === 0 ? (
-                          <div className="text-center py-12">
+                        <p className="text-2xl font-bold text-blue-400">{affiliatesData.stats.commission_rate}%</p>
+                    </div>
+                </div>
+                {/* Lista de Usuários Convidados */}
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                        <UserCheck className="w-5 h-5 text-yellow-400" />
+                        Usuários Convidados
+                    </h3>
+                    {affiliatesData.invitedUsers.length === 0 ? (
+                        <div className="text-center py-12">
                             <Users className="w-16 h-16 text-neutral-600 mx-auto mb-4" />
                             <p className="text-neutral-400 text-lg mb-2">Nenhum usuário convidado</p>
-                            <p className="text-neutral-500 text-sm">Convide amigos para começar a ganhar comissões</p>
-                          </div>
-                        ) : (
-                          <div className="space-y-3">
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
                             {affiliatesData.invitedUsers.map((user: any, index: number) => (
-                              <div key={index} className="p-4 bg-neutral-700/50 rounded-lg border border-neutral-600">
-                                <div className="flex justify-between items-start">
-                                  <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-2">
-                                      <div className="w-8 h-8 bg-yellow-500/20 rounded-full flex items-center justify-center">
-                                        <Users className="w-4 h-4 text-yellow-400" />
-                                      </div>
-                                      <div>
-                                        <p className="text-white font-medium">{user.name || 'Usuário'}</p>
-                                        <p className="text-neutral-400 text-sm">{user.email || 'Email não disponível'}</p>
-                                      </div>
+                                <div key={index} className="p-4 bg-neutral-700/50 rounded-lg border border-neutral-600">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex-1">
+                                            <p className="text-white font-medium">{user.name}</p>
+                                            <p className="text-neutral-400 text-sm">{user.email}</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-neutral-300 text-sm">Cadastro:</p>
+                                            <p className="text-white text-sm">{formatDate(user.created_at)}</p>
+                                        </div>
                                     </div>
-                                    <div className="text-neutral-400 text-sm space-y-1">
-                                      <p>Data de cadastro: {user.created_at ? formatDate(user.created_at) : 'Não disponível'}</p>
-                                      <p>Status: {user.status || 'Ativo'}</p>
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400">
-                                      Ativo
-                                    </span>
-                                  </div>
                                 </div>
-                              </div>
                             ))}
-                          </div>
-                        )}
-                      </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        ) : (
+            // 3. MOSTRA UMA MENSAGEM DE ERRO SE ALGO FALHAR
+            <div className="text-center py-12">
+                <p className="text-neutral-400 text-lg mb-2">Não foi possível carregar os dados de afiliado.</p>
+                <p className="text-neutral-500 text-sm mb-4">Tente novamente mais tarde.</p>
+                <Button 
+                    onClick={fetchAffiliatesData}
+                    variant="outline"
+                    className="bg-neutral-700 border-neutral-600 text-white hover:bg-neutral-600"
+                >
+                    Tentar Novamente
+                </Button>
+            </div>
+        )}
+    </div>
+)}
                       <div className="text-center pt-4">
                         <Button 
                           onClick={fetchAffiliatesData}
@@ -943,6 +944,7 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
     </div>
   );
 }
+
 
 
 
