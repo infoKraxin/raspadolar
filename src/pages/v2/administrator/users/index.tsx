@@ -886,30 +886,31 @@ export default function UsersPage() {
                 ) : invitedUsers.length === 0 ? (
                   <div className="text-neutral-400 text-sm">Nenhum usuário convidado.</div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full text-sm">
-                      <thead>
-                        <tr className="text-neutral-400">
-                          <th className="px-2 py-1 text-left">Nome</th>
-                          <th className="px-2 py-1 text-left">Username</th>
-                          <th className="px-2 py-1 text-left">Email</th>
-                          <th className="px-2 py-1 text-left">Saldo</th>
-                          <th className="px-2 py-1 text-left">Data Cadastro</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {invitedUsers.map((u) => (
-                          <tr key={u.id} className="border-b border-neutral-600 last:border-0">
-                            <td className="px-2 py-1 text-white">{u.full_name}</td>
-                            <td className="px-2 py-1 text-neutral-300">{u.username}</td>
-                            <td className="px-2 py-1 text-neutral-300">{u.email}</td>
-                            <td className="px-2 py-1 text-green-400">R$ {parseFloat(u.wallet?.[0]?.balance || '0').toFixed(2).replace('.', ',')}</td>
-                            <td className="px-2 py-1 text-neutral-400">{new Date(u.created_at).toLocaleDateString('pt-BR')}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+<div className="overflow-x-auto">
+  <table className="min-w-full text-sm">
+    <thead>
+      <tr className="text-neutral-400">
+        <th className="px-2 py-1 text-left">Username</th>
+        <th className="px-2 py-1 text-left">Email</th>
+        <th className="px-2 py-1 text-left">Total Depositado</th>
+        <th className="px-2 py-1 text-left">Nº Depósitos</th>
+        <th className="px-2 py-1 text-left">Data Cadastro</th>
+      </tr>
+    </thead>
+    <tbody>
+      {invitedUsers.map((u) => (
+        <tr key={u.id} className="border-b border-neutral-600 last:border-0">
+          <td className="px-2 py-1 text-white">{u.username}</td>
+          <td className="px-2 py-1 text-neutral-300">{u.email}</td>
+          {/* Exibindo o novo dado que veio do backend */}
+          <td className="px-2 py-1 text-green-400 font-semibold">{formatCurrency(u.total_deposited)}</td>
+          <td className="px-2 py-1 text-center text-white">{u.total_deposits_count}</td>
+          <td className="px-2 py-1 text-neutral-400">{new Date(u.created_at).toLocaleDateString('pt-BR')}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
                 )}
               </div>
             </div>
@@ -920,4 +921,5 @@ export default function UsersPage() {
     </div>
   );
 }
+
 
