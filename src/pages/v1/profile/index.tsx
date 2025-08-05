@@ -830,6 +830,13 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
                       Gerencie seus afiliados e acompanhe suas comissões
                     </p>
                   </div>
+<div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 p-6 rounded-lg border border-blue-400/20">
+    <div className="flex items-center gap-3 mb-2">
+        <Percent className="w-6 h-6 text-blue-400" />
+        <h3 className="text-white font-semibold">Sua Comissão</h3>
+    </div>
+    <p className="text-2xl font-bold text-blue-400">{affiliatesData.stats.commission_rate}%</p>
+</div>
                   {!affiliatesData ? (
                     <div className="text-center py-12">
                       <Button 
@@ -935,4 +942,5 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
     </div>
   );
 }
+
 
