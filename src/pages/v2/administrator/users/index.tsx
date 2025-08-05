@@ -38,6 +38,7 @@ import {
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { toast } from 'sonner';
+import { useRouter } from 'next/router';
 
 const poppins = Poppins({ 
   subsets: ["latin"],
@@ -45,7 +46,7 @@ const poppins = Poppins({
 })
 
 interface User {
-  id: string;
+  id: string | number; // O ID pode ser número ou string, o código agora lida com ambos
   username: string;
   email: string;
   cpf: string;
@@ -77,9 +78,8 @@ interface UsersResponse {
   };
 }
 
-
-
 export default function UsersPage() {
+  const router = useRouter();
   const { token } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState<User[]>([]);
@@ -116,14 +116,12 @@ export default function UsersPage() {
   const [invitedLoading, setInvitedLoading] = useState(false);
   const [invitedError, setInvitedError] = useState('');
   
-  // Estados para modal de detalhes do usuário
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [userDetails, setUserDetails] = useState<any>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [detailsError, setDetailsError] = useState('');
   
-  // Estados para toggle influencer
   const [influencerLoading, setInfluencerLoading] = useState<string | null>(null);
 
   const fetchUsers = async (page: number = 1, search: string = '') => {
@@ -147,7 +145,6 @@ export default function UsersPage() {
         throw new Error(data.message || 'Erro ao carregar usuários');
       }
 
-      console.log('Dados dos usuários:', data.data.users);
       setUsers(data.data.users);
       setPagination(data.data.pagination);
       setError('');
@@ -159,43 +156,34 @@ export default function UsersPage() {
   };
 
   useEffect(() => {
-    fetchUsers(1, searchTerm);
+    if(token) {
+        fetchUsers(1, searchTerm);
+    }
   }, [token]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      fetchUsers(1, searchTerm);
+      if(token) {
+        fetchUsers(1, searchTerm);
+      }
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm]);
+  }, [searchTerm, token]);
 
-  // Debug: Log dos dados dos usuários quando mudarem
-  useEffect(() => {
-    if (users.length > 0) {
-      console.log('Usuários carregados:', users);
-      users.forEach(user => {
-        console.log(`User ${user.username}: is_influencer =`, user.is_influencer, 'tipo:', typeof user.is_influencer);
-      });
-    }
-  }, [users]);
-
-  const handleEdit = (userId: string) => {
-    const user = users.find(u => u.id === userId);
-    if (user) {
-      setEditingUser(user);
-      setEditForm({
-        username: user.username,
-        email: user.email,
-        balance: user.wallet[0]?.balance || '0',
-        is_active: user.is_active
-      });
-      setIsEditModalOpen(true);
-      setEditError('');
-    }
+  const handleEdit = (user: User) => {
+    setEditingUser(user);
+    setEditForm({
+      username: user.username,
+      email: user.email,
+      balance: user.wallet[0]?.balance || '0',
+      is_active: user.is_active
+    });
+    setIsEditModalOpen(true);
+    setEditError('');
   };
 
-  const handleToggleStatus = async (userId: string, currentStatus: boolean) => {
+  const handleToggleStatus = async (userId: string | number, currentStatus: boolean) => {
     if (!token) return;
     
     try {
@@ -203,40 +191,6 @@ export default function UsersPage() {
         `https://raspadinha-api.onrender.com/v1/api/admin/users/${userId}/toggle-status`,
         {
           method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': '/',
-          },
-        }
-      );
-
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Erro ao alterar status do usuário');
-      }
-
-      // Atualizar a lista de usuários
-      await fetchUsers(pagination.page, searchTerm);
-      
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
-
-  const handlePageChange = (newPage: number) => {
-    fetchUsers(newPage, searchTerm);
-  };
-
-  const fetchUserDetails = async (userId: string) => {
-    if (!token) return;
-    
-    setDetailsLoading(true);
-    setDetailsError('');
-    try {
-      const response = await fetch(
-        `https://raspadinha-api.onrender.com/v1/api/admin/users/${userId}`,
-        {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -247,28 +201,24 @@ export default function UsersPage() {
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.message || 'Erro ao carregar detalhes do usuário');
+        throw new Error(data.message || 'Erro ao alterar status do usuário');
       }
 
-      setUserDetails(data.data);
+      toast.success('Status do usuário alterado com sucesso!');
+      await fetchUsers(pagination.page, searchTerm);
+      
     } catch (err: any) {
-      setDetailsError(err.message);
-    } finally {
-      setDetailsLoading(false);
+      setError(err.message);
+      toast.error(err.message);
     }
   };
 
-  const handleViewDetails = (userId: string) => {
-    setSelectedUserId(userId);
-    setIsModalOpen(true);
-    fetchUserDetails(userId);
+  const handlePageChange = (newPage: number) => {
+    fetchUsers(newPage, searchTerm);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedUserId(null);
-    setUserDetails(null);
-    setDetailsError('');
+  const handleViewDetails = (userId: string | number) => {
+    router.push(`/v2/administrator/users/${userId}`);
   };
 
   const handleCloseEditModal = () => {
@@ -320,14 +270,13 @@ export default function UsersPage() {
         throw new Error(data.message || 'Erro ao atualizar usuário');
       }
 
-      // Atualizar a lista de usuários
+      toast.success('Usuário atualizado com sucesso!');
       await fetchUsers(pagination.page, searchTerm);
-      
-      // Fechar modal
       handleCloseEditModal();
       
     } catch (err: any) {
       setEditError(err.message);
+      toast.error(err.message);
     } finally {
       setEditLoading(false);
     }
@@ -445,7 +394,7 @@ export default function UsersPage() {
         throw new Error(data.message || 'Erro ao salvar comissão');
       }
       toast.success('Comissão atualizada com sucesso!');
-      // Reabrir o modal (refetch convidados)
+      await fetchUsers(pagination.page, searchTerm);
       await handleOpenAffiliateModal(affiliateUser);
     } catch (err: any) {
       setCommissionError(err.message);
@@ -455,10 +404,10 @@ export default function UsersPage() {
     }
   };
 
-  const handleToggleInfluencer = async (userId: string, currentIsInfluencer: boolean) => {
+  const handleToggleInfluencer = async (userId: string | number, currentIsInfluencer: boolean) => {
     if (!token) return;
     
-    setInfluencerLoading(userId);
+    setInfluencerLoading(String(userId));
     try {
       const response = await fetch('https://raspadinha-api.onrender.com/v1/api/admin/affiliates/toggle-influencer', {
         method: 'POST',
@@ -480,7 +429,6 @@ export default function UsersPage() {
 
       toast.success(currentIsInfluencer ? 'Modo influencer removido com sucesso!' : 'Modo influencer adicionado com sucesso!');
       
-      // Atualizar a lista de usuários
       await fetchUsers(pagination.page, searchTerm);
       
     } catch (err: any) {
@@ -490,8 +438,8 @@ export default function UsersPage() {
     }
   };
 
-  const formatCurrency = (value: string) => {
-    const numValue = parseFloat(value);
+  const formatCurrency = (value: string | number) => {
+    const numValue = typeof value === 'string' ? parseFloat(value) : value;
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
@@ -499,6 +447,7 @@ export default function UsersPage() {
   };
 
   const formatCPF = (cpf: string) => {
+    if (!cpf) return 'N/A';
     return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
   };
 
@@ -543,7 +492,6 @@ export default function UsersPage() {
           </header>
           
           <div className="flex flex-1 flex-col gap-6 p-6 bg-neutral-900">
-            {/* Header Section */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-neutral-700 rounded-lg flex items-center justify-center">
@@ -560,7 +508,6 @@ export default function UsersPage() {
               </Button>
             </div>
 
-            {/* Search Section */}
             <Card className="bg-neutral-800 border-neutral-700 p-6">
               <div className="flex items-center gap-4">
                 <div className="relative flex-1">
@@ -578,7 +525,6 @@ export default function UsersPage() {
               </div>
             </Card>
 
-            {/* Users Table */}
             <Card className="bg-neutral-800 border-neutral-700">
               <div className="p-6 border-b border-neutral-700">
                 <h3 className="text-lg font-semibold text-white">Lista de Usuários</h3>
@@ -587,14 +533,12 @@ export default function UsersPage() {
                 </p>
               </div>
               
-              {/* Loading State */}
               {loading && (
                 <div className="flex items-center justify-center h-32">
                   <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 </div>
               )}
               
-              {/* Error State */}
               {error && (
                 <div className="p-6">
                   <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
@@ -629,7 +573,7 @@ export default function UsersPage() {
                     {!loading && !error && users.map((user) => (
                       <TableRow key={user.id} className="border-neutral-700 hover:bg-neutral-700/30">
                         <TableCell className="text-neutral-400 font-mono text-xs">
-                          {user.id.substring(0, 8)}...
+                          {String(user.id)}
                         </TableCell>
                         <TableCell className="text-white font-medium">{user.full_name}</TableCell>
                         <TableCell className="text-neutral-300">{user.username}</TableCell>
@@ -665,7 +609,7 @@ export default function UsersPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => window.location.href = `/v2/administrator/users/details/${user.id}`}
+                              onClick={() => handleViewDetails(String(user.id))}
                               className="text-green-400 hover:text-green-300 hover:bg-green-500/10"
                             >
                               <Eye className="w-4 h-4" />
@@ -688,9 +632,9 @@ export default function UsersPage() {
                                 : "text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
                               }
                               title={user.is_influencer ? 'Remover modo influencer' : 'Adicionar modo influencer'}
-                              disabled={influencerLoading === user.id}
+                              disabled={influencerLoading === String(user.id)}
                             >
-                              {influencerLoading === user.id ? (
+                              {influencerLoading === String(user.id) ? (
                                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                               ) : (
                                 <Star className={`w-4 h-4 ${user.is_influencer ? 'fill-current' : ''}`} />
@@ -705,14 +649,6 @@ export default function UsersPage() {
                             >
                               <DollarSign className="w-4 h-4" />
                             </Button>
-                            {/* <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEdit(user.id)}
-                              className="text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button> */}
                             <Button
                               variant="ghost"
                               size="sm"
