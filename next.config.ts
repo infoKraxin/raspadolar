@@ -1,9 +1,8 @@
- /** @type {import('next').NextConfig} */
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   images: {
     remotePatterns: [
-      // Domínios que você já tinha
       {
         protocol: 'https',
         hostname: 'api.raspapixoficial.com',
@@ -24,22 +23,25 @@ const nextConfig = {
         hostname: 'raspadolar.vercel.app',
         pathname: '/**',
       },
-      // Domínio do GitHub (versão corrigida)
       {
         protocol: 'https',
         hostname: 'raw.githubusercontent.com',
         pathname: '/infoKraxin/raspadolar/**',
       },
-      // --- NOVO DOMÍNIO ADICIONADO AQUI ---
       {
         protocol: 'https',
         hostname: 'ik.imagekit.io',
         pathname: '/azx3nlpdu/**',
       },
+      // --- ADICIONE ESTE BLOCO ---
+      {
+        protocol: 'https',
+        hostname: 'raspagreen.cloud',
+        pathname: '/storage/prizes/**',
+      },
+      // --------------------------
     ],
   },
 };
 
 module.exports = nextConfig;
-
-
