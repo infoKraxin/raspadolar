@@ -219,7 +219,7 @@ export default function UserDetailsPage() {
     setCommissionError('');
     try {
       const response = await fetch('https://api.raspapixoficial.com/v1/api/admin/affiliates/edit-commission', {
-        method: 'PUT',
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -783,3 +783,4 @@ export default function UserDetailsPage() {
     </div>
   );
 }
+
