@@ -46,7 +46,7 @@ const poppins = Poppins({
 })
 
 interface User {
-  id: string | number; // O ID pode ser número ou string, o código agora lida com ambos
+  id: string | number; // ID pode ser número ou string
   username: string;
   email: string;
   cpf: string;
@@ -122,7 +122,7 @@ export default function UsersPage() {
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [detailsError, setDetailsError] = useState('');
   
-  const [influencerLoading, setInfluencerLoading] = useState<string | null>(null);
+  const [influencerLoading, setInfluencerLoading] = useState<string | number | null>(null);
 
   const fetchUsers = async (page: number = 1, search: string = '') => {
     if (!token) return;
@@ -573,7 +573,8 @@ export default function UsersPage() {
                     {!loading && !error && users.map((user) => (
                       <TableRow key={user.id} className="border-neutral-700 hover:bg-neutral-700/30">
                         <TableCell className="text-neutral-400 font-mono text-xs">
-                          {String(user.id)}
+                          {/* CORREÇÃO APLICADA AQUI */}
+                          {String(user.id).substring(0, 8)}...
                         </TableCell>
                         <TableCell className="text-white font-medium">{user.full_name}</TableCell>
                         <TableCell className="text-neutral-300">{user.username}</TableCell>
@@ -1079,3 +1080,4 @@ export default function UsersPage() {
     </div>
   );
 }
+
