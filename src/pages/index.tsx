@@ -33,6 +33,7 @@ interface ScratchCard {
   id: string;
   name: string;
   description: string;
+  prize_text?: string; // <-- 1. NOVO CAMPO ADICIONADO AQUI
   price: string;
   image_url: string;
   is_active: boolean;
@@ -107,19 +108,7 @@ export default function Home() {
     return 'Outros';
   };
 
-  const getMaxPrize = (card: ScratchCard) => {
-    if (!card.prizes.length) return 'Sem prêmios';
-    const maxPrize = card.prizes.reduce((max, prize) => {
-      const prizeValue = parseFloat(prize.value || '0');
-      const maxValue = parseFloat(max.value || '0');
-      return prizeValue > maxValue ? prize : max;
-    });
-
-    if (maxPrize.type === 'MONEY') {
-      return `Ganhe até R$ ${parseFloat(maxPrize.value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-    }
-    return maxPrize.product_name || maxPrize.name || 'Prêmio especial';
-  };
+  // <-- 2. FUNÇÃO getMaxPrize REMOVIDA DAQUI -->
 
   const getFilteredCards = () => {
     if (filter === 'all') return scratchCards;
@@ -149,7 +138,6 @@ export default function Home() {
     }
   };
 
-  // FUNÇÃO fetchUserData CORRIGIDA
   const fetchUserData = async () => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -158,7 +146,7 @@ export default function Home() {
     }
 
     try {
-      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/users/profile', { 
+      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/users/profile', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -167,18 +155,15 @@ export default function Home() {
 
       console.log('Resposta completa da API de perfil:', data);
 
-      // Verificamos se a resposta foi um sucesso e se a propriedade 'balance' existe em data.data
       if (data.success && data.data && typeof data.data.balance !== 'undefined') {
         setBalance(data.data.balance);
         console.log('Saldo atualizado com sucesso:', data.data.balance);
       } else {
         console.log('Estrutura da resposta da API de perfil inesperada ou saldo não encontrado.');
-        // Definir o saldo como 0 em caso de falha para evitar erros
         setBalance(0);
       }
     } catch (error) {
       console.error('Erro ao buscar dados do usuário:', error);
-      // Definir saldo como 0 em caso de falha completa da requisição
       setBalance(0);
     }
   };
@@ -250,7 +235,7 @@ export default function Home() {
         console.error('Erro ao verificar depósitos não processados:', error);
       }
     };
-    
+
     checkAndCorrectBalance();
   }, []);
 
@@ -263,7 +248,7 @@ export default function Home() {
 
   return (
     <div className={`${poppins.className}`}>
-       <Header />
+        <Header />
 
       {/* Banner Carousel */}
       <div className="bg-neutral-900 mt-4 relative w-full max-w-6xl lg:max-w-7xl mx-auto overflow-hidden px-2 sm:px-4 lg:px-0">
@@ -331,7 +316,6 @@ export default function Home() {
                 .filter(card => card.is_featured)
                 .map((card) => {
                   const cardType = getCardType(card);
-                  const maxPrize = getMaxPrize(card);
 
                   return (
                     <div key={card.id} className={`bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl border ${getAppColorBorder()} shadow-lg hover:shadow-xl transition-all duration-300 pt-6 sm:pt-8`}>
@@ -355,8 +339,9 @@ export default function Home() {
                         <h3 className="text-white font-semibold text-base sm:text-lg mb-1 truncate" title={card.name}>
                           {card.name}
                         </h3>
-                        <p className="text-neutral-400 text-sm mb-3 sm:mb-4 truncate" title={cardType === 'Produtos' ? card.description : maxPrize}>
-                          {cardType === 'Produtos' ? card.description : maxPrize}
+                        {/* <-- 3. LÓGICA DO SUBTÍTULO ALTERADA AQUI --> */}
+                        <p className="text-neutral-400 text-sm mb-3 sm:mb-4 truncate" title={card.prize_text || card.description}>
+                          {card.prize_text || card.description}
                         </p>
                         <div className="flex justify-between items-center">
                           <span className="text-green-400 font-bold text-base sm:text-lg">
@@ -456,7 +441,6 @@ export default function Home() {
             ) : (
               getFilteredCards().map((card) => {
                 const cardType = getCardType(card);
-                const maxPrize = getMaxPrize(card);
 
                 return (
                   <div key={card.id} className="bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-xl border border-neutral-700/50 shadow-lg hover:shadow-xl transition-all duration-300 pt-6 sm:pt-8">
@@ -480,8 +464,9 @@ export default function Home() {
                       <h3 className="text-white font-semibold text-base sm:text-lg mb-1 truncate" title={card.name}>
                         {card.name}
                       </h3>
-                      <p className="text-neutral-400 text-sm mb-3 sm:mb-4 truncate" title={cardType === 'Produtos' ? card.description : maxPrize}>
-                        {cardType === 'Produtos' ? card.description : maxPrize}
+                      {/* <-- 3. LÓGICA DO SUBTÍTULO ALTERADA AQUI --> */}
+                      <p className="text-neutral-400 text-sm mb-3 sm:mb-4 truncate" title={card.prize_text || card.description}>
+                        {card.prize_text || card.description}
                       </p>
                       <div className="flex justify-between items-center">
                         <span className="text-green-400 font-bold text-base sm:text-lg">
@@ -549,6 +534,3 @@ export default function Home() {
     </div>
   );
 }
-
-
-
