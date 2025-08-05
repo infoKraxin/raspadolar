@@ -319,7 +319,7 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
     }
     setIsLoadingAffiliates(true);
     try {
-      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/users/invited-users', {
+     const response = await fetch('https://raspadinha-api.onrender.com/v1/api/affiliates/my-data', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -935,3 +935,4 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
     </div>
   );
 }
+
