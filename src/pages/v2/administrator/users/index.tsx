@@ -46,7 +46,7 @@ const poppins = Poppins({
 })
 
 interface User {
-  id: string | number; // ID pode ser número ou string
+  id: string | number;
   username: string;
   email: string;
   cpf: string;
@@ -55,7 +55,6 @@ interface User {
   is_active: boolean;
   is_influencer: boolean;
   created_at: string;
-  updated_at: string;
   wallet: Array<{
     balance: string;
   }>;
@@ -115,12 +114,6 @@ export default function UsersPage() {
   const [invitedUsers, setInvitedUsers] = useState<any[]>([]);
   const [invitedLoading, setInvitedLoading] = useState(false);
   const [invitedError, setInvitedError] = useState('');
-  
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [userDetails, setUserDetails] = useState<any>(null);
-  const [detailsLoading, setDetailsLoading] = useState(false);
-  const [detailsError, setDetailsError] = useState('');
   
   const [influencerLoading, setInfluencerLoading] = useState<string | number | null>(null);
 
@@ -573,8 +566,7 @@ export default function UsersPage() {
                     {!loading && !error && users.map((user) => (
                       <TableRow key={user.id} className="border-neutral-700 hover:bg-neutral-700/30">
                         <TableCell className="text-neutral-400 font-mono text-xs">
-                          {/* CORREÇÃO APLICADA AQUI */}
-                          {String(user.id).substring(0, 8)}...
+                          {String(user.id)}
                         </TableCell>
                         <TableCell className="text-white font-medium">{user.full_name}</TableCell>
                         <TableCell className="text-neutral-300">{user.username}</TableCell>
@@ -681,7 +673,6 @@ export default function UsersPage() {
                 </div>
               )}
               
-              {/* Pagination */}
               {!loading && !error && pagination.pages > 1 && (
                 <div className="flex items-center justify-between p-6 border-t border-neutral-700">
                   <div className="text-sm text-neutral-400">
@@ -1080,4 +1071,5 @@ export default function UsersPage() {
     </div>
   );
 }
+
 
