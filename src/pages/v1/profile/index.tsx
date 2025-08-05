@@ -29,7 +29,8 @@ import {
   Users,
   DollarSign,
   UserCheck,
-  Loader2
+  Loader2,
+  Percent
 } from 'lucide-react';
 import Image from 'next/image';
 import DepositModal from '@/components/deposit-modal';
@@ -942,5 +943,6 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
     </div>
   );
 }
+
 
 
