@@ -36,20 +36,24 @@ export default function AdminLoginPage() {
     if (error) setError(''); // Clear error when user starts typing
   };
 
+  // ==================================================================
+  // FUNÇÃO handleSubmit TOTALMENTE CORRIGIDA
+  // ==================================================================
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
     try {
-      // Fazer chamada para a API de login
-      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/auth/login', {
+      // 1. URL CORRIGIDA: Apontando para a rota '/api/login' que existe no seu backend.
+      const response = await fetch('https://raspadinha-api.onrender.com/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        // 2. BODY CORRIGIDO: Enviando 'email' em vez de 'identifier'.
         body: JSON.stringify({
-          identifier: formData.email,
+          email: formData.email,
           password: formData.password,
         }),
       });
@@ -60,14 +64,15 @@ export default function AdminLoginPage() {
         throw new Error(data.message || 'Erro na autenticação');
       }
 
-      // Verificar se o usuário é administrador
-      if (!data.data.user.is_admin) {
+      // 3. LEITURA DA RESPOSTA CORRIGIDA: Lendo de 'data.user' em vez de 'data.data.user'.
+      // Lembre-se: seu backend (/api/login) PRECISA retornar o campo 'is_admin' no objeto do usuário.
+      if (!data.user.is_admin) {
         setError('Acesso negado. Você não tem permissões de administrador.');
         return;
       }
 
-      // Fazer login usando o contexto
-      login(data.data.user, data.data.token);
+      // 4. CHAMADA DO LOGIN CORRIGIDA: Usando 'data.user' e 'data.token'.
+      login(data.user, data.token);
       
       // Redirecionar para o dashboard administrativo
       router.push('/v2/administrator/dashboard');
@@ -78,6 +83,7 @@ export default function AdminLoginPage() {
       setIsLoading(false);
     }
   };
+  // ==================================================================
 
   return (
     <div className={`${poppins.className} min-h-screen bg-neutral-900 flex items-center justify-center p-4`}>
