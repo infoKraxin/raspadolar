@@ -933,7 +933,6 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
             </div>
           </div>
         </div>
-      </div>
       <Footer />
       <DepositModal
         isOpen={isDepositModalOpen}
@@ -941,10 +940,8 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
         token={token}
         updateUser={updateUser}
       />
-    </div>
   );
 }
-
 
 
 
