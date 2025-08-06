@@ -276,16 +276,16 @@ export default function DepositModal({ isOpen, onClose, token, updateUser }: Dep
     }
     setIsGeneratingPayment(true);
     try {
-      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/deposits/appsnap', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount: amount,
-        })
-      });
+      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/deposits/pagarme', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: amount,
+        })
+      });
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.message || 'Erro ao gerar pagamento');
@@ -464,3 +464,4 @@ export default function DepositModal({ isOpen, onClose, token, updateUser }: Dep
     </>
   );
 }
+
