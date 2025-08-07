@@ -6,7 +6,7 @@ import Header from '@/components/header';
 import Footer from '@/components/footer';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowLeft, Lock, Loader2, Sparkles } from 'lucide-react'; // Adicionado Sparkles
+import { ArrowLeft, Lock, Loader2, Sparkles } from 'lucide-react';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
 import ScratchCard from 'react-scratchcard-v4';
@@ -205,7 +205,8 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
           id: i,
           type: winningType.type,
           value: prizeDisplayValue,
-          icon: fixImageUrl(result.prize.image_url) || winningType.icon
+          icon: fixImageUrl(result.prize.image_url) || winningType.icon,
+          isWin: true // Marca como vencedor
         });
       }
 
@@ -230,7 +231,8 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
           id: i,
           type: selectedType.type,
           value: selectedType.baseValue,
-          icon: selectedType.icon
+          icon: selectedType.icon,
+          isWin: false // Marca como não vencedor
         });
       }
     } else {
@@ -256,7 +258,8 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
           id: i,
           type: typeData.type,
           value: typeData.baseValue,
-          icon: typeData.icon
+          icon: typeData.icon,
+          isWin: false // Marca como não vencedor
         });
       }
     }
@@ -381,7 +384,6 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
     }
   };
 
-  // --- NOVA FUNÇÃO ADICIONADA ---
   const handleRevealAll = () => {
       if(gameState === 'playing') {
           handleScratchComplete();
@@ -478,16 +480,25 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
           {(gameState === 'playing' || gameState === 'completed') && (
             <div className="bg-neutral-700 rounded-lg p-4 sm:p-6 border border-neutral-600 mb-4 sm:mb-6">
               
-              {/* --- BOTÃO "RASPAR TUDO" ADICIONADO AQUI --- */}
               {gameState === 'playing' && (
+                <>
+                  <div className="text-center mb-4">
+                    <p className="text-white font-semibold text-sm sm:text-base mb-2">
+                      🎯 Raspe a superfície para descobrir os prêmios!
+                    </p>
+                    <p className="text-yellow-400 text-xs sm:text-sm">
+                      💡 Você precisa de 3 símbolos iguais para ganhar!
+                    </p>
+                  </div>
                   <div className="text-center mb-4">
                       <Button onClick={handleRevealAll} variant="outline" className="border-yellow-500 text-yellow-500 hover:bg-yellow-500/10 hover:text-yellow-400">
                           <Sparkles className="mr-2 h-4 w-4"/>
                           Raspar Tudo (Revelar)
                       </Button>
                   </div>
+                </>
               )}
-
+              
               {gameState === 'playing' && (
                 <div className="flex justify-center mb-4 touch-none overflow-hidden" style={{ touchAction: 'none' }}>
                    <div className="w-full flex justify-center" style={{ touchAction: 'none', userSelect: 'none' }}>
@@ -568,9 +579,13 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
                   {scratchItems.map((item) => (
                     <div
                       key={item.id}
-                      className="relative aspect-square bg-gradient-to-br from-neutral-600 to-neutral-700 rounded-lg border border-neutral-500 overflow-hidden"
+                      className={`relative aspect-square bg-gradient-to-br rounded-lg border overflow-hidden transition-all duration-300 ${
+                          item.isWin 
+                          ? 'from-yellow-600/40 to-yellow-700/40 border-yellow-400 shadow-lg shadow-yellow-400/40' 
+                          : 'from-neutral-600 to-neutral-700 border-neutral-500 opacity-60'
+                      }`}
                     >
-                      <div className="absolute inset-0 flex flex-col items-center justify-center p-2 bg-gradient-to-br from-neutral-600/20 to-neutral-700/20">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center p-2">
                         <div className="w-8 h-8 sm:w-10 sm:h-10 mb-1 relative mx-auto">
                           <Image
                             src={item.icon}
@@ -580,7 +595,7 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
                           />
                         </div>
                        <p className="text-white text-xs font-bold text-center">
-                          Valor: {String(item.value)}
+                          {item.value > 0 ? `R$ ${item.value.toFixed(2).replace('.', ',')}` : 'Sem Prêmio'}
                         </p>
                       </div>
                     </div>
