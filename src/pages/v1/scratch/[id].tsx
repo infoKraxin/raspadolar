@@ -6,7 +6,7 @@ import Header from '@/components/header';
 import Footer from '@/components/footer';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowLeft, Lock, Loader2, Sparkles } from 'lucide-react'; // Adicionado Sparkles
+import { ArrowLeft, Lock, Loader2, Sparkles } from 'lucide-react';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
 import ScratchCard from 'react-scratchcard-v4';
@@ -18,13 +18,27 @@ const poppins = Poppins({
   weight: ["100", "200", "300","400","500", "600", "700"],
 });
 
-// ... (Todas as suas interfaces permanecem as mesmas)
+// Interfaces para a API
 interface Prize { id: string; name: string; type: string; value: string; product_name: string | null; redemption_value: string | null; image_url: string; }
 interface ScratchCardData { id: string; name: string; description: string; price: string; image_url: string; prizes: Prize[]; }
+interface ApiResponse { success: boolean; message: string; data: ScratchCardData; }
+
+// Interfaces para o jogo
 interface GamePrize { id: string; name: string; type: string; value: string; product_name: string | null; redemption_value: string | null; image_url: string; }
 interface GameResult { isWinner: boolean; amountWon: string; prize: GamePrize | null; }
 interface PlayGameResponse { success: boolean; message: string; prize: GamePrize | null; newBalance: number; }
-interface ScratchItem { id: number; type: string; value: number; icon: string; name?: string; isWin?: boolean; }
+
+
+// --- INTERFACE CORRIGIDA AQUI ---
+interface ScratchItem {
+  id: number;
+  type: string; // Corrigido de 'number' para 'string'
+  value: number;
+  icon: string;
+  name?: string;
+  isWin?: boolean;
+}
+
 type GameState = 'idle' | 'loading' | 'playing' | 'completed';
 
 
@@ -171,7 +185,6 @@ const ScratchCardPage = () => {
     }
   };
 
-  // --- NOVA FUNÇÃO PARA O BOTÃO "RASPAR TUDO" ---
   const handleRevealAll = () => {
     if (gameState === 'playing') {
         handleScratchComplete();
@@ -240,7 +253,6 @@ const ScratchCardPage = () => {
           
           {(gameState === 'playing' || gameState === 'completed') && (
             <div className="text-center">
-                {/* --- BOTÃO "RASPAR TUDO" ADICIONADO AQUI --- */}
                 {gameState === 'playing' && (
                     <div className="mb-4">
                         <Button onClick={handleRevealAll} variant="outline" className="border-yellow-500 text-yellow-500 hover:bg-yellow-500/10 hover:text-yellow-400">
@@ -271,7 +283,6 @@ const ScratchCardPage = () => {
                     </ScratchCard>
                 </div>
               ) : (
-                // --- TELA DE RESULTADO (APÓS RASPAR OU CLICAR EM "RASPAR TUDO") ---
                 <div>
                     {gameResult?.isWinner ? (
                         <div className="text-center mb-4 p-4 rounded-lg bg-green-500/10">
