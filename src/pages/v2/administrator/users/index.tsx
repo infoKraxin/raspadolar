@@ -26,7 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Search, Edit, Trash2, Users, UserPlus, ChevronLeft, ChevronRight, Eye, X, UserCheck, Settings, UserX, UserCheck2, DollarSign, Star } from "lucide-react"
+import { Search, Edit, Trash2, Users, UserPlus, ChevronLeft, ChevronRight, Eye, X, UserCheck, Settings, UserX, UserCheck2, DollarSign, Star, Wand2 } from "lucide-react"
 import { Poppins } from 'next/font/google'
 import { useAuth } from '@/contexts/AuthContext'
 import {
@@ -55,6 +55,7 @@ interface User {
   is_active: boolean;
   is_influencer: boolean;
   created_at: string;
+  affiliate_code: string | null; // <-- Adicionado para sabermos se o código existe
   wallet: Array<{
     balance: string;
   }>;
@@ -122,6 +123,7 @@ export default function UsersPage() {
   const [detailsError, setDetailsError] = useState('');
   
   const [influencerLoading, setInfluencerLoading] = useState<string | number | null>(null);
+  const [generateCodeLoading, setGenerateCodeLoading] = useState<string | number | null>(null); // <-- Novo estado
 
   const fetchUsers = async (page: number = 1, search: string = '') => {
     if (!token) return;
@@ -181,6 +183,39 @@ export default function UsersPage() {
     setIsEditModalOpen(true);
     setEditError('');
   };
+  
+  // <-- Início da Nova Função
+  const handleGenerateCode = async (userId: string | number) => {
+    if (!token) return;
+    
+    setGenerateCodeLoading(userId);
+    try {
+      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/admin/users/generate-affiliate-code', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: userId })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Erro ao gerar código');
+      }
+
+      toast.success(data.message);
+      // Atualiza a lista de usuários para refletir a mudança
+      await fetchUsers(pagination.page, searchTerm);
+      
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setGenerateCodeLoading(null);
+    }
+  };
+  // <-- Fim da Nova Função
 
   const handleToggleStatus = async (userId: string | number, currentStatus: boolean) => {
     if (!token) return;
@@ -604,48 +639,68 @@ export default function UsersPage() {
                           {formatDate(user.created_at)}
                         </TableCell>
                        <TableCell className="text-right">
-  <div className="flex items-center justify-end gap-1">
-    {/* Botão de Ajustar Saldo */}
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={() => handleOpenAdjustModal(user)}
-      className="text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10"
-    >
-      <DollarSign className="w-4 h-4" />
-    </Button>
+                          <div className="flex items-center justify-end gap-1">
+                            {/* Botão de Gerar Código de Afiliado - NOVO */}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              title="Gerar código de afiliado"
+                              onClick={() => handleGenerateCode(user.id)}
+                              disabled={!!user.affiliate_code || generateCodeLoading === user.id}
+                              className="text-teal-400 hover:text-teal-300 hover:bg-teal-500/10 disabled:opacity-50 disabled:pointer-events-none"
+                            >
+                              {generateCodeLoading === user.id ? (
+                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              ) : (
+                                <Wand2 className="w-4 h-4" />
+                              )}
+                            </Button>
+                            
+                            {/* Botão de Ajustar Saldo */}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              title="Ajustar saldo"
+                              onClick={() => handleOpenAdjustModal(user)}
+                              className="text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10"
+                            >
+                              <DollarSign className="w-4 h-4" />
+                            </Button>
 
-    {/* Botão de Gerenciar Afiliação */}
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={() => handleOpenAffiliateModal(user)}
-      className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
-    >
-      <UserCheck className="w-4 h-4" />
-    </Button>
+                            {/* Botão de Gerenciar Afiliação */}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              title="Gerenciar afiliação"
+                              onClick={() => handleOpenAffiliateModal(user)}
+                              className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
+                            >
+                              <UserCheck className="w-4 h-4" />
+                            </Button>
 
-    {/* Botão de Ativar/Inativar */}
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={() => handleToggleStatus(String(user.id), user.is_active)}
-      className={user.is_active ? "text-red-400 hover:text-red-300 hover:bg-red-500/10" : "text-green-400 hover:text-green-300 hover:bg-green-500/10"}
-    >
-      {user.is_active ? <UserX className="w-4 h-4" /> : <UserCheck2 className="w-4 h-4" />}
-    </Button>
+                            {/* Botão de Ativar/Inativar */}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              title={user.is_active ? 'Inativar usuário' : 'Ativar usuário'}
+                              onClick={() => handleToggleStatus(String(user.id), user.is_active)}
+                              className={user.is_active ? "text-red-400 hover:text-red-300 hover:bg-red-500/10" : "text-green-400 hover:text-green-300 hover:bg-green-500/10"}
+                            >
+                              {user.is_active ? <UserX className="w-4 h-4" /> : <UserCheck2 className="w-4 h-4" />}
+                            </Button>
 
-    {/* Botão de Visualizar (já existente) */}
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={() => handleViewDetails(String(user.id))}
-      className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
-    >
-      <Eye className="w-4 h-4" />
-    </Button>
-  </div>
-</TableCell>
+                            {/* Botão de Visualizar (já existente) */}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              title="Visualizar detalhes"
+                              onClick={() => handleViewDetails(String(user.id))}
+                              className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -921,5 +976,3 @@ export default function UsersPage() {
     </div>
   );
 }
-
-
