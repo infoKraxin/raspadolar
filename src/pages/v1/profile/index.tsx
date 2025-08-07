@@ -555,9 +555,10 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
                           Link de convite
                         </Label>
                         <div className="relative">
+                          {/* --- CORREÇÃO APLICADA AQUI --- */}
                           <Input
                             id="inviteCode"
-                            value={profileData?.inviteCode?.code || ''}
+                            value={profileData?.inviteCode?.code ? `https://raspa.ae?r=${profileData.inviteCode.code}` : ''}
                             readOnly
                             className="bg-neutral-700/50 border-neutral-600 text-white placeholder:text-neutral-400 cursor-not-allowed pr-12"
                           />
@@ -931,3 +932,4 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
     </div>
   );
 }
+
