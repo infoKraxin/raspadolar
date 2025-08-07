@@ -229,36 +229,36 @@ export default function DepositPage() {
     setIsGeneratingPayment(true);
     
     try {
-      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/deposits/create', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount: amount,
-          paymentMethod: 'PIX',
-          gateway: 'pixup'
-        })
-      });
+  // 1. URL CORRIGIDA para apontar para a nova rota
+  const response = await fetch('https://raspadinha-api.onrender.com/v1/api/deposits/ellitium', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    // 2. CORPO (BODY) SIMPLIFICADO, enviando apenas o que o servidor precisa
+    body: JSON.stringify({
+      amount: amount
+    })
+  });
 
-      const data = await response.json();
+  const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Erro ao gerar pagamento');
-      }
+  if (!response.ok) {
+    throw new Error(data.message || 'Erro ao gerar pagamento');
+  }
 
-      if (data.success) {
-        setPaymentData(data.data);
-        setShowPaymentModal(true);
-        toast.success('Pagamento PIX gerado com sucesso!');
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Erro ao gerar pagamento PIX');
-      console.error('Erro ao gerar pagamento:', error);
-    } finally {
-      setIsGeneratingPayment(false);
-    }
+  if (data.success) {
+    setPaymentData(data.data);
+    setShowPaymentModal(true);
+    toast.success('Pagamento PIX gerado com sucesso!');
+  }
+} catch (error: any) {
+  toast.error(error.message || 'Erro ao gerar pagamento PIX');
+  console.error('Erro ao gerar pagamento:', error);
+} finally {
+  setIsGeneratingPayment(false);
+}
   };
   
   const getCurrentAmount = () => {
@@ -457,3 +457,4 @@ export default function DepositPage() {
     </div>
   );
 }
+
