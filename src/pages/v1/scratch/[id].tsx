@@ -28,11 +28,9 @@ interface GamePrize { id: string; name: string; type: string; value: string; pro
 interface GameResult { isWinner: boolean; amountWon: string; prize: GamePrize | null; }
 interface PlayGameResponse { success: boolean; message: string; prize: GamePrize | null; newBalance: number; }
 
-
-// --- INTERFACE CORRIGIDA AQUI ---
 interface ScratchItem {
   id: number;
-  type: string; // Corrigido de 'number' para 'string'
+  type: string;
   value: number;
   icon: string;
   name?: string;
@@ -40,7 +38,6 @@ interface ScratchItem {
 }
 
 type GameState = 'idle' | 'loading' | 'playing' | 'completed';
-
 
 const ScratchCardPage = () => {
   const router = useRouter();
@@ -89,6 +86,7 @@ const ScratchCardPage = () => {
     }
   }, [id]);
 
+  // --- FUNÇÃO CORRIGIDA ---
   const generateScratchItems = (result: GameResult): ScratchItem[] => {
     if (!scratchCardData?.prizes?.length) return [];
 
@@ -107,13 +105,29 @@ const ScratchCardPage = () => {
         if (!winningItem) return [];
 
         for (let i = 0; i < 3; i++) {
-            items.push({ id: items.length, ...winningItem, isWin: true });
+            // CORREÇÃO: Monta o objeto explicitamente sem usar o spread (...)
+            items.push({
+                id: items.length,
+                type: winningItem.type,
+                value: winningItem.value,
+                icon: winningItem.icon,
+                name: winningItem.name,
+                isWin: true,
+            });
         }
 
         const otherPrizes = allPrizes.filter(p => p.id !== winningItem.id);
         for (let i = 0; i < 6; i++) {
             const randomPrize = otherPrizes[Math.floor(Math.random() * otherPrizes.length)] || winningItem;
-            items.push({ id: items.length, ...randomPrize, isWin: false });
+            // CORREÇÃO: Monta o objeto explicitamente
+            items.push({
+                id: items.length,
+                type: randomPrize.type,
+                value: randomPrize.value,
+                icon: randomPrize.icon,
+                name: randomPrize.name,
+                isWin: false
+            });
         }
     } else {
         const prizeCounts: { [key: string]: number } = {};
@@ -121,7 +135,15 @@ const ScratchCardPage = () => {
             let availablePrizes = allPrizes.filter(p => (prizeCounts[p.id] || 0) < 2);
             if (availablePrizes.length === 0) availablePrizes = allPrizes;
             const randomPrize = availablePrizes[Math.floor(Math.random() * availablePrizes.length)];
-            items.push({ id: items.length, ...randomPrize, isWin: false });
+            // CORREÇÃO: Monta o objeto explicitamente
+            items.push({
+                id: items.length,
+                type: randomPrize.type,
+                value: randomPrize.value,
+                icon: randomPrize.icon,
+                name: randomPrize.name,
+                isWin: false
+            });
             prizeCounts[randomPrize.id] = (prizeCounts[randomPrize.id] || 0) + 1;
         }
     }
