@@ -180,18 +180,19 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
     if (!scratchCardData?.prizes?.length) {
       return [];
     }
-    const visualTypes = ['coin', 'gem', 'star', 'crown', 'heart', 'diamond', 'trophy', 'medal', 'gift', 'ticket', 'chest'];
+    const visualTypes = ['coin', 'gem', 'star', 'crown', 'heart', 'diamond', 'trophy', 'medal', 'gift', 'ticket', 'chest'] as const;
     const itemTypes = scratchCardData.prizes.map((prize, index) => ({
-      type: visualTypes[index % visualTypes.length] as 'coin' | 'gem' | 'star' | 'crown' | 'heart',
+      type: visualTypes[index % visualTypes.length],
       icon: fixImageUrl(prize.image_url) || '/50_money.webp',
       baseValue: parseFloat(prize.value || prize.redemption_value || '0'),
+      name: prize.type === 'MONEY' ? `R$ ${parseFloat(prize.value).toFixed(2)}` : (prize.product_name || prize.name),
       prizeData: prize
     }));
     const items: ScratchItem[] = [];
 
     if (result.isWinner && result.prize) {
       const winningPrizeData = scratchCardData.prizes.find(p => p.id === result.prize?.id);
-      const winningTypeIndex = winningPrizeData ? scratchCardData.prizes.findIndex(p => p.id === winningPrizeData.id) : 0;
+      const winningTypeIndex = winningPrizeData ? scratchCardData.prizes.indexOf(winningPrizeData) : 0;
       const winningType = itemTypes[winningTypeIndex % itemTypes.length];
       
       const prizeDisplayValue = parseFloat(
@@ -206,7 +207,8 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
           type: winningType.type,
           value: prizeDisplayValue,
           icon: fixImageUrl(result.prize.image_url) || winningType.icon,
-          isWin: true // Marca como vencedor
+          name: winningType.name,
+          isWin: true
         });
       }
 
@@ -223,7 +225,7 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
             selectedType = remainingTypes[0]; 
           }
         } else {
-            selectedType = itemTypes[0] || { type: 'coin', icon: '/50_money.webp', baseValue: 0, prizeData: null };
+            selectedType = itemTypes[0] || { type: 'coin', icon: '/50_money.webp', baseValue: 0, prizeData: null, name: 'Sem Prêmio' };
         }
         
         typeUsageCount[selectedType.type] = (typeUsageCount[selectedType.type] || 0) + 1;
@@ -232,35 +234,25 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
           type: selectedType.type,
           value: selectedType.baseValue,
           icon: selectedType.icon,
-          isWin: false // Marca como não vencedor
+          name: selectedType.name,
+          isWin: false
         });
       }
     } else {
-      const availableTypes = [...itemTypes];
-      const pattern = [];
-      const typeCounts: { [key: string]: number } = {};
-
-      while (pattern.length < 9) {
-          let randomType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
-          if (!randomType) continue;
-          let currentCount = typeCounts[randomType.type] || 0;
-          
-          if (currentCount < 2) {
-              pattern.push(randomType);
-              typeCounts[randomType.type] = currentCount + 1;
-          }
-      }
-
-      const shuffledPattern = pattern.sort(() => Math.random() - 0.5);
+      const prizeCounts: { [key: string]: number } = {};
       for (let i = 0; i < 9; i++) {
-        const typeData = shuffledPattern[i];
+        let availableTypes = itemTypes.filter(p => (prizeCounts[p.type] || 0) < 2);
+        if (availableTypes.length === 0) availableTypes = itemTypes;
+        const randomType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
         items.push({
           id: i,
-          type: typeData.type,
-          value: typeData.baseValue,
-          icon: typeData.icon,
-          isWin: false // Marca como não vencedor
+          type: randomType.type,
+          value: randomType.baseValue,
+          icon: randomType.icon,
+          name: randomType.name,
+          isWin: false
         });
+        prizeCounts[randomType.type] = (prizeCounts[randomType.type] || 0) + 1;
       }
     }
     return items.sort(() => Math.random() - 0.5);
@@ -281,16 +273,16 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
         })
       });
       const data: PlayGameResponse = await response.json();
-      if (data.success) {
+      if (data.success && scratchCardData) {
         const result: GameResult = {
           isWinner: !!(data.prize && data.prize.type !== 'NONE'),
           amountWon: data.prize ? data.prize.value : '0',
           prize: data.prize,
           scratchCard: {
-            id: scratchCardData!.id,
-            name: scratchCardData!.name,
-            price: scratchCardData!.price,
-            image_url: scratchCardData!.image_url,
+            id: scratchCardData.id,
+            name: scratchCardData.name,
+            price: scratchCardData.price,
+            image_url: scratchCardData.image_url,
           }
         };
         if (user && typeof data.newBalance === 'number') {
@@ -298,30 +290,14 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
         }
         return { result };
       } else {
-        console.error('Erro ao jogar:', data.message);
+        toast.error(data.message || 'Erro ao jogar.');
         return { result: null, errorMessage: data.message };
       }
     } catch (error) {
-      console.error('Erro na requisição de jogo:', error);
+      toast.error('Erro de conexão ao servidor.');
       return { result: null, errorMessage: 'Erro de conexão com o servidor.' };
     } finally {
       setPlayingGame(false);
-    }
-  };
-
-  const refreshUserBalance = async () => {
-    if (!token) return;
-    try {
-      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/users/profile', {
-        method: 'GET',
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      const data = await response.json();
-      if (response.ok && data.success) {
-        updateUser(data.data);
-      }
-    } catch (error) {
-      console.error('Erro ao atualizar saldo do usuário:', error);
     }
   };
 
@@ -360,28 +336,10 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
       setTimeout(() => setShowConfetti(false), 5000);
     }
     setGameState('completed');
-    await refreshUserBalance();
   };
 
   const handlePlayAgain = async () => {
-    if (!isAuthenticated || playingGame) return;
-    setScratchItems([]);
-    setScratchComplete(false);
-    setShowConfetti(false);
-    setHasWon(false);
-    setTotalWinnings(0);
-    setGameResult(null);
-    setGameState('loading');
-    const { result, errorMessage } = await playGame(token || '');
-    if (result) {
-      setGameResult(result);
-      const items = generateScratchItems(result);
-      setScratchItems(items);
-      setGameState('playing');
-    } else {
-      setGameState('idle');
-      toast.error(errorMessage || 'Erro ao iniciar o jogo. Tente novamente.');
-    }
+    await handleBuyAndScratch();
   };
 
   const handleRevealAll = () => {
@@ -407,7 +365,7 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <Winners />
 
-        <div className="mt-4 bg-neutral-800 rounded-xl border border-neutral-700 p-4 sm:p-6 mb-6 sm:mb-8" style={{ overscrollBehavior: 'contain' }}>
+        <div className="mt-4 bg-neutral-800 rounded-xl border border-neutral-700 p-4 sm:p-6 mb-6 sm:mb-8">
           <div className="text-center mb-4 sm:mb-6">
             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent">
               {scratchCardData?.name || '...'}
@@ -421,10 +379,10 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
             <div className="bg-neutral-700 rounded-lg p-3 sm:p-6 border border-neutral-600 mb-4 sm:mb-6">
               <div className="relative w-64 h-64 sm:w-96 sm:h-96 lg:w-[32rem] lg:h-[32rem] xl:w-[36rem] xl:h-[36rem] rounded-lg overflow-hidden mx-auto">
                 <Image
-                  src="/raspe_aqui.webp"
+                  src={scratchCardData?.image_url || "/raspe_aqui.webp"}
                   alt="Raspe Aqui"
                   fill
-                  className="object-contain opacity-40"
+                  className="object-cover"
                 />
                 {!isAuthenticated && (
                   <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
@@ -452,10 +410,11 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
                 </p>
                 <Button 
                   onClick={handleBuyAndScratch}
-                  disabled={!isAuthenticated || !scratchCardData}
+                  disabled={!isAuthenticated || !scratchCardData || playingGame}
                   className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 disabled:from-neutral-600 disabled:to-neutral-700 text-white font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-xl w-full lg:w-1/2 transition-all duration-300 shadow-lg hover:shadow-xl border border-yellow-400/20 disabled:border-neutral-600/20 cursor-pointer disabled:cursor-not-allowed text-sm sm:text-base"
                 >
-                  {!isAuthenticated ? 'Faça login para jogar' : scratchCardData ? `Comprar e Raspar (R$ ${parseFloat(scratchCardData.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})` : 'Carregando...'}
+                  {playingGame ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 
+                  !isAuthenticated ? 'Faça login para jogar' : scratchCardData ? `Comprar e Raspar (R$ ${parseFloat(scratchCardData.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})` : 'Carregando...'}
                 </Button>
               </div>
             </div>
@@ -530,7 +489,7 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
                               />
                             </div>
                             <p className="text-white text-xs font-bold text-center">
-                              {item.value > 0 ? `R$ ${item.value.toFixed(2).replace('.', ',')}` : 'Ops! Hoje não'}
+                                {item.name}
                             </p>
                           </div>
                         ))}
@@ -595,7 +554,7 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
                           />
                         </div>
                        <p className="text-white text-xs font-bold text-center">
-                          {item.value > 0 ? `R$ ${item.value.toFixed(2).replace('.', ',')}` : 'Sem Prêmio'}
+                          {item.name}
                         </p>
                       </div>
                     </div>
@@ -606,12 +565,21 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
               {gameState === 'completed' && (
                 <div className="text-center mt-4">
                   {hasWon && gameResult?.prize?.type === 'PRODUCT' ? (
-                    <Button 
-                      onClick={() => router.push('/v1/profile/inventory')}
-                      className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold py-2 px-6 rounded-lg w-full transition-all duration-300 shadow-lg hover:shadow-xl border border-purple-400/20 text-sm"
-                    >
-                      Ir para Inventário
-                    </Button>
+                    <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                        <Button 
+                            onClick={() => router.push('/v1/profile/inventory')}
+                            className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold"
+                        >
+                            Ir para Inventário
+                        </Button>
+                        <Button 
+                            onClick={handlePlayAgain}
+                            disabled={!isAuthenticated || !scratchCardData}
+                            className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-semibold"
+                        >
+                            {scratchCardData ? `Jogar Novamente (R$ ${parseFloat(scratchCardData.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})` : 'Carregando...'}
+                        </Button>
+                    </div>
                   ) : (
                     <Button 
                       onClick={handlePlayAgain}
