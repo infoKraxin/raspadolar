@@ -116,14 +116,15 @@ export default function ProfilePage() {
     return phone;
   };
 
-  const copyInviteCode = async (code: string) => {
-    try {
-      await navigator.clipboard.writeText(`https://raspa.ae?r=${code}`);
-      toast.success('Link de convite copiado!');
-    } catch (error) {
-      toast.error('Erro ao copiar link de convite');
-    }
-  };
+  const copyInviteCode = async (textToCopy: string) => {
+  try {
+    // Agora ele simplesmente copia o texto que recebe, que já é o link completo.
+    await navigator.clipboard.writeText(textToCopy);
+    toast.success('Link de convite copiado!');
+  } catch (error) {
+    toast.error('Erro ao copiar link de convite');
+  }
+};
 
   const getFirstName = (fullName: string) => {
     if (!fullName) return 'Usuário';
@@ -932,5 +933,4 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
     </div>
   );
 }
-
 
