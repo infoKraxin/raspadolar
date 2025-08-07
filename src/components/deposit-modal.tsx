@@ -276,7 +276,7 @@ export default function DepositModal({ isOpen, onClose, token, updateUser }: Dep
     }
     setIsGeneratingPayment(true);
     try {
-      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/deposits/pagarme', {
+      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/deposits/ellitium', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -464,4 +464,5 @@ export default function DepositModal({ isOpen, onClose, token, updateUser }: Dep
     </>
   );
 }
+
 
