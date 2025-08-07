@@ -550,21 +550,21 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
                           className="bg-neutral-700/50 border-neutral-600 text-white placeholder:text-neutral-400 cursor-not-allowed"
                         />
                       </div>
-                      <div className="space-y-2">
+                    <div className="space-y-2">
                         <Label htmlFor="inviteCode" className="text-white font-medium">
                           Link de convite
                         </Label>
                         <div className="relative">
-                          {/* --- CORREÇÃO APLICADA AQUI --- */}
+                          {/* --- CORREÇÃO COM A URL CORRETA --- */}
                           <Input
                             id="inviteCode"
-                            value={profileData?.inviteCode?.code ? `https://raspa.ae?r=${profileData.inviteCode.code}` : ''}
+                            value={profileData?.inviteCode?.code ? `https://raspadolar.vercel.app/register?ref=${profileData.inviteCode.code}` : ''}
                             readOnly
                             className="bg-neutral-700/50 border-neutral-600 text-white placeholder:text-neutral-400 cursor-not-allowed pr-12"
                           />
                           {profileData?.inviteCode?.code && (
                             <button
-                              onClick={() => copyInviteCode(profileData.inviteCode.code)}
+                              onClick={() => copyInviteCode(`https://raspadolar.vercel.app/register?ref=${profileData.inviteCode.code}`)}
                               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-white transition-colors p-1 rounded hover:bg-neutral-600"
                               title="Copiar link de convite"
                             >
@@ -932,4 +932,5 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
     </div>
   );
 }
+
 
