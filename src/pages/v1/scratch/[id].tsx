@@ -93,7 +93,7 @@ interface PlayGameResponse {
 // Tipos para os itens da raspadinha
 interface ScratchItem {
   id: number;
-  type: 'coin' | 'gem' | 'star' | 'crown' | 'heart' | 'diamond' | 'trophy' | 'medal' | 'gift' | 'ticket' | 'chest';
+  type: string;
   value: number;
   icon: string;
   name?: string;
@@ -176,111 +176,88 @@ const ScratchCardPage = () => {
     }
   }, [id]);
 
-const generateScratchItems = (result: GameResult): ScratchItem[] => {
+  // --- FUNÇÃO ATUALIZADA ---
+  const generateScratchItems = (result: GameResult): ScratchItem[] => {
     if (!scratchCardData?.prizes?.length) {
-      return [];
+        return [];
     }
-    const visualTypes = ['coin', 'gem', 'star', 'crown', 'heart', 'diamond', 'trophy', 'medal', 'gift', 'ticket', 'chest'];
-    const itemTypes = scratchCardData.prizes.map((prize, index) => ({
-      type: visualTypes[index % visualTypes.length] as 'coin' | 'gem' | 'star' | 'crown' | 'heart',
-      icon: fixImageUrl(prize.image_url) || '/50_money.webp',
-      baseValue: parseFloat(prize.value || prize.redemption_value || '0'),
-      prizeData: prize
+
+    const allPrizes = scratchCardData.prizes.map((prize) => ({
+        id: prize.id,
+        type: prize.id, // Usar o ID do prêmio como tipo único para evitar colisões
+        icon: fixImageUrl(prize.image_url) || '/50_money.webp',
+        value: parseFloat(prize.type === 'MONEY' ? prize.value : prize.redemption_value || '0'),
+        name: prize.type === 'MONEY' ? `R$ ${prize.value}` : prize.product_name || prize.name,
     }));
+
     const items: ScratchItem[] = [];
 
     if (result.isWinner && result.prize) {
-      const winningPrizeData = scratchCardData.prizes.find(p => p.id === result.prize?.id);
-      const winningTypeIndex = winningPrizeData ? scratchCardData.prizes.findIndex(p => p.id === winningPrizeData.id) : 0;
-      const winningType = itemTypes[winningTypeIndex % itemTypes.length];
-      
-      const prizeDisplayValue = parseFloat(
-        result.prize.type === 'PRODUCT' 
-          ? (result.prize.redemption_value || '0') 
-          : result.prize.value
-      );
-
-      for (let i = 0; i < 3; i++) {
-        items.push({
-          id: i,
-          type: winningType.type,
-          value: prizeDisplayValue,
-          icon: fixImageUrl(result.prize.image_url) || winningType.icon
-        });
-      }
-
-      const remainingTypes = itemTypes.filter(t => t.type !== winningType.type);
-      const typeUsageCount: { [key: string]: number } = {};
-
-      for (let i = 3; i < 9; i++) {
-        let selectedType;
-        if (remainingTypes.length > 0) {
-          const availableTypes = remainingTypes.filter(t => (typeUsageCount[t.type] || 0) < 2);
-          if (availableTypes.length > 0) {
-            selectedType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
-          } else {
-            selectedType = remainingTypes[0]; 
-          }
-        } else {
-            selectedType = itemTypes[0] || { type: 'coin', icon: '/50_money.webp', baseValue: 0, prizeData: null };
+        const winningItem = allPrizes.find(p => p.id === result.prize?.id);
+        if (!winningItem) {
+             // Fallback caso o prêmio ganho não seja encontrado na lista
+            console.error("Prêmio ganho não encontrado na lista de prêmios da raspadinha.");
+            return []; // Retorna vazio para evitar erros
         }
-        
-        typeUsageCount[selectedType.type] = (typeUsageCount[selectedType.type] || 0) + 1;
-        items.push({
-          id: i,
-          type: selectedType.type,
-          // --- CORREÇÃO APLICADA AQUI ---
-          value: selectedType.baseValue, // Usando o valor real do prêmio, e não mais '0'.
-          icon: selectedType.icon
-        });
-      }
+
+        // 1. Adiciona os 3 itens vencedores
+        for (let i = 0; i < 3; i++) {
+            items.push({
+                id: i,
+                type: winningItem.type,
+                value: winningItem.value,
+                icon: winningItem.icon,
+                name: winningItem.name,
+                isWin: true,
+            });
+        }
+
+        // 2. Preenche os 6 itens restantes com prêmios "falsos"
+        const otherPrizes = allPrizes.filter(p => p.id !== winningItem.id);
+        for (let i = 3; i < 9; i++) {
+            const prizePool = otherPrizes.length > 0 ? otherPrizes : [winningItem]; // Usa outros prêmios, ou o próprio vencedor se for o único
+            const randomPrize = prizePool[Math.floor(Math.random() * prizePool.length)];
+            items.push({
+                id: i,
+                type: randomPrize.type,
+                value: randomPrize.value,
+                icon: randomPrize.icon,
+                name: randomPrize.name,
+                isWin: false,
+            });
+        }
     } else {
-      // Quando o jogador perde, todos os itens também mostram seus valores
-      const availableTypes = [...itemTypes];
-      const pattern = [];
-      const typeCounts: { [key: string]: number } = {};
+        // Lógica para quando o jogador PERDE
+        // Garante que nenhum item apareça 3 ou mais vezes
+        const prizeCounts: { [key: string]: number } = {};
+        const prizePool = [...allPrizes];
 
-      while (pattern.length < 9) {
-          let randomType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
-          if (!randomType) continue;
-          let currentCount = typeCounts[randomType.type] || 0;
-          
-          if (currentCount < 2) {
-              pattern.push(randomType);
-              typeCounts[randomType.type] = currentCount + 1;
-          }
-      }
-
-      const shuffledPattern = pattern.sort(() => Math.random() - 0.5);
-      for (let i = 0; i < 9; i++) {
-        const typeData = shuffledPattern[i];
-        items.push({
-          id: i,
-          type: typeData.type,
-          value: typeData.baseValue, // Usando o valor real do prêmio
-          icon: typeData.icon
-        });
-      }
+        for (let i = 0; i < 9; i++) {
+            // Filtra prêmios que já apareceram 2 vezes
+            let availablePrizes = prizePool.filter(p => (prizeCounts[p.id] || 0) < 2);
+            if (availablePrizes.length === 0) {
+                 // Se todos os prêmios já apareceram 2 vezes, reseta e usa a lista completa
+                availablePrizes = prizePool;
+            }
+            
+            const randomPrize = availablePrizes[Math.floor(Math.random() * availablePrizes.length)];
+            
+            items.push({
+                id: i,
+                type: randomPrize.type,
+                value: randomPrize.value,
+                icon: randomPrize.icon,
+                name: randomPrize.name,
+                isWin: false,
+            });
+            
+            // Atualiza a contagem do prêmio escolhido
+            prizeCounts[randomPrize.id] = (prizeCounts[randomPrize.id] || 0) + 1;
+        }
     }
+
+    // Embaralha a lista final de itens para garantir posições aleatórias
     return items.sort(() => Math.random() - 0.5);
-  };
-
-  const checkForWin = (items: ScratchItem[]): { hasWon: boolean; winningType?: string; winnings?: number } => {
-    const typeCounts: { [key: string]: number } = {};
-    items.forEach(item => {
-      typeCounts[item.type] = (typeCounts[item.type] || 0) + 1;
-    });
-    for (const [type, count] of Object.entries(typeCounts)) {
-      if (count >= 3) {
-        const winningItem = items.find(item => item.type === type);
-        return {
-          hasWon: true,
-          winningType: type,
-          winnings: winningItem ? winningItem.value : 0
-        };
-      }
-    }
-    return { hasWon: false };
   };
 
   const playGame = async (authToken: string): Promise<{ result: GameResult | null, errorMessage?: string }> => {
@@ -366,7 +343,12 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
     if (scratchComplete || !gameResult) return;
     setScratchComplete(true);
     setHasWon(gameResult.isWinner);
-    setTotalWinnings(parseFloat(gameResult.amountWon));
+    if (gameResult.isWinner && gameResult.prize) {
+      const winningValue = gameResult.prize.type === 'PRODUCT' 
+        ? parseFloat(gameResult.prize.redemption_value || '0')
+        : parseFloat(gameResult.prize.value || '0');
+      setTotalWinnings(winningValue);
+    }
     if (gameResult.isWinner) {
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 5000);
@@ -517,7 +499,7 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
                             <div className="w-8 h-8 mb-1 relative">
                               <Image
                                 src={item.icon}
-                                alt={`Prêmio ${item.value}`}
+                                alt={`Prêmio ${item.name}`}
                                 fill
                                 className="object-contain"
                                 onError={(e) => {
@@ -527,8 +509,8 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
                               />
                             </div>
                             <p className="text-white text-xs font-bold text-center">
-  {item.value > 0 ? `R$ ${item.value.toFixed(2).replace('.', ',')}` : 'Ops! Hoje não'}
-</p>
+                              {item.name}
+                            </p>
                           </div>
                         ))}
                       </div>
@@ -576,21 +558,20 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
                   {scratchItems.map((item) => (
                     <div
                       key={item.id}
-                      className="relative aspect-square bg-gradient-to-br from-neutral-600 to-neutral-700 rounded-lg border border-neutral-500 overflow-hidden"
+                      className={`relative aspect-square bg-gradient-to-br rounded-lg border overflow-hidden ${item.isWin ? 'from-yellow-600/50 to-yellow-700/50 border-yellow-400' : 'from-neutral-600 to-neutral-700 border-neutral-500'}`}
                     >
-                      <div className="absolute inset-0 flex flex-col items-center justify-center p-2 bg-gradient-to-br from-neutral-600/20 to-neutral-700/20">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center p-2">
                         <div className="w-8 h-8 sm:w-10 sm:h-10 mb-1 relative mx-auto">
                           <Image
                             src={item.icon}
-                            alt={`Prêmio ${item.value}`}
+                            alt={`Prêmio ${item.name}`}
                             fill
                             className="object-contain"
                           />
                         </div>
                        <p className="text-white text-xs font-bold text-center">
-  {/* DEBUG: Mostrando o valor real do item */}
-  Valor: {String(item.value)}
-</p>
+                          {item.name}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -650,15 +631,15 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
                 <div key={prize.id} className="flex-shrink-0 w-38 xl:w-auto">
                   <div className="flex flex-col border-2 border-yellow-500/30 p-3 rounded-lg bg-gradient-to-t from-yellow-500/17 from-[0%] to-[35%] to-yellow-400/10 cursor-pointer aspect-square hover:scale-105 transition-all duration-300">
                   <Image
-                    src={fixImageUrl(prize.image_url) || "/50_money.webp"}
-                      alt={prize.type === 'MONEY' ? `${parseFloat(prize.value || '0').toFixed(0)} Reais` : prize.name}
-                      width={80}
-                      height={80}
-                      className="size-full p-3 object-contain"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = '/50_money.webp';
-                    }}
+                      src={fixImageUrl(prize.image_url) || "/50_money.webp"}
+                        alt={prize.type === 'MONEY' ? `${parseFloat(prize.value || '0').toFixed(0)} Reais` : prize.name}
+                        width={80}
+                        height={80}
+                        className="size-full p-3 object-contain"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/50_money.webp';
+                      }}
                   />
                     <h3 className="text-sm font-semibold mb-3 overflow-hidden text-ellipsis text-nowrap w-30 text-white">
                       {prize.type === 'MONEY' ? `${parseFloat(prize.value || '0').toFixed(0)} Reais` : prize.name}
@@ -684,12 +665,3 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
 };
 
 export default ScratchCardPage;
-
-
-
-
-
-
-
-
-
