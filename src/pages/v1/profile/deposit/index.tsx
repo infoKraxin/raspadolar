@@ -229,7 +229,7 @@ export default function DepositPage() {
     setIsGeneratingPayment(true);
     
     try {
-      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/deposits/create', {
+      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/deposits/ellitium', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -457,3 +457,4 @@ export default function DepositPage() {
     </div>
   );
 }
+
