@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
+import { toast } from 'sonner';
 
 interface User {
   id: string;
@@ -105,6 +106,52 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
   };
+  
+  // ===================================================================
+  // ====== BLOCO DE CÓDIGO PARA ATUALIZAÇÃO SILENCIOSA DO SALDO ========
+  // ===================================================================
+  useEffect(() => {
+    // Se não há usuário ou token, não faz nada
+    if (!token || !user) return;
+
+    // Inicia a verificação periódica a cada 7 segundos
+    const intervalId = setInterval(async () => {
+      try {
+        const response = await fetch('https://raspadinha-api.onrender.com/v1/api/users/profile', {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+
+        if (!response.ok) return;
+
+        const profileData = await response.json();
+        
+        if (profileData.success) {
+          const newBalance = profileData.data.balance;
+
+          // Compara o novo saldo com o saldo atual no estado
+          if (newBalance !== user.balance) {
+            // Se for diferente, atualiza o usuário silenciosamente
+            updateUser(profileData.data);
+            
+            // Opcional: Se quiser a notificação CORRIGIDA (aparecendo só uma vez), 
+            // remova as duas barras da linha do 'if' e do 'toast.success' abaixo.
+            // if (newBalance > user.balance) {
+            //   toast.success('Seu saldo foi atualizado!');
+            // }
+          }
+        }
+      } catch (error) {
+        // Ignora erros para não poluir o console ou incomodar o usuário
+      }
+    }, 7000); // Verifica a cada 7 segundos
+
+    // Limpa o intervalo para evitar problemas de performance quando o usuário deslogar
+    return () => clearInterval(intervalId);
+
+  }, [token, user]); // Roda o efeito se o token ou os dados do usuário mudarem
+  // ===================================================================
+  // =================== FIM DO BLOCO DE ATUALIZAÇÃO ===================
+  // ===================================================================
 
   const value: AuthContextType = {
     user,
