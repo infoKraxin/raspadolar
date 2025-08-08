@@ -149,7 +149,7 @@ export default function ProfilePage() {
     }
 
     const amount = parseFloat(withdrawData.amount);
-    const availableBalance = parseFloat(profileData.wallet?.[0]?.balance || '0');
+    const availableBalance = parseFloat(profileData.balance || '0');
 
     if (!withdrawData.amount || amount <= 0) {
       toast.error('Digite um valor válido para saque');
@@ -214,17 +214,17 @@ export default function ProfilePage() {
 
   // Verifique se 'user' existe antes de atualizar
   if (user && updateUser) {
-    updateUser({
-      ...user,
-      balance: parseFloat(data.data.wallet.balance)
-    });
-  }
+          updateUser({
+            ...user,
+            balance: parseFloat(data.data.wallet.balance)
+          });
+        }
 
   // Atualiza o estado local 'profileData'
   setProfileData((prev: any) => ({
-    ...prev,
-    balance: parseFloat(data.data.wallet.balance)
-  }));
+  ...prev,
+  balance: parseFloat(data.data.wallet.balance)
+}));
 } else {
    toast.error(data.message || 'Erro ao processar saque.');
 }
@@ -942,6 +942,7 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
     </div>
   );
 }
+
 
 
 
