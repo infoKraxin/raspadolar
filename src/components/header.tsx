@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import DepositModal from "@/components/deposit-modal";
 import { getAppColor, getAppColorText } from "@/lib/colors";
 
-// O Header NÃO precisa mais de props para o saldo, ele usará o Contexto.
 export default function Header() {
     const { user, login, logout, updateUser, token } = useAuth();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -47,6 +46,9 @@ export default function Header() {
         fetchLogo();
     }, []);
 
+    // ===================================================================
+    // FUNÇÃO DE ATUALIZAR SALDO CORRIGIDA (SEM NOTIFICAÇÃO)
+    // ===================================================================
     const refreshUserBalance = async () => {
         if (!token) return;
         
@@ -60,25 +62,25 @@ export default function Header() {
             });
 
             const data = await response.json();
-            console.log("Resposta da API de perfil:", data);
-
+            
             if (response.ok && data.success) {
-                // CORREÇÃO: Apontar para a propriedade correta no log.
-                console.log("Saldo recebido da API:", data.data?.balance);
-                updateUser(data.data);
-                toast.success('Saldo atualizado com sucesso!');
-            } else {
-                toast.error('Erro ao buscar saldo: ' + (data.message || 'Erro desconhecido'));
+                // Compara o saldo novo com o antigo para atualizar apenas se houver mudança
+                if (user && data.data.balance !== user.balance) {
+                    updateUser(data.data);
+                }
+                // A LINHA DA NOTIFICAÇÃO FOI REMOVIDA DAQUI!
             }
         } catch (error) {
-            console.error('Erro ao atualizar saldo do usuário:', error);
-            toast.error('Erro de rede ao atualizar saldo.');
+            // Ignora erros silenciosamente para não incomodar o usuário
         }
     };
+    // ===================================================================
+    // FIM DA FUNÇÃO CORRIGIDA
+    // ===================================================================
 
     useEffect(() => {
         if (user && token) {
-            const interval = setInterval(refreshUserBalance, 10000);
+            const interval = setInterval(refreshUserBalance, 10000); // Roda a função a cada 10s
             return () => clearInterval(interval);
         }
     }, [user, token]);
@@ -109,65 +111,68 @@ export default function Header() {
         setIsAuthModalOpen(false);
     };
     
-    // ... (O resto das suas funções handle continua igual)
     const handleQuickAmountSelect = (amount: number) => {
-        setSelectedAmount(amount);
-        setCustomAmount(amount.toString());
-    };
-    
-    const handleCustomAmountChange = (value: string) => {
-        const cleanValue = value.replace(/[^0-9.,]/g, '');
-        setCustomAmount(cleanValue);
-        setSelectedAmount(null);
-    };
+        setSelectedAmount(amount);
+        setCustomAmount(amount.toString());
+    };
+    
+    const handleCustomAmountChange = (value: string) => {
+        const cleanValue = value.replace(/[^0-9.,]/g, '');
+        setCustomAmount(cleanValue);
+        setSelectedAmount(null);
+    };
 
-    const handleGeneratePayment = async () => {
-        const amount = parseFloat(customAmount.replace(',', '.'));
-        
-        if (!amount || amount < 1) {
-            toast.error('Por favor, insira um valor válido (mínimo R$ 1,00)');
-            return;
-        }
+    // ===================================================================
+    // FUNÇÃO DE GERAR PAGAMENTO CORRIGIDA (ROTA /ellitium)
+    // ===================================================================
+    const handleGeneratePayment = async () => {
+        const amount = parseFloat(customAmount.replace(',', '.'));
+        
+        if (!amount || amount < 1) {
+            toast.error('Por favor, insira um valor válido (mínimo R$ 1,00)');
+            return;
+        }
 
-        if (!token) {
-            toast.error('Erro de autenticação');
-            return;
-        }
-        
-        setIsGeneratingPayment(true);
-        
-        try {
-            const response = await fetch('https://raspadinha-api.onrender.com/v1/api/deposits/create', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    amount: amount,
-                    paymentMethod: 'PIX',
-                    gateway: 'pixup'
-                })
-            });
+        if (!token) {
+            toast.error('Erro de autenticação');
+            return;
+        }
+        
+        setIsGeneratingPayment(true);
+        
+        try {
+            const response = await fetch('https://raspadinha-api.onrender.com/v1/api/deposits/ellitium', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    amount: amount
+                })
+            });
 
-            const data = await response.json();
+            const data = await response.json();
 
-            if (!response.ok) {
-                throw new Error(data.message || 'Erro ao gerar pagamento');
-            }
+            if (!response.ok) {
+                throw new Error(data.message || 'Erro ao gerar pagamento');
+            }
 
-            if (data.success) {
-                setPaymentData(data.data);
-                setShowPaymentModal(true);
-                toast.success('Pagamento PIX gerado com sucesso!');
-            }
-        } catch (error: any) {
-            toast.error(error.message || 'Erro ao gerar pagamento PIX');
-            console.error('Erro ao gerar pagamento:', error);
-        } finally {
-            setIsGeneratingPayment(false);
-        }
-    };
+            if (data.success) {
+                setPaymentData(data.data);
+                setShowPaymentModal(true);
+                toast.success('Pagamento PIX gerado com sucesso!');
+            }
+        } catch (error: any) {
+            toast.error(error.message || 'Erro ao gerar pagamento PIX');
+            console.error('Erro ao gerar pagamento:', error);
+        } finally {
+            setIsGeneratingPayment(false);
+        }
+    };
+    // ===================================================================
+    // FIM DA FUNÇÃO CORRIGIDA
+    // ===================================================================
 
     return (
         <div className="w-screen border-b bg-neutral-900 border-neutral-800">
@@ -180,12 +185,12 @@ export default function Header() {
                             <Image src={logoUrl} alt="logo" width={84} height={64} className="object-contain" />
                         ) : (
                             <Image
-  src="https://rdddmzabvuyo9kjb.public.blob.vercel-storage.com/nova-logo.png.png"
-  alt="Nova Logo"
-  width={84} // Ajuste o valor da largura conforme necessário
-  height={64} // Ajuste o valor da altura conforme necessário
-  className="object-contain"
-/>
+                                src="https://rdddmzabvuyo9kjb.public.blob.vercel-storage.com/nova-logo.png.png"
+                                alt="Nova Logo"
+                                width={84}
+                                height={64}
+                                className="object-contain"
+                            />
                         )}
                     </a>
 
@@ -227,7 +232,6 @@ export default function Header() {
                                         </div>
                                         <div className="hidden md:block text-left">
                                             <p className="text-white text-sm font-medium">{user.full_name}</p>
-                                            {/* CORREÇÃO APLICADA AQUI */}
                                             <p className="text-neutral-400 text-xs">
                                                 R$ {(typeof user.balance === 'number') ? user.balance.toFixed(2) : '0.00'}
                                             </p>
@@ -243,14 +247,13 @@ export default function Header() {
                                             <p className="text-neutral-400 text-sm">{user.email}</p>
                                             <div className="flex items-center gap-2 mt-2">
                                                 <Wallet size={16} className={`${getAppColorText()}`} />
-                                                {/* CORREÇÃO APLICADA AQUI */}
                                                 <span className={`${getAppColorText()} font-medium`}>
                                                     R$ {(typeof user.balance === 'number') ? user.balance.toFixed(2) : '0.00'}
                                                 </span>
                                                 <button
                                                     onClick={() => {
-                                                        refreshUserBalance();
                                                         toast.info('Atualizando saldo...');
+                                                        refreshUserBalance();
                                                     }}
                                                     className="ml-1 p-1 rounded hover:bg-neutral-700 transition-colors"
                                                     title="Atualizar saldo"
@@ -300,18 +303,11 @@ export default function Header() {
             <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} onAuthSuccess={handleAuthSuccess} />
             <DepositModal isOpen={isDepositModalOpen} onClose={() => setIsDepositModalOpen(false)} token={token} updateUser={updateUser} />
 
-            {/* O seu modal de pagamento continua igual */}
             {paymentData && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    {/* ... (conteúdo do modal sem alterações) ... */}
+                    {/* O modal de pagamento foi movido para o componente DepositModal, mas se você ainda o usar aqui, o conteúdo permanece o mesmo. */}
                 </div>
             )}
         </div>
     )
 }
-
-
-
-
-
-
