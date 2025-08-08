@@ -32,10 +32,11 @@ interface InventoryResponse {
 
 const InventoryPage: React.FC = () => {
   const router = useRouter();
-  const { user, token, isLoading: authLoading } = useAuth();
+  const { user, token, isLoading: authLoading, updateUser } = useAuth(); // Adicionado 'updateUser'
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pendingRedemptions, setPendingRedemptions] = useState<PendingRedemption[]>([]);
+  const [isRedeeming, setIsRedeeming] = useState<string | null>(null); // Para gerenciar o estado do botão de resgate
   
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -78,12 +79,15 @@ const InventoryPage: React.FC = () => {
     }
   };
 
- const handleRedeem = async (redemptionId: string) => {
-    // 1. Mensagem de carregamento para o usuário
+  const handleBackClick = () => {
+    router.push('/v1/profile');
+  };
+
+  const handleRedeem = async (redemptionId: string) => {
+    setIsRedeeming(redemptionId);
     toast.info('Resgatando prêmio...', { id: 'redeem-toast' });
 
     try {
-      // 2. Chama a nova rota no servidor
       const response = await fetch('https://raspadinha-api.onrender.com/v1/api/users/redeem-prize', {
         method: 'POST',
         headers: {
@@ -95,22 +99,45 @@ const InventoryPage: React.FC = () => {
 
       const data = await response.json();
 
-      // 3. Verifica a resposta do servidor
       if (response.ok && data.success) {
         toast.success(data.message, { id: 'redeem-toast' });
-        // 4. Atualiza o saldo e o inventário
-        // A. Recarrega o inventário para remover o item resgatado
+        
+        // Atualiza o saldo do usuário no contexto global
+        if (updateUser) {
+          updateUser({ ...user, balance: data.newBalance });
+        }
+        
+        // Recarrega o inventário para remover o item resgatado
         fetchPendingRedemptions();
-        // B. Atualiza o saldo do usuário (opcional, pode ser feito com useAuth)
-        // updateUser({ ...user, balance: data.newBalance });
+
       } else {
         toast.error(data.message || 'Erro ao resgatar prêmio.', { id: 'redeem-toast' });
       }
     } catch (err) {
       toast.error('Erro de conexão ao resgatar prêmio.', { id: 'redeem-toast' });
       console.error('Erro ao resgatar prêmio:', err);
+    } finally {
+      setIsRedeeming(null);
     }
   };
+
+  useEffect(() => {
+    if (!authLoading) {
+      if (user && token) {
+        fetchPendingRedemptions();
+      } else if (!user) {
+        router.push('/');
+      }
+    }
+  }, [user, token, authLoading, router]);
+
+  if (authLoading || (!user && !authLoading)) {
+    return (
+      <div className={`${poppins.className} min-h-screen bg-neutral-900 flex items-center justify-center`}>
+        <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+      </div>
+    );
+  }
 
   return (
     <div className={`${poppins.className} min-h-screen bg-neutral-900`}>
@@ -176,8 +203,16 @@ const InventoryPage: React.FC = () => {
                     size="sm"
                     onClick={() => handleRedeem(redemption.id)}
                     className={`${getAppGradient()} text-white w-full`}
+                    disabled={isRedeeming === redemption.id}
                   >
-                    Resgatar
+                    {isRedeeming === redemption.id ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Resgatando...
+                      </div>
+                    ) : (
+                      'Resgatar'
+                    )}
                   </Button>
                 </div>
               </div>
@@ -203,4 +238,3 @@ const InventoryPage: React.FC = () => {
 };
 
 export default InventoryPage;
-
