@@ -180,7 +180,7 @@ export default function Header() {
                             <Image src={logoUrl} alt="logo" width={84} height={64} className="object-contain" />
                         ) : (
                             <Image
-  src="https://raw.githubusercontent.com/infoKraxin/Raspadinhabackend/main/nova-logo.png.png"
+  src="https://raw.githubusercontent.com/infoKraxin/Raspadinhabackend/refs/heads/main/nova-logo.png.png?token=GHSAT0AAAAAADICASBLRBURQSQLMFYYZP5A2EVSXRA"
   alt="Nova Logo"
   width={84} // Ajuste o valor da largura conforme necessário
   height={64} // Ajuste o valor da altura conforme necessário
@@ -309,6 +309,7 @@ export default function Header() {
         </div>
     )
 }
+
 
 
 
