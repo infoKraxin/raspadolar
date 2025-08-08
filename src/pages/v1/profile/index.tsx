@@ -171,7 +171,7 @@ export default function ProfilePage() {
       return;
     }
 
-    setIsWithdrawing(true);
+   setIsWithdrawing(true);
 
     try {
       const pixTypeMap = {
@@ -188,7 +188,7 @@ export default function ProfilePage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          amount: amount,
+          amount: withdrawData.amount.replace('R$', '').replace(',', '.'),
           pix_key: withdrawData.pixKey,
           pix_type: pixTypeMap[withdrawData.keyType as keyof typeof pixTypeMap],
           document: profileData.cpf.replace(/\D/g, '')
@@ -196,12 +196,14 @@ export default function ProfilePage() {
       });
 
       const data = await response.json();
+      console.log('Resposta completa do servidor:', data); // Adicione esta linha
+      console.log('Status da resposta:', response.status); // Adicione esta linha
 
       if (!response.ok) {
         throw new Error(data.message || 'Erro ao processar saque');
       }
 
-      if (data.success) {
+      if (data.success && data.data && data.data.wallet) {
         toast.success(data.message || 'Solicitação de saque criada com sucesso!');
 
         setWithdrawData({
@@ -210,14 +212,21 @@ export default function ProfilePage() {
           amount: ''
         });
 
-        const updatedProfileData = {
-          ...profileData,
-          wallet: [{
-            ...profileData.wallet[0],
-            balance: data.data.wallet.balance
-          }]
-        };
-        setProfileData(updatedProfileData);
+        // 1. Atualiza o estado global do usuário com o novo saldo
+        if (updateUser) {
+          updateUser({
+            ...user,
+            balance: parseFloat(data.data.wallet.balance)
+          });
+        }
+
+        // 2. Atualiza o estado local 'profileData' para que o componente seja renderizado
+        setProfileData((prev: any) => ({
+          ...prev,
+          balance: parseFloat(data.data.wallet.balance)
+        }));
+      } else {
+         toast.error(data.message || 'Erro ao processar saque.');
       }
     } catch (error: any) {
       toast.error(error.message || 'Erro ao processar saque');
@@ -933,5 +942,6 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
     </div>
   );
 }
+
 
 
