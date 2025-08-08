@@ -18,6 +18,17 @@ const poppins = Poppins({
   weight: ["100", "200", "300","400","500", "600", "700"],
 });
 
+// ==========================================================
+// ## 1. FUNÇÃO PARA TOCAR O SOM DE VITÓRIA ##
+// ==========================================================
+const playWinSound = () => {
+  const audio = new Audio('https://rdddmzabvuyo9kjb.public.blob.vercel-storage.com/cashier-quotka-chingquot-sound-effect-129698.mp3');
+  audio.play().catch(error => {
+    // Erros podem acontecer se o usuário não interagiu com a página ainda.
+    console.error("Erro ao tocar o áudio:", error);
+  });
+};
+
 // Interfaces para a API
 interface Prize {
   id: string;
@@ -356,6 +367,10 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
       setTotalWinnings(winningValue);
     }
     if (gameResult.isWinner) {
+      // ==========================================================
+      // ## 2. CHAMADA PARA TOCAR O SOM DE VITÓRIA ##
+      // ==========================================================
+      playWinSound();
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 5000);
     }
@@ -510,33 +525,33 @@ const generateScratchItems = (result: GameResult): ScratchItem[] => {
                       brushSize={screenWidth < 640 ? 12 : screenWidth < 1024 ? 20 : 25}
                       onComplete={handleScratchComplete}
                     >
-                    <div className="w-full h-full bg-gradient-to-br from-neutral-800 to-neutral-900 p-4">
-                      <div className="grid grid-cols-3 gap-2 h-full">
-                        {scratchItems.map((item) => (
-                          <div
-                            key={item.id}
-                            className="bg-gradient-to-br from-neutral-700 to-neutral-800 rounded-lg flex flex-col items-center justify-center p-2 border border-neutral-600"
-                          >
-                            <div className="w-8 h-8 mb-1 relative">
-                              <Image
-                                src={item.icon}
-                                alt={`Prêmio ${item.value}`}
-                                fill
-                                className="object-contain"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.src = '/50_money.webp';
-                                }}
-                              />
+                      <div className="w-full h-full bg-gradient-to-br from-neutral-800 to-neutral-900 p-4">
+                        <div className="grid grid-cols-3 gap-2 h-full">
+                          {scratchItems.map((item) => (
+                            <div
+                              key={item.id}
+                              className="bg-gradient-to-br from-neutral-700 to-neutral-800 rounded-lg flex flex-col items-center justify-center p-2 border border-neutral-600"
+                            >
+                              <div className="w-8 h-8 mb-1 relative">
+                                <Image
+                                  src={item.icon}
+                                  alt={`Prêmio ${item.value}`}
+                                  fill
+                                  className="object-contain"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.src = '/50_money.webp';
+                                  }}
+                                />
+                              </div>
+                              <p className="text-white text-xs font-bold text-center">
+                                {item.value > 0 ? `R$ ${item.value.toFixed(2).replace('.', ',')}` : 'Ops! Hoje não'}
+                              </p>
                             </div>
-                            <p className="text-white text-xs font-bold text-center">
-                              {item.value > 0 ? `R$ ${item.value.toFixed(2).replace('.', ',')}` : 'Ops! Hoje não'}
-                            </p>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  </ScratchCard>
+                    </ScratchCard>
                   </div>
                 </div>
               )}
