@@ -229,8 +229,12 @@ export default function WithdrawalsPage() {
       if (!token) {
         throw new Error('Token de autenticação não encontrado');
       }
-
-      const response = await fetch(`https://raspadinha-api.onrender.com/v1/api/admin/withdrawals/${withdrawalId}/approve`, {
+      
+      const requestUrl = `https://raspadinha-api.onrender.com/v1/api/admin/withdrawals/${withdrawalId}/approve`;
+      console.log('Tentando aprovar saque. ID:', withdrawalId);
+      console.log('URL da requisição:', requestUrl);
+      
+      const response = await fetch(requestUrl, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -499,3 +503,4 @@ export default function WithdrawalsPage() {
     </div>
   );
 }
+
