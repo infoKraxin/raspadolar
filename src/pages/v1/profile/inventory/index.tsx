@@ -32,11 +32,11 @@ interface InventoryResponse {
 
 const InventoryPage: React.FC = () => {
   const router = useRouter();
-  const { user, token, isLoading: authLoading, updateUser } = useAuth(); // Adicionado 'updateUser'
+  const { user, token, isLoading: authLoading, updateUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pendingRedemptions, setPendingRedemptions] = useState<PendingRedemption[]>([]);
-  const [isRedeeming, setIsRedeeming] = useState<string | null>(null); // Para gerenciar o estado do botão de resgate
+  const [isRedeeming, setIsRedeeming] = useState<string | null>(null);
   
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -102,12 +102,10 @@ const InventoryPage: React.FC = () => {
       if (response.ok && data.success) {
         toast.success(data.message, { id: 'redeem-toast' });
         
-        // Atualiza o saldo do usuário no contexto global
-        if (updateUser) {
+        if (user && updateUser) {
           updateUser({ ...user, balance: data.newBalance });
         }
         
-        // Recarrega o inventário para remover o item resgatado
         fetchPendingRedemptions();
 
       } else {
