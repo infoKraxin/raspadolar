@@ -204,30 +204,30 @@ export default function ProfilePage() {
       }
 
       if (data.success && data.data && data.data.wallet) {
-        toast.success(data.message || 'Solicitação de saque criada com sucesso!');
+  toast.success(data.message || 'Solicitação de saque criada com sucesso!');
 
-        setWithdrawData({
-          pixKey: '',
-          keyType: 'cpf',
-          amount: ''
-        });
+  setWithdrawData({
+    pixKey: '',
+    keyType: 'cpf',
+    amount: ''
+  });
 
-        // 1. Atualiza o estado global do usuário com o novo saldo
-        if (updateUser) {
-          updateUser({
-            ...user,
-            balance: parseFloat(data.data.wallet.balance)
-          });
-        }
+  // Verifique se 'user' existe antes de atualizar
+  if (user && updateUser) {
+    updateUser({
+      ...user,
+      balance: parseFloat(data.data.wallet.balance)
+    });
+  }
 
-        // 2. Atualiza o estado local 'profileData' para que o componente seja renderizado
-        setProfileData((prev: any) => ({
-          ...prev,
-          balance: parseFloat(data.data.wallet.balance)
-        }));
-      } else {
-         toast.error(data.message || 'Erro ao processar saque.');
-      }
+  // Atualiza o estado local 'profileData'
+  setProfileData((prev: any) => ({
+    ...prev,
+    balance: parseFloat(data.data.wallet.balance)
+  }));
+} else {
+   toast.error(data.message || 'Erro ao processar saque.');
+}
     } catch (error: any) {
       toast.error(error.message || 'Erro ao processar saque');
       console.error('Erro no saque:', error);
@@ -942,6 +942,7 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
     </div>
   );
 }
+
 
 
 
