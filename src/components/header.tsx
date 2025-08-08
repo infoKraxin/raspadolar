@@ -180,7 +180,7 @@ export default function Header() {
                             <Image src={logoUrl} alt="logo" width={84} height={64} className="object-contain" />
                         ) : (
                             <Image
-  src="https://github.com/infoKraxin/Raspadinhabackend/blob/main/ChatGPT_Image_6_de_ago._de_2025,_12_07_05%20(1).png?raw=true"
+  src="https://raw.githubusercontent.com/infoKraxin/Raspadinhabackend/main/ChatGPT_Image_6_de_ago._de_2025%2C_12_07_05%20(1).png"
   alt="Nova Logo"
   width={84} // Ajuste o valor da largura conforme necessário
   height={64} // Ajuste o valor da altura conforme necessário
@@ -309,4 +309,5 @@ export default function Header() {
         </div>
     )
 }
+
 
