@@ -157,7 +157,6 @@ export default function Home() {
 
       if (data.success && data.data && typeof data.data.balance !== 'undefined') {
         setBalance(data.data.balance);
-        console.log('Saldo atualizado com sucesso:', data.data.balance);
       } else {
         console.log('Estrutura da resposta da API de perfil inesperada ou saldo não encontrado.');
         setBalance(0);
@@ -534,3 +533,4 @@ export default function Home() {
     </div>
   );
 }
+
