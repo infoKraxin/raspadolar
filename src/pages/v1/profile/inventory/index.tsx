@@ -78,31 +78,39 @@ const InventoryPage: React.FC = () => {
     }
   };
 
-  const handleRedeem = async (redemptionId: string) => {
-    toast.info(`Funcionalidade de resgate para o item ${redemptionId} ainda não implementada.`);
-  };
+ const handleRedeem = async (redemptionId: string) => {
+    // 1. Mensagem de carregamento para o usuário
+    toast.info('Resgatando prêmio...', { id: 'redeem-toast' });
 
-  useEffect(() => {
-    if (!authLoading) {
-      if (user && token) {
+    try {
+      // 2. Chama a nova rota no servidor
+      const response = await fetch('https://raspadinha-api.onrender.com/v1/api/users/redeem-prize', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prizeId: redemptionId }),
+      });
+
+      const data = await response.json();
+
+      // 3. Verifica a resposta do servidor
+      if (response.ok && data.success) {
+        toast.success(data.message, { id: 'redeem-toast' });
+        // 4. Atualiza o saldo e o inventário
+        // A. Recarrega o inventário para remover o item resgatado
         fetchPendingRedemptions();
-      } else if (!user) {
-        router.push('/');
+        // B. Atualiza o saldo do usuário (opcional, pode ser feito com useAuth)
+        // updateUser({ ...user, balance: data.newBalance });
+      } else {
+        toast.error(data.message || 'Erro ao resgatar prêmio.', { id: 'redeem-toast' });
       }
+    } catch (err) {
+      toast.error('Erro de conexão ao resgatar prêmio.', { id: 'redeem-toast' });
+      console.error('Erro ao resgatar prêmio:', err);
     }
-  }, [user, token, authLoading, router]);
-
-  const handleBackClick = () => {
-    router.push('/v1/profile');
   };
-
-  if (authLoading || (!user && !authLoading)) {
-    return (
-      <div className={`${poppins.className} min-h-screen bg-neutral-900 flex items-center justify-center`}>
-        <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
-      </div>
-    );
-  }
 
   return (
     <div className={`${poppins.className} min-h-screen bg-neutral-900`}>
@@ -195,3 +203,4 @@ const InventoryPage: React.FC = () => {
 };
 
 export default InventoryPage;
+
