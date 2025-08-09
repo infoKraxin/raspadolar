@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
+import { useRouter } from 'next/router'; // --- PASSO 1: IMPORTAR o useRouter ---
 import Image from 'next/image';
 import { X, Eye, EyeOff, Mail, Lock, User, Phone, CreditCard, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,11 +14,12 @@ interface AuthModalProps {
   onAuthSuccess?: (user: any, token: string) => void;
 }
 
-// SUA URL DA API FOI COLADA AQUI!
 const API_BASE_URL = "https://raspadinha-api.onrender.com";
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
   const { login } = useAuth();
+  const router = useRouter(); // Instância do router para ler a URL
+
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -25,11 +27,28 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
     email: '',
     password: '',
     confirmPassword: '',
-    name: '', // Será mapeado para 'username' no backend
-    phone: '', // Backend atual não usa na API de registro
-    cpf: '' // Backend atual não usa na API de registro
+    name: '',
+    phone: '',
+    cpf: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+
+  // --- PASSO 2: ADICIONAR ESTADO para o código de referência ---
+  const [referralCode, setReferralCode] = useState('');
+
+  // --- PASSO 3: ADICIONAR useEffect para capturar o código da URL ---
+  useEffect(() => {
+    // Esta função roda sempre que o modal abrir ou a URL mudar.
+    if (isOpen && router.isReady) {
+      const refCodeFromUrl = router.query.ref as string;
+      if (refCodeFromUrl) {
+        setReferralCode(refCodeFromUrl);
+        // Opcional: Notificar o usuário que um código de convite foi aplicado
+        // toast.info(`Código de convite aplicado: ${refCodeFromUrl}`);
+      }
+    }
+  }, [isOpen, router.isReady, router.query]);
+
 
   // Body scroll lock
   useEffect(() => {
@@ -112,13 +131,13 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
   };
 
   const handleLogin = async () => {
-    const response = await fetch(`${API_BASE_URL}/api/login`, { // URL CORRIGIDA
+    const response = await fetch(`${API_BASE_URL}/api/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email: formData.email, // Propriedade 'email' esperada pelo backend
+        email: formData.email,
         password: formData.password,
       }),
     });
@@ -129,43 +148,32 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
       throw new Error(data.message || 'Erro ao fazer login');
     }
 
-    // A estrutura de resposta do backend que te passei tem 'user' e 'token' diretamente no objeto 'data'
     if (data.token && data.user) {
       login(data.user, data.token);
-      
       toast.success('Login realizado com sucesso!');
-      
       if (onAuthSuccess) {
         onAuthSuccess(data.user, data.token);
       }
-      
       onClose();
     } else {
         throw new Error('Resposta inesperada do servidor após o login.');
     }
   };
 
+  // --- PASSO 4: MODIFICAR a função handleRegister para ENVIAR o código ---
   const handleRegister = async () => {
     if (formData.password !== formData.confirmPassword) {
       throw new Error('As senhas não coincidem');
     }
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const inviteCode = urlParams.get('r');
-    
-    // O backend atual espera 'username', 'email', 'password', 'phone' e 'document'.
-    const registerData: any = {
+    const registerData = {
       username: formData.name,
       email: formData.email,
       password: formData.password,
-      phone: formData.phone.replace(/\D/g, ''), // Incluído
-      document: formData.cpf.replace(/\D/g, '') // Incluído
+      phone: formData.phone.replace(/\D/g, ''),
+      document: formData.cpf.replace(/\D/g, ''),
+      referralCode: referralCode // AQUI! Enviamos o código capturado para a API.
     };
-
-    if (inviteCode) {
-      // Se você quiser usar um código de convite no futuro, o backend precisará ser adaptado.
-      // registerData.invite_code = inviteCode;
-    }
 
     const response = await fetch(`${API_BASE_URL}/api/register`, {
       method: 'POST',
@@ -181,16 +189,12 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
       throw new Error(data.message || 'Erro ao criar conta');
     }
 
-    // A estrutura de resposta do backend que te passei tem 'user' e 'token' diretamente no objeto 'data'
     if (data.token && data.user) {
       login(data.user, data.token);
-      
       toast.success('Conta criada com sucesso!');
-      
       if (onAuthSuccess) {
         onAuthSuccess(data.user, data.token);
       }
-      
       onClose();
     } else {
         throw new Error('Resposta inesperada do servidor após o registro.');
@@ -279,7 +283,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                     />
                   </div>
 
-                  {/* Phone Field (mantido no front-end, mas não enviado ao backend) */}
+                  {/* Phone Field */}
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={18} />
                     <input
@@ -290,14 +294,12 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                       onChange={handleInputChange}
                       maxLength={15}
                       className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
-                      // removido 'required' temporariamente, pois não está sendo enviado ao backend.
-                      // Se o backend for atualizado para aceitar, você pode adicionar 'required' novamente.
                       required
                       disabled={isLoading}
                     />
                   </div>
 
-                  {/* CPF Field (mantido no front-end, mas não enviado ao backend) */}
+                  {/* CPF Field */}
                   <div className="relative">
                     <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={18} />
                     <input
@@ -308,8 +310,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                       onChange={handleInputChange}
                       maxLength={14}
                       className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
-                      // removido 'required' temporariamente, pois não está sendo enviado ao backend.
-                      // Se o backend for atualizado para aceitar, você pode adicionar 'required' novamente.
                       required
                       disabled={isLoading}
                     />
