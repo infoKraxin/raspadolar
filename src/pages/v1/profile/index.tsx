@@ -658,7 +658,7 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
                       <div className="text-sm text-neutral-400">
                         <p>• Saques são processados em até 1 hora útil</p>
                         <p>• Valor mínimo: R$ 10,00</p>
-                        <p>• O saque do bônus só é permitido após o acúmulo de R$70. Caso esse valor não seja atingido, a solicitação será recusada.</p>
+                        <p>• O saque do bônus só é permitido após o acúmulo de R$70. Caso esse valor não seja atingido, a solicitação será recusada</p>
                       </div>
                     </div>
                   </div>
@@ -942,7 +942,6 @@ const getStatusText = (status: string, type: 'deposit' | 'withdraw') => {
     </div>
   );
 }
-
 
 
 
