@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
-import { useRouter } from 'next/router'; // --- PASSO 1: IMPORTAR o useRouter ---
+import { useRouter } from 'next/router'; // --- PASSO 1: IMPORTAR o useRouter -d--
 import Image from 'next/image';
 import { X, Eye, EyeOff, Mail, Lock, User, Phone, CreditCard, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -461,3 +461,4 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
     </div>
   );
 }
+
