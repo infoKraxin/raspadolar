@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAppColor, getAppGradient } from '@/lib/colors';
+import RegistrationBonusModal from './RegistrationBonusModal'; 
 
 // --- IMPORTAÇÃO DO NOVO MODAL DE BÔNUS ---
 import RegistrationBonusModal from './RegistrationBonusModal';
@@ -508,3 +509,4 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
   </div>
   );
 }
+
