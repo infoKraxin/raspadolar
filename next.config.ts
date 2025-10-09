@@ -2,18 +2,18 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    // 🛑 SEÇÃO ADICIONAL DE DOMAINS (LEGACY) - FORÇA A COMPATIBILIDADE
-    // ESSENCIAL PARA URLS COMPLEXAS COMO AS DO GITHUB E PLACEHOLDER
+    // 🛑 SEÇÃO ADICIONAL DE DOMAINS (LEGACY) PARA FORÇAR A ACEITAÇÃO
+    // ESSENCIAL PARA URLs que o remotePatterns está bloqueando
     domains: [
       'api.raspapixoficial.com',
       'raspadolar.vercel.app',
       'via.placeholder.com',
-      'github.com', // Adicionado para cobrir o banner
-      'raw.githubusercontent.com', // Adicionado para URLs raw
+      'github.com',
+      'raw.githubusercontent.com', 
       'ik.imagekit.io',
       'raspagreen.cloud',
       'rdddmzabvuyo9kjb.public.blob.vercel-storage.com',
-      'supabase.co' // Domínio base para **.supabase.co
+      'supabase.co'
     ],
     // -------------------------------------------------------------
     remotePatterns: [
@@ -40,11 +40,11 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'github.com',
-        pathname: '/**', // Caminho genérico para cobrir ?raw=true
+        pathname: '/**', // 🛑 CORREÇÃO CRÍTICA: AGORA GENÉRICO '/**'
       },
       {
         protocol: 'https',
-        hostname: 'raw.githubusercontent.com', // Adicionado para URLs diretas do GitHub
+        hostname: 'raw.githubusercontent.com',
         pathname: '/**',
       },
       {
@@ -52,7 +52,6 @@ const nextConfig = {
         hostname: 'ik.imagekit.io',
         pathname: '/azx3nlpdu/**',
       },
-      // --- BLOCOS ORIGINAIS ---
       {
         protocol: 'https',
         hostname: 'raspagreen.cloud',
@@ -63,7 +62,6 @@ const nextConfig = {
         hostname: 'rdddmzabvuyo9kjb.public.blob.vercel-storage.com',
         pathname: '/**',
       },
-      // --------------------------
     ],
   },
 };
