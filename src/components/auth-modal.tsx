@@ -7,458 +7,504 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAppColor, getAppGradient } from '@/lib/colors';
+
+// --- IMPORTAÇÃO DO NOVO MODAL DE BÔNUS ---
 import RegistrationBonusModal from './RegistrationBonusModal';
 
 interface AuthModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onAuthSuccess?: (user: any, token: string) => void;
+  isOpen: boolean;
+  onClose: () => void;
+  onAuthSuccess?: (user: any, token: string) => void;
 }
 
 const API_BASE_URL = "https://raspadinha-api.onrender.com";
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
-  const { login } = useAuth();
-  const router = useRouter(); // Instância do router para ler a URL
+  const { login } = useAuth();
+  const router = useRouter(); 
 
-  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    name: '',
-    phone: '',
-    cpf: ''
-  });
-  const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    name: '',
+    phone: '',
+    cpf: ''
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  // --- NOVO ESTADO: Controla a visibilidade do modal de bônus ---
+  const [showBonusModal, setShowBonusModal] = useState(false);
 
-  // --- PASSO 2: ADICIONAR ESTADO para o código de referência ---
-  const [referralCode, setReferralCode] = useState('');
+  // Estado para o código de referência
+  const [referralCode, setReferralCode] = useState('');
 
-  // --- PASSO 3: ADICIONAR useEffect para capturar o código da URL ---
-  useEffect(() => {
-    // Esta função roda sempre que o modal abrir ou a URL mudar.
-    if (isOpen && router.isReady) {
-      const refCodeFromUrl = router.query.ref as string;
-      if (refCodeFromUrl) {
-        setReferralCode(refCodeFromUrl);
-        // Opcional: Notificar o usuário que um código de convite foi aplicado
-        // toast.info(`Código de convite aplicado: ${refCodeFromUrl}`);
-      }
-    }
-  }, [isOpen, router.isReady, router.query]);
+  // Efeito para capturar o código da URL
+  useEffect(() => {
+    if (isOpen && router.isReady) {
+      const refCodeFromUrl = router.query.ref as string;
+      if (refCodeFromUrl) {
+        setReferralCode(refCodeFromUrl);
+      }
+    }
+  }, [isOpen, router.isReady, router.query]);
 
 
-  // Body scroll lock
-  useEffect(() => {
-    if (isOpen) {
-      const scrollY = window.scrollY;
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-      document.body.style.overflow = 'hidden';
-      
-      return () => {
+  // Body scroll lock
+  useEffect(() => {
+    // Garante que o scroll lock não seja aplicado se o modal de bônus estiver aberto
+    if (isOpen && !showBonusModal) {
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+      
+      return () => {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+      };
+    } else if (!isOpen && !showBonusModal) {
+    // Garante que o scroll seja destravado se ambos estiverem fechados
         document.body.style.position = '';
         document.body.style.top = '';
         document.body.style.width = '';
         document.body.style.overflow = '';
-        window.scrollTo(0, scrollY);
-      };
     }
-  }, [isOpen]);
+  }, [isOpen, showBonusModal]);
 
-  if (!isOpen) return null;
+  // Se o modal principal não estiver aberto e o de bônus também não, retorna nulo
+  if (!isOpen && !showBonusModal) return null;
+  // Se o modal principal estiver fechado, mas o de bônus estiver aberto, NÃO retorna nulo ainda,
+  // para que a renderização do modal de bônus aconteça no final do componente.
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    
-    if (name === 'phone') {
-      const numericValue = value.replace(/\D/g, '');
-      let formattedValue = numericValue;
-      if (numericValue.length > 0) {
-        formattedValue = numericValue.replace(/^(\d{2})(\d)/g, '($1) $2');
-      }
-      if (numericValue.length > 6) {
-        formattedValue = formattedValue.replace(/^(\(\d{2}\)\s)(\d{5})(\d)/g, '$1$2-$3');
-      }
-      
-      setFormData({
-        ...formData,
-        [name]: formattedValue
-      });
-    } else if (name === 'cpf') {
-      const numericValue = value.replace(/\D/g, '');
-      let formattedValue = numericValue;
-      if (numericValue.length > 3) {
-        formattedValue = numericValue.replace(/^(\d{3})(\d)/g, '$1.$2');
-      }
-      if (numericValue.length > 6) {
-        formattedValue = formattedValue.replace(/^(\d{3}\.\d{3})(\d)/g, '$1.$2');
-      }
-      if (numericValue.length > 9) {
-        formattedValue = formattedValue.replace(/^(\d{3}\.\d{3}\.\d{3})(\d)/g, '$1-$2');
-      }
-      
-      setFormData({
-        ...formData,
-        [name]: formattedValue
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value
-      });
-    }
-  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
+    // Lógica de formatação de telefone e CPF (mantida)
+    if (name === 'phone') {
+      const numericValue = value.replace(/\D/g, '');
+      let formattedValue = numericValue;
+      if (numericValue.length > 0) {
+        formattedValue = numericValue.replace(/^(\d{2})(\d)/g, '($1) $2');
+      }
+      if (numericValue.length > 6) {
+        formattedValue = formattedValue.replace(/^(\(\d{2}\)\s)(\d{5})(\d)/g, '$1$2-$3');
+      }
+      
+      setFormData({
+        ...formData,
+        [name]: formattedValue
+      });
+    } else if (name === 'cpf') {
+      const numericValue = value.replace(/\D/g, '');
+      let formattedValue = numericValue;
+      if (numericValue.length > 3) {
+        formattedValue = numericValue.replace(/^(\d{3})(\d)/g, '$1.$2');
+      }
+      if (numericValue.length > 6) {
+        formattedValue = formattedValue.replace(/^(\d{3}\.\d{3})(\d)/g, '$1.$2');
+      }
+      if (numericValue.length > 9) {
+        formattedValue = formattedValue.replace(/^(\d{3}\.\d{3}\.\d{3})(\d)/g, '$1-$2');
+      }
+      
+      setFormData({
+        ...formData,
+        [name]: formattedValue
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
+  };
 
-    try {
-      if (activeTab === 'login') {
-        await handleLogin();
-      } else {
-        await handleRegister();
-      }
-    } catch (err: any) {
-      toast.error(err.message || 'Ocorreu um erro. Tente novamente.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
 
-  const handleLogin = async () => {
-    const response = await fetch(`${API_BASE_URL}/api/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: formData.email,
-        password: formData.password,
-      }),
-    });
+    try {
+      if (activeTab === 'login') {
+        await handleLogin();
+      } else {
+        await handleRegister();
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Ocorreu um erro. Tente novamente.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    const data = await response.json();
+  const handleLogin = async () => {
+    const response = await fetch(`${API_BASE_URL}/api/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: formData.email,
+        password: formData.password,
+      }),
+    });
 
-    if (!response.ok) {
-      throw new Error(data.message || 'Erro ao fazer login');
-    }
+    const data = await response.json();
 
-    if (data.token && data.user) {
-      login(data.user, data.token);
-      toast.success('Login realizado com sucesso!');
-      if (onAuthSuccess) {
-        onAuthSuccess(data.user, data.token);
-      }
-      onClose();
-    } else {
-        throw new Error('Resposta inesperada do servidor após o login.');
-    }
-  };
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao fazer login');
+    }
 
-  // --- PASSO 4: MODIFICAR a função handleRegister para ENVIAR o código ---
-  const handleRegister = async () => {
-    if (formData.password !== formData.confirmPassword) {
-      throw new Error('As senhas não coincidem');
-    }
+    if (data.token && data.user) {
+      login(data.user, data.token);
+      toast.success('Login realizado com sucesso!');
+      if (onAuthSuccess) {
+        onAuthSuccess(data.user, data.token);
+      }
+      onClose();
+    } else {
+        throw new Error('Resposta inesperada do servidor após o login.');
+    }
+  };
 
-    const registerData = {
-      username: formData.name,
-      email: formData.email,
-      password: formData.password,
-      phone: formData.phone.replace(/\D/g, ''),
-      document: formData.cpf.replace(/\D/g, ''),
-      referralCode: referralCode // AQUI! Enviamos o código capturado para a API.
-    };
+  // --- LÓGICA DE REGISTRO MODIFICADA ---
+  const handleRegister = async () => {
+    if (formData.password !== formData.confirmPassword) {
+      throw new Error('As senhas não coincidem');
+    }
 
-    const response = await fetch(`${API_BASE_URL}/api/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(registerData),
-    });
+    const registerData = {
+      username: formData.name,
+      email: formData.email,
+      password: formData.password,
+      phone: formData.phone.replace(/\D/g, ''),
+      document: formData.cpf.replace(/\D/g, ''),
+      referralCode: referralCode // Envia o código capturado
+    };
 
-    const data = await response.json();
+    const response = await fetch(`${API_BASE_URL}/api/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(registerData),
+    });
 
-    if (!response.ok) {
-      throw new Error(data.message || 'Erro ao criar conta');
-    }
+    const data = await response.json();
 
-    if (data.token && data.user) {
-      login(data.user, data.token);
-      toast.success('Conta criada com sucesso!');
-      if (onAuthSuccess) {
-        onAuthSuccess(data.user, data.token);
-      }
-      onClose();
-    } else {
-        throw new Error('Resposta inesperada do servidor após o registro.');
-    }
-  };
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao criar conta');
+    }
 
-  return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-neutral-900 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] md:max-h-[90vh] overflow-y-auto border border-neutral-700">
-        <div className="flex flex-col md:flex-row min-h-[400px] md:min-h-[500px]">
-          {/* Left Side - Banner Image */}
-          <div className="hidden md:flex md:w-1/2 relative min-h-[500px]">
-            <Image
-              src="/banner_modal.webp"
-              alt="Banner"
-              fill
-              className="object-cover object-center"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-neutral-900/20 to-neutral-900/20" /> 
-          </div>
+    if (data.token && data.user) {
+      // 1. Loga o usuário
+      login(data.user, data.token);
+      
+      // 2. Fecha o modal de autenticação (Importante!)
+      onClose(); 
+      
+      // 3. Aciona o modal de bônus
+      setShowBonusModal(true); 
+      
+      // Mostra o toast de sucesso (opcional, mas bom feedback)
+      toast.success('Conta criada com sucesso!');
+      
+      if (onAuthSuccess) {
+        onAuthSuccess(data.user, data.token);
+      }
+    } else {
+        throw new Error('Resposta inesperada do servidor após o registro.');
+    }
+  };
 
-          {/* Right Side - Forms */}
-          <div className="w-full md:w-1/2 p-4 md:p-8 flex flex-col min-h-[400px] md:min-h-[500px] justify-between">
-            {/* Close Button */}
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 text-neutral-400 hover:text-white transition-colors"
-            >
-              <X size={24} />
-            </button>
+  // --- NOVO: Lidar com o fechamento do modal de bônus ---
+  const handleBonusModalClose = () => {
+    setShowBonusModal(false);
+    // Redireciona o usuário para a página de Depósito após fechar o modal
+    router.push('/depositar'); 
+  };
 
-            {/* Header */}
-            <div className="mb-8">
-              <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-white to-neutral-300 bg-clip-text text-transparent mb-2">
-                {activeTab === 'login' ? 'Bem-vindo de volta!' : 'Crie sua conta'}
-              </h2>
-              <p className="text-neutral-400 text-sm">
-                {activeTab === 'login' 
-                  ? 'Entre na sua conta e continue jogando' 
-                  : 'Registre-se e comece a ganhar prêmios reais'
-                }
-              </p>
-            </div>
-
-            {/* Tabs */}
-            <div className="flex mb-6 bg-neutral-800/50 rounded-lg p-1">
-              <button
-                onClick={() => setActiveTab('login')}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
-                  activeTab === 'login'
-                    ? `${getAppColor()} text-white shadow-lg`
-                    : 'text-neutral-400 hover:text-white'
-                }`}
-              >
-                Entrar
-              </button>
-              <button
-                onClick={() => setActiveTab('register')}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
-                  activeTab === 'register'
-                    ? `${getAppColor()} text-white shadow-lg`
-                    : 'text-neutral-400 hover:text-white'
-                }`}
-              >
-                Registrar
-              </button>
-            </div>
-
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-4 flex-1 flex flex-col justify-center">
-              {activeTab === 'register' && (
-                <>
-                  {/* Name Field */}
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={18} />
-                    <input
-                      type="text"
-                      name="name"
-                      placeholder="Nome completo"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
-                      required
-                      disabled={isLoading}
-                    />
-                  </div>
-
-                  {/* Phone Field */}
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={18} />
-                    <input
-                      type="tel"
-                      name="phone"
-                      placeholder="Telefone (ex: (11) 98765-4321)"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      maxLength={15}
-                      className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
-                      required
-                      disabled={isLoading}
-                    />
-                  </div>
-
-                  {/* CPF Field */}
-                  <div className="relative">
-                    <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={18} />
-                    <input
-                      type="text"
-                      name="cpf"
-                      placeholder="CPF (ex: 123.456.789-00)"
-                      value={formData.cpf}
-                      onChange={handleInputChange}
-                      maxLength={14}
-                      className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
-                      required
-                      disabled={isLoading}
-                    />
-                  </div>
-                </>
-              )}
-
-              {/* Email Field */}
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={18} />
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="E-mail"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-
-              {/* Password Field */}
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={18} />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  placeholder="Senha"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 pr-12 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
-                  required
-                  disabled={isLoading}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-white transition-colors"
-                  disabled={isLoading}
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-
-              {/* Confirm Password Field (only for register) */}
-              {activeTab === 'register' && (
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={18} />
-                  <input
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    name="confirmPassword"
-                    placeholder="Confirmar senha"
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    className="w-full pl-10 pr-12 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
-                    required
-                    disabled={isLoading}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-white transition-colors"
-                    disabled={isLoading}
-                  >
-                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              )}
-
-              {/* Remember me / Forgot password */}
-              {activeTab === 'login' && (
-                <div className="flex items-center justify-between text-sm">
-                  <label className="flex items-center gap-2 text-neutral-400 cursor-pointer">
-                    <Checkbox id="remember" />
-                    Lembrar de mim
-                  </label>
-                  <button
-                    type="button"
-                    className="text-neutral-400 hover:text-white transition-colors cursor-pointer"
-                  >
-                    Esqueceu a senha?
-                  </button>
-                </div>
-              )}
-
-              {/* Terms (only for register) */}
-              {activeTab === 'register' && (
-                <div className="flex items-start gap-2 text-sm">
-                  <Checkbox id="terms" required className="mt-0.5" />
-                  <label htmlFor="terms" className="text-neutral-400 cursor-pointer">
-                    Concordo com os{' '}
-                    <button type="button" className="text-neutral-400 hover:text-white transition-colors cursor-pointer">
-                      Termos de Uso
-                    </button>
-                    {' '}e{' '}
-                    <button type="button" className="text-neutral-400 hover:text-white transition-colors cursor-pointer">
-                      Política de Privacidade
-                    </button>
-                  </label>
-                </div>
-              )}
-
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                className={`w-full ${getAppGradient()} text-white py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl`}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="animate-spin" size={18} />
-                    {activeTab === 'login' ? 'Entrando...' : 'Criando conta...'}
-                  </div>
-                ) : (
-                  activeTab === 'login' ? 'Entrar' : 'Criar Conta'
-                )}
-              </Button>
-            </form>
-
-            {/* Footer */}
-            <div className="mt-6 text-center text-sm text-neutral-400">
-              {activeTab === 'login' ? (
-                <p>
-                  Não tem uma conta?{' '}
-                  <button
-                    onClick={() => setActiveTab('register')}
-                    className="text-white hover:text-white transition-colors font-medium"
-                  >
-                    Registre-se
-                  </button>
-                </p>
-              ) : (
-                <p>
-                  Já tem uma conta?{' '}
-                  <button
-                    onClick={() => setActiveTab('login')}
-                    className="text-white hover:text-white transition-colors font-medium"
-                  >
-                    Faça login
-                  </button>
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+  // Renderiza o modal principal somente se 'isOpen' for true E 'showBonusModal' for false
+  if (!isOpen) return (
+     // Se o modal principal não estiver aberto, mas o de bônus estiver,
+     // continua a renderização do modal de bônus (abaixo).
+     <RegistrationBonusModal 
+        isOpen={showBonusModal} 
+        onClose={handleBonusModalClose} 
+        appGradient={getAppGradient()} 
+    />
   );
-}
+  
+  return (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-neutral-900 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] md:max-h-[90vh] overflow-y-auto border border-neutral-700">
+        <div className="flex flex-col md:flex-row min-h-[400px] md:min-h-[500px]">
+          {/* Left Side - Banner Image */}
+          <div className="hidden md:flex md:w-1/2 relative min-h-[500px]">
+            <Image
+              src="/banner_modal.webp"
+              alt="Banner"
+              fill
+              className="object-cover object-center"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-neutral-900/20 to-neutral-900/20" /> 
+          </div>
 
+          {/* Right Side - Forms */}
+          <div className="w-full md:w-1/2 p-4 md:p-8 flex flex-col min-h-[400px] md:min-h-[500px] justify-between">
+            {/* Close Button */}
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 text-neutral-400 hover:text-white transition-colors"
+            >
+              <X size={24} />
+            </button>
+
+            {/* Header */}
+            <div className="mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-white to-neutral-300 bg-clip-text text-transparent mb-2">
+                {activeTab === 'login' ? 'Bem-vindo de volta!' : 'Crie sua conta'}
+              </h2>
+              <p className="text-neutral-400 text-sm">
+                {activeTab === 'login' 
+                  ? 'Entre na sua conta e continue jogando' 
+                  : 'Registre-se e comece a ganhar prêmios reais'
+                }
+              </p>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex mb-6 bg-neutral-800/50 rounded-lg p-1">
+              <button
+                onClick={() => setActiveTab('login')}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
+                  activeTab === 'login'
+                    ? `${getAppColor()} text-white shadow-lg`
+                    : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                Entrar
+              </button>
+              <button
+                onClick={() => setActiveTab('register')}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
+                  activeTab === 'register'
+                    ? `${getAppColor()} text-white shadow-lg`
+                    : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                Registrar
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-4 flex-1 flex flex-col justify-center">
+              {activeTab === 'register' && (
+                <>
+                  {/* Name Field */}
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={18} />
+                    <input
+                      type="text"
+                      name="name"
+                      placeholder="Nome completo"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+
+                  {/* Phone Field */}
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={18} />
+                    <input
+                      type="tel"
+                      name="phone"
+                      placeholder="Telefone (ex: (11) 98765-4321)"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      maxLength={15}
+                      className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+
+                  {/* CPF Field */}
+                  <div className="relative">
+                    <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={18} />
+                    <input
+                      type="text"
+                      name="cpf"
+                      placeholder="CPF (ex: 123.456.789-00)"
+                      value={formData.cpf}
+                      onChange={handleInputChange}
+                      maxLength={14}
+                      className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Email Field */}
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={18} />
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="E-mail"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+
+              {/* Password Field */}
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={18} />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  placeholder="Senha"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 pr-12 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
+                  required
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-white transition-colors"
+                  disabled={isLoading}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+
+              {/* Confirm Password Field (only for register) */}
+              {activeTab === 'register' && (
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={18} />
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    name="confirmPassword"
+                    placeholder="Confirmar senha"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-12 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:border-neutral-500 focus:ring-2 focus:ring-neutral-500/20 transition-all duration-200 outline-none"
+                    required
+                    disabled={isLoading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-white transition-colors"
+                    disabled={isLoading}
+                  >
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              )}
+
+              {/* Remember me / Forgot password */}
+              {activeTab === 'login' && (
+                <div className="flex items-center justify-between text-sm">
+                  <label className="flex items-center gap-2 text-neutral-400 cursor-pointer">
+                    <Checkbox id="remember" />
+                    Lembrar de mim
+                  </label>
+                  <button
+                    type="button"
+                    className="text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                  >
+                    Esqueceu a senha?
+                  </button>
+                </div>
+              )}
+
+              {/* Terms (only for register) */}
+              {activeTab === 'register' && (
+                <div className="flex items-start gap-2 text-sm">
+                  <Checkbox id="terms" required className="mt-0.5" />
+                  <label htmlFor="terms" className="text-neutral-400 cursor-pointer">
+                    Concordo com os{' '}
+                    <button type="button" className="text-neutral-400 hover:text-white transition-colors cursor-pointer">
+                      Termos de Uso
+                    </button>
+                    {' '}e{' '}
+                    <button type="button" className="text-neutral-400 hover:text-white transition-colors cursor-pointer">
+                      Política de Privacidade
+                    </button>
+                  </label>
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                className={`w-full ${getAppGradient()} text-white py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl`}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="animate-spin" size={18} />
+                    {activeTab === 'login' ? 'Entrando...' : 'Criando conta...'}
+                  </div>
+                ) : (
+                  activeTab === 'login' ? 'Entrar' : 'Criar Conta'
+                )}
+              </Button>
+            </form>
+
+            {/* Footer */}
+            <div className="mt-6 text-center text-sm text-neutral-400">
+              {activeTab === 'login' ? (
+                <p>
+                  Não tem uma conta?{' '}
+                  <button
+                    onClick={() => setActiveTab('register')}
+                    className="text-white hover:text-white transition-colors font-medium"
+                  >
+                    Registre-se
+                  </button>
+                </p>
+              ) : (
+                <p>
+                  Já tem uma conta?{' '}
+                  <button
+                    onClick={() => setActiveTab('login')}
+                    className="text-white hover:text-white transition-colors font-medium"
+                  >
+                    Faça login
+                  </button>
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    
+    {/* RENDERIZAÇÃO DO MODAL DE BÔNUS FORA DA ESTRUTURA PRINCIPAL */}
+    <RegistrationBonusModal 
+        isOpen={showBonusModal} 
+        onClose={handleBonusModalClose} 
+        appGradient={getAppGradient()} 
+    />
+  </div>
+  );
+}
