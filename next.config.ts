@@ -25,7 +25,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'raw.githubusercontent.com',
+        hostname: 'github.com',
         pathname: '/infoKraxin/raspadolar/**',
       },
       {
@@ -50,3 +50,4 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
+
