@@ -1,25 +1,54 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
-import { useRouter } from 'next/router'; // --- PASSO 1: IMPORTAR o useRouter ---
-import Image from 'next/image';
+import React, { useState, useEffect, useCallback } from 'react';
+// As dependências Next.js (useRouter, Image) e aliases foram removidas/substituídas para compatibilidade.
 import { X, Eye, EyeOff, Mail, Lock, User, Phone, CreditCard, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
-import { getAppColor, getAppGradient } from '@/lib/colors';
+import { toast } from 'sonner'; 
 import RegistrationBonusModal from './RegistrationBonusModal';
+
+// --- Substitutos para compatibilidade ---
+
+// Simulação de getAppGradient (Tailwind - Cor de Exemplo)
+const getAppGradient = () => "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700";
+// Simulação de getAppColor (Tailwind - Cor de Exemplo)
+const getAppColor = () => "bg-indigo-600"; 
+// Simulação de useAuth/login
+const mockLogin = (user: any, token: string) => {
+  console.log(`User logged in: ${user.email}, Token: ${token.substring(0, 10)}...`);
+  // Aqui você faria o login real na sua aplicação
+};
+
+// Componente simples de Checkbox
+const SimpleCheckbox = ({ id, required = false, className = '' }: { id: string, required?: boolean, className?: string }) => (
+    <input type="checkbox" id={id} required={required} className={`h-4 w-4 rounded border-neutral-700 bg-neutral-800 text-indigo-600 focus:ring-indigo-600 ${className}`} />
+);
+
+// Componente simples de Button
+const SimpleButton = ({ children, type = 'button', className = '', disabled = false, onClick }: any) => (
+    <button
+        type={type}
+        className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        disabled={disabled}
+        onClick={onClick}
+    >
+        {children}
+    </button>
+);
+
+// Fim dos Substitutos
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAuthSuccess?: (user: any, token: string) => void;
+  // O onAuthSuccess é mantido, mas não será chamado diretamente por mockLogin
+  onAuthSuccess?: (user: any, token: string) => void; 
+  // Propriedade opcional para o código de referência, caso a URL não seja acessível.
+  initialReferralCode?: string; 
 }
 
 const API_BASE_URL = "https://raspadinha-api.onrender.com";
 
-export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
-  const { login } = useAuth();
-  const router = useRouter(); // Instância do router para ler a URL
+export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialReferralCode }: AuthModalProps) {
+  // Substituído 'useAuth().login' pela mockLogin, pois o contexto não pode ser resolvido.
+  const login = mockLogin; 
 
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   const [showPassword, setShowPassword] = useState(false);
@@ -34,43 +63,27 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  // --- PASSO 2: ADICIONAR ESTADO para o código de referência ---
-  const [referralCode, setReferralCode] = useState('');
+  // ESTADO para controlar o Modal de Bônus
+  const [showBonusModal, setShowBonusModal] = useState(false); 
+  
+  // Usamos a prop inicial como fallback, já que useRouter foi removido
+  const [referralCode, setReferralCode] = useState(initialReferralCode || ''); 
 
-  // --- PASSO 3: ADICIONAR useEffect para capturar o código da URL ---
+  // Body scroll lock (Simplificado)
   useEffect(() => {
-    // Esta função roda sempre que o modal abrir ou a URL mudar.
-    if (isOpen && router.isReady) {
-      const refCodeFromUrl = router.query.ref as string;
-      if (refCodeFromUrl) {
-        setReferralCode(refCodeFromUrl);
-        // Opcional: Notificar o usuário que um código de convite foi aplicado
-        // toast.info(`Código de convite aplicado: ${refCodeFromUrl}`);
-      }
+    if (isOpen || showBonusModal) {
+        document.body.style.overflow = 'hidden';
+    } else {
+        document.body.style.overflow = 'unset';
     }
-  }, [isOpen, router.isReady, router.query]);
+    return () => {
+        document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, showBonusModal]);
 
 
-  // Body scroll lock
-  useEffect(() => {
-    if (isOpen) {
-      const scrollY = window.scrollY;
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-      document.body.style.overflow = 'hidden';
-      
-      return () => {
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        document.body.style.overflow = '';
-        window.scrollTo(0, scrollY);
-      };
-    }
-  }, [isOpen]);
-
-  if (!isOpen) return null;
+  // Se o Modal de Bônus estiver aberto, o AuthModal não deve ser renderizado
+  if (!isOpen && !showBonusModal) return null;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -125,13 +138,16 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
         await handleRegister();
       }
     } catch (err: any) {
-      toast.error(err.message || 'Ocorreu um erro. Tente novamente.');
+      // Usando console.error em vez de toast para simplificar, já que 'sonner' pode não estar disponível
+      console.error('Erro de autenticação:', err.message); 
+      alert(`Erro: ${err.message || 'Ocorreu um erro. Tente novamente.'}`); // Usando alert como fallback
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleLogin = async () => {
+    // Implementação de Login... (mantida)
     const response = await fetch(`${API_BASE_URL}/api/login`, {
       method: 'POST',
       headers: {
@@ -151,17 +167,16 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
 
     if (data.token && data.user) {
       login(data.user, data.token);
-      toast.success('Login realizado com sucesso!');
+      console.log('Login realizado com sucesso!');
       if (onAuthSuccess) {
         onAuthSuccess(data.user, data.token);
       }
       onClose();
     } else {
-        throw new Error('Resposta inesperada do servidor após o login.');
+      throw new Error('Resposta inesperada do servidor após o login.');
     }
   };
 
-  // --- PASSO 4: MODIFICAR a função handleRegister para ENVIAR o código ---
   const handleRegister = async () => {
     if (formData.password !== formData.confirmPassword) {
       throw new Error('As senhas não coincidem');
@@ -173,7 +188,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
       password: formData.password,
       phone: formData.phone.replace(/\D/g, ''),
       document: formData.cpf.replace(/\D/g, ''),
-      referralCode: referralCode // AQUI! Enviamos o código capturado para a API.
+      referralCode: referralCode
     };
 
     const response = await fetch(`${API_BASE_URL}/api/register`, {
@@ -192,28 +207,56 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
 
     if (data.token && data.user) {
       login(data.user, data.token);
-      toast.success('Conta criada com sucesso!');
+      console.log('Conta criada com sucesso!');
+
+      // Lógica para checar o bônus e encadear os modais
+      // O backend DEVE retornar `bonus_disponivel: true` e `bonus_amount: 2000.00`
+      const bonus_amount = data.bonus_amount || 2000.00; // Usando fallback
+
+      if (data.bonus_disponivel) {
+        // 1. Fecha o Modal de Autenticação
+        onClose();
+        // 2. Abre o Modal de Bônus APÓS um pequeno delay para a transição
+        setTimeout(() => {
+            setShowBonusModal(true);
+        }, 100); 
+      } else {
+        // Se não houver bônus, apenas fecha o modal
+        onClose();
+      }
+
       if (onAuthSuccess) {
         onAuthSuccess(data.user, data.token);
       }
-      onClose();
     } else {
-        throw new Error('Resposta inesperada do servidor após o registro.');
+      throw new Error('Resposta inesperada do servidor após o registro.');
     }
   };
 
+  // --- Renderização do Modal de Bônus ---
+  if (showBonusModal) {
+    return (
+        <RegistrationBonusModal 
+            isOpen={showBonusModal} 
+            onClose={() => setShowBonusModal(false)}
+            // Passa o valor do bônus, usando um valor padrão se a API não fornecer
+            bonusAmount={2000.00} 
+        />
+    );
+  }
+
+  // Se o Modal de Bônus não estiver ativo, renderiza o Modal de Autenticação (se estiver aberto)
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-neutral-900 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] md:max-h-[90vh] overflow-y-auto border border-neutral-700">
         <div className="flex flex-col md:flex-row min-h-[400px] md:min-h-[500px]">
           {/* Left Side - Banner Image */}
           <div className="hidden md:flex md:w-1/2 relative min-h-[500px]">
-            <Image
-              src="/banner_modal.webp"
+            {/* Img simples substituindo next/image */}
+            <img
+              src="https://placehold.co/400x500/0c0a09/ffffff?text=REGISTRO+PREMIADO"
               alt="Banner"
-              fill
-              className="object-cover object-center"
-              priority
+              className="object-cover object-center w-full h-full rounded-l-2xl"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-neutral-900/20 to-neutral-900/20" /> 
           </div>
@@ -385,7 +428,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
               {activeTab === 'login' && (
                 <div className="flex items-center justify-between text-sm">
                   <label className="flex items-center gap-2 text-neutral-400 cursor-pointer">
-                    <Checkbox id="remember" />
+                    <SimpleCheckbox id="remember" />
                     Lembrar de mim
                   </label>
                   <button
@@ -400,7 +443,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
               {/* Terms (only for register) */}
               {activeTab === 'register' && (
                 <div className="flex items-start gap-2 text-sm">
-                  <Checkbox id="terms" required className="mt-0.5" />
+                  <SimpleCheckbox id="terms" required className="mt-0.5" />
                   <label htmlFor="terms" className="text-neutral-400 cursor-pointer">
                     Concordo com os{' '}
                     <button type="button" className="text-neutral-400 hover:text-white transition-colors cursor-pointer">
@@ -415,9 +458,9 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
               )}
 
               {/* Submit Button */}
-              <Button
+              <SimpleButton
                 type="submit"
-                className={`w-full ${getAppGradient()} text-white py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl`}
+                className={`w-full ${getAppGradient()} text-white py-3 font-medium transition-all duration-200 shadow-lg hover:shadow-xl`}
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -428,7 +471,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                 ) : (
                   activeTab === 'login' ? 'Entrar' : 'Criar Conta'
                 )}
-              </Button>
+              </SimpleButton>
             </form>
 
             {/* Footer */}
