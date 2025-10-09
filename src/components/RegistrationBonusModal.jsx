@@ -1,76 +1,70 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { X, Gift } from 'lucide-react';
 
-/**
- * Modal exibido após o cadastro bem-sucedido para notificar o bônus de indicação.
- * @param {boolean} isOpen - Controla a visibilidade do modal.
- * @param {function} onClose - Função para fechar o modal.
- * @param {string} appGradient - Classe CSS para o gradiente principal (ex: 'bg-gradient-to-r from-yellow-500 to-amber-600').
- */
-const RegistrationBonusModal = ({ isOpen, onClose, appGradient }) => {
-    if (!isOpen) return null;
+interface RegistrationBonusModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  bonusAmount: number; // Recebe o valor do bônus
+}
 
-    // Classe de gradiente padrão para fallback
-    const gradientClass = appGradient || 'bg-gradient-to-r from-yellow-500 to-amber-600';
+export default function RegistrationBonusModal({ isOpen, onClose, bonusAmount }: RegistrationBonusModalProps) {
+  if (!isOpen) return null;
 
-    return (
-        // Overlay (Fundo Escuro e Bloqueador de Interação)
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm transition-opacity duration-300">
-            
-            {/* Modal de Diálogo */}
-            <div className="bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-md p-6 sm:p-8 transform scale-100 transition-transform duration-300 border border-neutral-700">
-                
-                {/* Botão de Fechar */}
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 text-neutral-400 hover:text-white transition-colors"
-                >
-                    <X size={24} />
-                </button>
+  // Formatação para R$ 2.000,00
+  const formattedAmount = new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 2,
+  }).format(bonusAmount);
 
-                {/* Ícone de Destaque */}
-                <div className="text-center mb-6">
-                    <span className="text-6xl" role="img" aria-label="Bônus">
-                        🥳
-                    </span>
+  return (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[51] flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl max-w-sm w-full border-4 border-yellow-400 animate-in fade-in-0 zoom-in-95 duration-300">
+        
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-neutral-400 hover:text-neutral-100 transition-colors"
+        >
+          <X size={24} />
+        </button>
+
+        <div className="p-8 text-center relative">
+            <div className="flex justify-center mb-4">
+                <div className="p-4 bg-yellow-500 rounded-full shadow-xl shadow-yellow-500/50">
+                    <Gift size={48} className="text-white animate-bounce" />
                 </div>
-
-                {/* Título e Mensagem */}
-                <h2 className="text-3xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-yellow-600 mb-3">
-                    Bônus de Indicação!
-                </h2>
-
-                <p className="text-neutral-400 text-center mb-6 text-lg">
-                    Seu cadastro foi concluído. Você foi **indicado por um amigo** e ganhou um bônus especial:
-                </p>
-
-                <div className="bg-green-700/30 p-4 rounded-lg border border-green-700 mb-6 text-center shadow-inner">
-                    <p className="text-5xl font-extrabold text-green-400">
-                        R$ 3.000
-                    </p>
-                    <p className="text-sm text-green-500 mt-1">
-                        Saldo de Bônus (Indicação)
-                    </p>
-                </div>
-
-                {/* Regra de Saque (Condição) */}
-                <div className="p-4 bg-red-900/40 border border-red-700 rounded-lg text-red-300 text-sm">
-                    <p className="font-bold mb-2 text-red-100">Condição para Saque:</p>
-                    <p>
-                        Para desbloquear o saque deste bônus, você deve ter um **depósito mínimo de R$ 70,00** ou um acumulativo de depósitos que atinja esse valor.
-                    </p>
-                </div>
-                
-                {/* Botão de Ação */}
-                <button
-                    onClick={onClose} // Fecha o modal e deve levar o usuário para a página de Depósito
-                    className={`w-full py-3 mt-6 text-lg font-bold text-neutral-900 rounded-lg shadow-xl transition duration-200 transform active:scale-95 ${gradientClass}`}
-                >
-                    Depositar Agora e Desbloquear Bônus
-                </button>
             </div>
-        </div>
-    );
-};
 
-export default RegistrationBonusModal;
+            <h2 className="text-3xl font-extrabold text-neutral-900 dark:text-white mb-2">
+                🎉 BÔNUS DE BOAS-VINDAS!
+            </h2>
+            
+            <p className="text-lg text-neutral-600 dark:text-neutral-300 mb-6">
+                Parabéns, seu cadastro foi concluído com sucesso!
+            </p>
+            
+            <div className="bg-green-100 dark:bg-green-900/50 p-4 rounded-lg mb-6">
+                <p className="text-2xl font-bold text-green-600 dark:text-green-300">
+                    Você ganhou um bônus de:
+                </p>
+                <p className="text-5xl font-extrabold text-green-800 dark:text-green-100 mt-2">
+                    {formattedAmount}
+                </p>
+            </div>
+
+            <button
+                onClick={onClose}
+                className="w-full bg-yellow-500 text-neutral-900 py-3 rounded-lg font-bold text-xl transition-all duration-200 shadow-md hover:bg-yellow-400 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-yellow-500/50"
+            >
+                Começar a Jogar Agora!
+            </button>
+            
+            <p className="text-xs text-neutral-400 mt-4">
+                *O bônus foi adicionado ao seu saldo. Aplicam-se Termos e Condições de Rollover.
+            </p>
+        </div>
+      </div>
+    </div>
+  );
+}
