@@ -189,13 +189,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
     if (!response.ok) {
       throw new Error(data.message || 'Erro ao criar conta');
     }
-
-    if (data.token && data.user) {
-      login(data.user, data.token);
-      toast.success('Seu saldo de 2.000R$ foi adicionado a sua conta!');
-      if (onAuthSuccess) {
-        onAuthSuccess(data.user, data.token);
-      }
       onClose();
     } else {
         throw new Error('Resposta inesperada do servidor após o registro.');
@@ -461,4 +454,5 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
     </div>
   );
 }
+
 
