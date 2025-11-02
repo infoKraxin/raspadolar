@@ -14,7 +14,7 @@ interface DepositModalProps {
   updateUser: (data: any) => void;
 }
 
-// CORREÇÃO 1: Removido o 10 e ajustada a lista (usando 60 em vez de 80 para um passo mais suave)
+// CORREÇÃO: Lista de valores rápidos começando em R$ 20
 const quickAmounts = [20, 40, 60, 100, 200, 500];
 
 function PaymentModal({ isOpen, onClose, paymentData, token, updateUser }: { isOpen: boolean; onClose: () => void; paymentData: any; token: string | null; updateUser: (data: any) => void }) {
@@ -384,7 +384,7 @@ export default function DepositModal({ isOpen, onClose, token, updateUser }: Dep
                             {badge.text}
                           </div>
                         )}
-                        {/* CORREÇÃO 2: Implementando a lógica do bônus (Deposite X + X) */}
+                        {/* CORREÇÃO: Implementando a lógica do bônus (Deposite X + X) */}
                         <div className="text-center">
                           <p className="text-[10px] sm:text-xs text-neutral-400">Deposite:</p>
                           <p className="text-sm sm:text-base font-bold">R$ {amount} + {amount}</p>
