@@ -28,26 +28,33 @@ const poppins = Poppins({
 });
 
 interface QuickAmountProps {
-  amount: number;
-  isSelected: boolean;
-  onClick: () => void;
+  amount: number;
+  isSelected: boolean;
+  onClick: () => void;
 }
 
 function QuickAmount({ amount, isSelected, onClick }: QuickAmountProps) {
-  return (
-    <button
-      onClick={onClick}
-      className={`p-4 rounded-lg border transition-all duration-300 ${
-        isSelected
-          ? 'bg-yellow-500/20 border-yellow-500 text-yellow-400'
-          : 'bg-neutral-700 border-neutral-600 text-neutral-300 hover:bg-neutral-600 hover:border-neutral-500'
-      }`}
-    >
-      <div className="text-center">
-        <p className="text-lg font-semibold">R$ {amount}</p>
-      </div>
-    </button>
-  );
+    const totalCredit = amount * 2; // Valor que será creditado (dobrado)
+    const displayAmount = `${amount} + ${amount}`; // Ex: "40 + 40"
+
+  return (
+    <button
+      onClick={onClick}
+      className={`p-4 rounded-lg border transition-all duration-300 ${
+        isSelected
+          ? 'bg-yellow-500/20 border-yellow-500 text-yellow-400'
+          : 'bg-neutral-700 border-neutral-600 text-neutral-300 hover:bg-neutral-600 hover:border-neutral-500'
+      }`}
+    >
+      <div className="text-center">
+        <p className="text-sm text-neutral-400">Deposite:</p>
+        <p className="text-lg font-bold">R$ {displayAmount}</p> {/* Exibe o valor + o bônus */}
+        <p className="text-xs text-green-400 font-semibold mt-1">
+            Ganhe R$ {totalCredit}
+        </p>
+      </div>
+    </button>
+  );
 }
 
 interface PaymentModalProps {
@@ -457,4 +464,5 @@ export default function DepositPage() {
     </div>
   );
 }
+
 
