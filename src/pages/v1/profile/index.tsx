@@ -792,8 +792,8 @@ export default function ProfilePage() {
                       </Button>
                       <div className="text-sm text-neutral-400">
                         <p>• Saques são processados em até 1 hora útil</p>
-                        <p>• Valor mínimo: R$ 10,00</p>
-                        <p>• O bônus precisa ter um acumulado de R$70 para poder ser sacado. Caso contrário, será reprovado</p>
+                        <p>• Valor mínimo: R$ 20</p>
+                        <p>• O bônus precisa ter um acumulado de R$100 para poder ser sacado. Caso contrário, será reprovado</p>
                       </div>
                     </div>
                   </div>
@@ -1231,4 +1231,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
 
