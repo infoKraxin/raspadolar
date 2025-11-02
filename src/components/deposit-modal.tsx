@@ -14,7 +14,7 @@ interface DepositModalProps {
   updateUser: (data: any) => void;
 }
 
-const quickAmounts = [10, 20, 40, 80, 100, 200];
+const quickAmounts = [20, 40, 60, 80, 100, 200];
 
 function PaymentModal({ isOpen, onClose, paymentData, token, updateUser }: { isOpen: boolean; onClose: () => void; paymentData: any; token: string | null; updateUser: (data: any) => void }) {
   const [timeLeft, setTimeLeft] = useState(900); // 15 minutos
@@ -464,5 +464,6 @@ export default function DepositModal({ isOpen, onClose, token, updateUser }: Dep
     </>
   );
 }
+
 
 
